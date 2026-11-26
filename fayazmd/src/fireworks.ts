@@ -1,4 +1,6 @@
-type Particle = {x: number; y: number; vx: number; vy: number; life: number; color: string; size: number};
+import {glowSprite} from './glow';
+
+type Particle ={x: number; y: number; vx: number; vy: number; life: number; color: string; size: number};
 
 const COLORS = ['#F6E3A6', '#FFFFFF', '#E9D3A1', '#F3E2C0', '#E9CF8A'];
 
@@ -23,8 +25,10 @@ export const startFireworks = (section: HTMLElement, canvas: HTMLCanvasElement) 
   };
 
   const burst = () => {
-    const cx = w * (0.18 + Math.random() * 0.64);
-    const cy = h * (0.1 + Math.random() * 0.3);
+    // Burst to the sides so the centred title and dials stay readable.
+    const side = Math.random() < 0.5 ? 0.08 : 0.72;
+    const cx = w * (side + Math.random() * 0.2);
+    const cy = h * (0.08 + Math.random() * 0.45);
     const petals = 5 + Math.floor(Math.random() * 3);
     const base = 2.2 + Math.random() * 1.2;
     const color = COLORS[Math.floor(Math.random() * COLORS.length)];
@@ -59,15 +63,10 @@ export const startFireworks = (section: HTMLElement, canvas: HTMLCanvasElement) 
         continue;
       }
       ctx.globalAlpha = Math.max(0, p.life) * 0.75;
-      ctx.fillStyle = p.color;
-      ctx.shadowColor = p.color;
-      ctx.shadowBlur = 8;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fill();
+      const r = p.size * 4; // glow radius
+      ctx.drawImage(glowSprite(p.color), p.x - r, p.y - r, r * 2, r * 2);
     }
     ctx.globalAlpha = 1;
-    ctx.shadowBlur = 0;
     if (parts.length || visible) {
       raf = requestAnimationFrame(tick);
     } else {

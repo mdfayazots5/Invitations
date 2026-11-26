@@ -110,6 +110,10 @@ const run = async () => {
     // tsx/esbuild wraps named functions in __name(); provide it inside the page for evaluated callbacks.
     await page.addInitScript('window.__name = (f) => f;');
     await page.addInitScript(FINGER);
+    // Our eased rAF scroll drives every frame; CSS smooth-scrolling would fight it and overshoot.
+    await page.addInitScript(() => {
+      addEventListener('DOMContentLoaded', () => (document.documentElement.style.scrollBehavior = 'auto'));
+    });
     await page.goto(URL_BASE, {waitUntil: 'networkidle'});
     await page.evaluate(() => document.fonts.ready);
     await wait(page, 300);
@@ -143,7 +147,8 @@ const run = async () => {
     await scrollTo(page, '#countdown', -10);
     await wait(page, 4000);
 
-    await scrollTo(page, '#rsvp', 0);
+    // Scroll so the whole form (name → send) is on screen, then fill it like a guest would.
+    await scrollTo(page, '#rsvp .form', -150);
     const name = await center(page, '#rsvp-name');
     await tap(page, name.x, name.y);
     await page.keyboard.type('Your Name', {delay: 90});
@@ -151,8 +156,9 @@ const run = async () => {
     await tap(page, joy.x, joy.y);
     const guests = await center(page, '#rsvp-guests');
     await tap(page, guests.x, guests.y);
-    await page.keyboard.press('Control+A');
+    await page.locator('#rsvp-guests').selectText();
     await page.keyboard.type('2', {delay: 120});
+    await page.locator('#rsvp-guests').blur();
     await wait(page, 1200);
 
     await scrollTo(page, '#venue-nikah', -20);

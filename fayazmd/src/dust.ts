@@ -1,3 +1,5 @@
+import {glowSprite} from './glow';
+
 /** Fixed full-screen canvas: 60 gold particles drifting upward, flickering, wrapping around. */
 export const startDust = (canvas: HTMLCanvasElement) => {
   const ctx = canvas.getContext('2d');
@@ -25,6 +27,7 @@ export const startDust = (canvas: HTMLCanvasElement) => {
     speed: 0.02 + Math.random() * 0.04,
   }));
 
+  const sprite = glowSprite('#E9CF8A');
   let raf = 0;
   const tick = () => {
     ctx.clearRect(0, 0, w, h);
@@ -38,14 +41,11 @@ export const startDust = (canvas: HTMLCanvasElement) => {
       }
       if (p.x < -4) p.x = w + 4;
       if (p.x > w + 4) p.x = -4;
-      const a = 0.25 + 0.55 * (0.5 + 0.5 * Math.sin(p.phase));
-      ctx.beginPath();
-      ctx.fillStyle = `rgba(233,207,138,${a.toFixed(3)})`;
-      ctx.shadowColor = 'rgba(246,227,166,0.8)';
-      ctx.shadowBlur = 6;
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.globalAlpha = 0.25 + 0.55 * (0.5 + 0.5 * Math.sin(p.phase));
+      const r = p.r * 3.5;
+      ctx.drawImage(sprite, p.x - r, p.y - r, r * 2, r * 2);
     }
+    ctx.globalAlpha = 1;
     raf = requestAnimationFrame(tick);
   };
   raf = requestAnimationFrame(tick);
