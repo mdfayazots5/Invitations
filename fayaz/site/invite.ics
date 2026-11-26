@@ -1,0 +1,36 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Fayaz Muskan Invite//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:nikah@fayaz-muskan-invite
+DTSTAMP:20261126T000000Z
+DTSTART:20261214T043000Z
+DTEND:20261214T073000Z
+SUMMARY:Nikah – Mohammed Fayaz & Muskan Khanam
+LOCATION:Ruby Gardens Function Hall\, Sripur Road\, Nagarkurnool
+DESCRIPTION:Directions: https://maps.google.com/?q=16.4786175,78.3060455
+URL:https://maps.google.com/?q=16.4786175,78.3060455
+BEGIN:VALARM
+TRIGGER:-PT3H
+ACTION:DISPLAY
+DESCRIPTION:Nikah – Mohammed Fayaz & Muskan Khanam
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:valima@fayaz-muskan-invite
+DTSTAMP:20261126T000000Z
+DTSTART:20261215T143000Z
+DTEND:20261215T173000Z
+SUMMARY:Valima Dinner – Mohammed Fayaz & Muskan Khanam
+LOCATION:Venkata Narasimha Gardens And Function Hall\, Shad Nagar Road\, Amangal
+DESCRIPTION:Directions: https://maps.google.com/?q=16.8444037,78.5197176
+URL:https://maps.google.com/?q=16.8444037,78.5197176
+BEGIN:VALARM
+TRIGGER:-PT3H
+ACTION:DISPLAY
+DESCRIPTION:Valima Dinner – Mohammed Fayaz & Muskan Khanam
+END:VALARM
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Nikah · Mohammed Fayaz &amp; Muskan Khanam · 14 Dec 2026</title>
+  <meta name="description" content="You are invited to the Nikah of Mohammed Fayaz &amp; Muskan Khanam — Monday 14 December 2026, Ruby Gardens, Nagarkurnool." />
+  <meta name="theme-color" content="#F4C9CF" />
+
+  <!-- Link preview (WhatsApp, Instagram, etc.). Crawlers prefer an absolute og:image URL;
+       after the first deploy, replace "poster.jpg" with https://<your-site>/poster.jpg -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Nikah · Mohammed Fayaz & Muskan Khanam" />
+  <meta property="og:description" content="Monday, 14 December 2026 · Ruby Gardens, Nagarkurnool. Your presence and duas will be our greatest blessing." />
+  <meta property="og:image" content="poster.jpg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Great+Vibes&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="bismillah" lang="ar" dir="rtl">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</p>
+      <p class="eyebrow">The Nikah of</p>
+      <h1 class="names">
+        <span>Mohammed Fayaz</span>
+        <span class="amp">&amp;</span>
+        <span>Muskan Khanam</span>
+      </h1>
+      <p class="urdu" lang="ur" dir="rtl">محمد فیاض ہمراہ مسکان خانم</p>
+      <div class="divider" aria-hidden="true"><span></span><i></i><span></span></div>
+      <p class="date">14 · December · 2026</p>
+    </header>
+
+    <section class="video-card" aria-label="Invitation video">
+      <video
+        src="nikah-invite.mp4"
+        poster="poster.jpg"
+        controls
+        playsinline
+        preload="metadata"
+      ></video>
+      <p class="hint">Tap ▶ to watch with sound</p>
+    </section>
+
+    <section class="blessing">
+      <p class="small-caps">With the blessings of</p>
+      <p class="elders">Late Mrs. &amp; Mr. Abdul Khader Sahab Pattedar</p>
+      <p class="place">(Konayapally)</p>
+    </section>
+
+    <section class="events">
+      <article class="event">
+        <h2>Nikah</h2>
+        <p class="day">Monday</p>
+        <p class="when">14th December 2026</p>
+        <p class="hijri">4 Rajab 1448</p>
+        <p class="time">10:00 AM</p>
+        <div class="divider small" aria-hidden="true"><span></span><i></i><span></span></div>
+        <p class="venue">Ruby Gardens</p>
+        <p class="address">Sripur Road, Nagarkurnool</p>
+        <a
+          class="btn primary"
+          target="_blank"
+          rel="noopener"
+          href="https://www.google.com/maps/place/Ruby+Gardens+Function+Hall/@16.4784009,78.3057736,148m/data=!3m1!1e3!4m6!3m5!1s0x3bca6d005b04d0bb:0xfa99cfbe2cb503b5!8m2!3d16.4786175!4d78.3060455!16s%2Fg%2F11vr_m01zm"
+          >📍 Get Directions</a
+        >
+      </article>
+
+      <article class="event">
+        <h2>Valima</h2>
+        <p class="day">Tuesday</p>
+        <p class="when">15th December 2026</p>
+        <p class="hijri">5 Rajab-ul-Murajjab 1448</p>
+        <p class="time">Dinner · 8:00 PM</p>
+        <div class="divider small" aria-hidden="true"><span></span><i></i><span></span></div>
+        <p class="venue">Venkata Narasimha Gardens</p>
+        <p class="address">Shad Nagar Road, Amangal</p>
+        <a
+          class="btn primary"
+          target="_blank"
+          rel="noopener"
+          href="https://www.google.com/maps/place/Venkata+Narasimha+Gardens+And+Function+Hall/@16.8444186,78.5193368,228m/data=!3m1!1e3!4m6!3m5!1s0x3bca51a091a8af1f:0x8ca710c8fb17b52a!8m2!3d16.8444037!4d78.5197176!16s%2Fg%2F11fzb17fcg"
+          >📍 Get Directions</a
+        >
+      </article>
+    </section>
+
+    <section class="actions">
+      <a class="btn" href="invite.ics" download="Fayaz-Muskan-Nikah.ics">🗓 Add to Calendar</a>
+      <a class="btn" href="nikah-invite.mp4" download="Fayaz-Muskan-Nikah-Invite.mp4">⬇ Download Video</a>
+      <a class="btn whatsapp" id="share" href="https://wa.me/" target="_blank" rel="noopener">Share on WhatsApp</a>
+    </section>
+
+    <footer class="closing">
+      <p class="quote">Your presence and duas will be our greatest blessing</p>
+      <p class="small-caps">With best compliments from</p>
+      <p class="from">Near &amp; Dear</p>
+    </footer>
+  </main>
+
+  <script>
+    // Build the WhatsApp share link from the deployed URL, so the same file works on any host.
+    const text =
+      'Assalamu Alaikum! You are invited to the Nikah of Mohammed Fayaz & Muskan Khanam — ' +
+      'Monday, 14 December 2026. Invitation & directions: ' + location.href.split('#')[0];
+    document.getElementById('share').href = 'https://wa.me/?text=' + encodeURIComponent(text);
+  </script>
+</body>
+</html>

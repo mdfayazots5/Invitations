@@ -1,0 +1,10 @@
+# Netlify: this branch deploys only the fayaz/ invitation.
+[build]
+  base = "fayaz"
+  publish = "site"
+  command = ""
+
+[[headers]]
+  for = "/*.mp4"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"

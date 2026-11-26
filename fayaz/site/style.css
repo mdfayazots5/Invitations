@@ -1,0 +1,190 @@
+:root {
+  --blush: #f4c9cf;
+  --blush-light: #fbe6e8;
+  --rose: #c97b8a;
+  --ivory: #fff8ee;
+  --paper: #fffbf5;
+  --gold: #c9a24b;
+  --gold-light: #e6c878;
+  --gold-deep: #9c7a2e;
+  --ink: #6b3743;
+  --ink-soft: #8a5864;
+  --gold-gradient: linear-gradient(100deg, #8a6620 0%, #b38a34 22%, #d9b65e 38%, #efd48a 46%, #cfa94f 56%, #a57d2c 74%, #8a6620 100%);
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --script: 'Great Vibes', cursive;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; }
+
+body {
+  min-height: 100vh;
+  font-family: var(--serif);
+  color: var(--ink);
+  background: radial-gradient(ellipse 90% 60% at 50% 20%, var(--paper) 0%, var(--ivory) 40%, var(--blush-light) 75%, var(--blush) 100%) fixed;
+  -webkit-font-smoothing: antialiased;
+  text-align: center;
+}
+
+.page {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 40px 20px 56px;
+}
+
+p { margin: 0; }
+
+.gold-text,
+.bismillah, .names span:not(.amp), .event h2, .venue, .from, .date {
+  background: var(--gold-gradient);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Hero */
+.bismillah {
+  font-family: 'Amiri', serif;
+  font-weight: 700;
+  font-size: clamp(30px, 8vw, 42px);
+  line-height: 1.9;
+}
+.eyebrow, .small-caps {
+  font-size: 15px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-top: 10px;
+}
+.names {
+  margin: 6px 0 0;
+  font-family: var(--script);
+  font-weight: 400;
+  font-size: clamp(44px, 13vw, 64px);
+  line-height: 1.25;
+  display: flex;
+  flex-direction: column;
+}
+.names .amp { color: var(--rose); font-size: 0.75em; line-height: 1; }
+.urdu {
+  font-family: 'Noto Nastaliq Urdu', serif;
+  font-size: clamp(22px, 6vw, 28px);
+  line-height: 2.3;
+  color: var(--ink);
+}
+.date {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px auto 14px;
+}
+.divider span { height: 1px; width: 90px; background: var(--gold); }
+.divider i {
+  width: 10px; height: 10px;
+  border: 1.5px solid var(--gold);
+  transform: rotate(45deg);
+}
+.divider.small span { width: 56px; }
+
+/* Video */
+.video-card {
+  margin: 30px auto 0;
+  padding: 10px;
+  border-radius: 22px;
+  background: var(--paper);
+  box-shadow: 0 0 0 1.5px var(--gold-light), 0 20px 50px rgba(160, 95, 90, 0.25);
+}
+.video-card video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  border-radius: 14px;
+  background: var(--ivory);
+  object-fit: cover;
+}
+.hint { font-style: italic; color: var(--ink-soft); font-size: 15px; margin-top: 8px; }
+
+/* Blessing */
+.blessing { margin-top: 40px; }
+.elders { font-size: 24px; font-weight: 600; margin-top: 6px; }
+.place { font-style: italic; color: var(--gold-deep); font-size: 19px; font-weight: 500; }
+
+/* Events */
+.events { display: grid; gap: 22px; margin-top: 36px; }
+.event {
+  padding: 30px 22px 28px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, var(--paper), var(--ivory));
+  box-shadow:
+    inset 0 0 0 8px var(--paper),
+    inset 0 0 0 9.5px var(--gold),
+    inset 0 0 0 13px var(--paper),
+    inset 0 0 0 14px var(--gold-light),
+    0 16px 40px rgba(160, 95, 90, 0.18);
+}
+.event h2 {
+  margin: 0;
+  font-family: var(--script);
+  font-weight: 400;
+  font-size: 64px;
+  line-height: 1.2;
+}
+.day { font-size: 14px; letter-spacing: 0.4em; color: var(--ink-soft); margin-top: 4px; }
+.when { font-size: 26px; font-weight: 600; margin-top: 2px; }
+.hijri { font-style: italic; color: var(--rose); font-size: 19px; }
+.time { font-size: 22px; font-weight: 600; margin-top: 10px; letter-spacing: 0.04em; }
+.venue { font-size: 26px; font-weight: 700; }
+.address { font-style: italic; color: var(--ink-soft); font-size: 18px; margin-bottom: 18px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1.5px solid var(--gold);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.btn:hover, .btn:focus-visible { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(156, 122, 46, 0.25); }
+.btn:focus-visible { outline: 2px solid var(--gold-deep); outline-offset: 3px; }
+.btn.primary {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, #b38a34, #d9b65e 50%, #a57d2c);
+  text-shadow: 0 1px 1px rgba(90, 60, 10, 0.35);
+}
+.btn.whatsapp { color: #fff; background: #25a35a; border-color: #25a35a; }
+
+.actions {
+  display: grid;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+/* Closing */
+.closing { margin-top: 44px; }
+.quote { font-style: italic; font-size: 24px; line-height: 1.35; margin-bottom: 18px; }
+.from { font-family: var(--script); font-size: 54px; line-height: 1.3; }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none; }
+}
