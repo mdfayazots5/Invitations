@@ -188,3 +188,22 @@ p { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   .btn { transition: none; }
 }
+
+/* Host / family section */
+.host {
+  margin-top: 36px;
+  padding: 34px 24px 26px;
+  border-radius: 200px 200px 18px 18px;
+  background: linear-gradient(180deg, var(--paper), var(--ivory));
+  box-shadow: inset 0 0 0 1px var(--gold), inset 0 0 0 8px var(--paper), inset 0 0 0 9px var(--gold-light), 0 16px 40px rgba(160, 95, 90, 0.15);
+}
+.host .small-caps { margin-top: 30px; }
+.host-name { font-family: var(--script); font-size: clamp(30px, 8.5vw, 40px); color: #1f5257; line-height: 1.4; }
+.host-text { font-style: italic; font-size: 19px; line-height: 1.45; color: var(--ink); }
+.host-couple { font-family: var(--script); font-size: clamp(38px, 11vw, 52px); line-height: 1.25; color: var(--gold-deep); }
+.host .urdu { color: #1f5257; margin-top: 6px; }
+
+.event-urdu { font-family: 'Noto Nastaliq Urdu', serif; font-size: 22px; line-height: 2.1; color: #1f5257; }
+.note { font-style: italic; color: var(--ink-soft); font-size: 17px; }
+.closing .urdu { color: #1f5257; }
+.insha { font-style: italic; color: var(--ink-soft); font-size: 18px; }
