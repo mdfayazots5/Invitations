@@ -1,5 +1,5 @@
 import './styles.css';
-import {archCap, artDefs, crest, jaaliBand, lantern, ornament, paperGrain, roseWall} from './art';
+import {artDefs, crest, jaaliBand, ornament, paperGrain} from './art';
 import {startCountdown} from './countdown';
 import {mountCurtain} from './curtain';
 import {createDrift} from './drift';
@@ -37,42 +37,50 @@ const heroHtml = () => `<section id="hero" class="sec hero" aria-label="${esc(u.
   <div class="hero-card" data-hero style="--h:2"><div data-scratch-slot></div></div>
 </section>`;
 
+/** The painted arch (public/art/arch.webp) with the invitation written inside its glowing panel. */
 const inviteHtml = () => `<section id="invitation" class="sec invite" data-hold="11000">
   ${band()}
-  <div class="wall wall-l" data-wall="21"></div>
-  <div class="wall wall-r" data-wall="43"></div>
-  <div class="invite-lights" aria-hidden="true">
-    <svg viewBox="0 0 400 120" preserveAspectRatio="xMidYMin meet"><use href="#chandelier" x="20" y="0" width="90" height="90"/>
-    <use href="#chandelier" x="290" y="0" width="90" height="90"/></svg>
-  </div>
-  <div class="lantern-l" aria-hidden="true">${lantern()}</div>
-  <div class="lantern-r" aria-hidden="true">${lantern()}</div>
-  <div class="arch">
-    <div class="vine vine-l" data-wall="57" aria-hidden="true"></div>
-    <div class="vine vine-r" data-wall="71" aria-hidden="true"></div>
-    ${archCap()}
-    <div class="arch-body">
-      <p class="bismillah-ar" ${R} lang="ar" dir="rtl">${C.bismillahAr}</p>
-      <p class="italic small" ${R}>${esc(C.bismillahEn)}</p>
-      <p class="caps tiny arch-label" ${R}>${esc(C.heroLabel)}</p>
-      <p class="urdu arch-urdu" ${R} lang="ur" dir="rtl">${C.namesUrdu}</p>
-      <div ${R}>${ornament('#a46f2a')}</div>
-      <p class="caps lead" ${R}>${esc(C.withJoy)}</p>
-      <p class="host" ${R}>${esc(C.host)}</p>
-      <p class="caps lead" ${R}>${esc(C.hostLine)}</p>
-      <p class="script name" ${R}>${esc(C.firstFull)}</p>
-      <p class="script and" ${R}>&amp;</p>
-      <p class="script name" ${R}>${esc(C.secondFull)}</p>
-      <p class="parents" ${R}>${esc(C.secondParents)}</p>
-      ${
-        C.blessings
-          ? `<p class="caps lead" ${R} style="margin-top:14px">${esc(C.blessingsLabel)}</p><p class="host" ${R}>${esc(C.blessings)}</p>`
-          : ''
-      }
-      <p class="urdu invite-urdu" ${R} lang="ur" dir="rtl">${C.welcomeUrdu}</p>
+  <div class="arch-scene">
+    <div class="arch-text" data-fit>
+      <div class="arch-flow">
+        <p class="bismillah-ar" ${R} lang="ar" dir="rtl">${C.bismillahAr}</p>
+        <p class="italic small" ${R}>${esc(C.bismillahEn)}</p>
+        <p class="caps tiny arch-label" ${R}>${esc(C.heroLabel)}</p>
+        <p class="urdu arch-urdu" ${R} lang="ur" dir="rtl">${C.namesUrdu}</p>
+        <div ${R}>${ornament('#7a4a18')}</div>
+        <p class="caps lead" ${R}>${esc(C.withJoy)}</p>
+        <p class="host" ${R}>${esc(C.host)}</p>
+        <p class="caps lead" ${R}>${esc(C.hostLine)}</p>
+        <p class="script name" ${R}>${esc(C.firstFull)}</p>
+        <p class="script and" ${R}>&amp;</p>
+        <p class="script name" ${R}>${esc(C.secondFull)}</p>
+        <p class="parents" ${R}>${esc(C.secondParents)}</p>
+        ${
+          C.blessings
+            ? `<p class="caps lead" ${R}>${esc(C.blessingsLabel)}</p><p class="host" ${R}>${esc(C.blessings)}</p>`
+            : ''
+        }
+        <p class="urdu invite-urdu" ${R} lang="ur" dir="rtl">${C.welcomeUrdu}</p>
+      </div>
     </div>
   </div>
 </section>`;
+
+/** Shrinks the arch text (CSS zoom) until it fits inside the painted panel; re-run on resize and when fonts load. */
+const fitArch = (box: HTMLElement) => {
+  const flow = box.firstElementChild as HTMLElement;
+  const fit = () => {
+    let z = 1;
+    flow.style.setProperty('zoom', '1');
+    while (z > 0.62 && flow.scrollHeight * z > box.clientHeight) {
+      z -= 0.02;
+      flow.style.setProperty('zoom', z.toFixed(2));
+    }
+  };
+  fit();
+  void document.fonts.ready.then(fit);
+  addEventListener('resize', fit);
+};
 
 /** Surah Ar-Rum 30:21 in its own short, pale section between the arch and the events. */
 const verseHtml = () => `<section id="verse" class="sec light verse" data-hold="7000">
@@ -210,7 +218,6 @@ const boot = () => {
   const app = document.getElementById('app')!;
   app.innerHTML = heroHtml() + inviteHtml() + verseHtml() + eventsHtml() + countdownHtml() + rsvpHtml() + venuesHtml() + closingHtml();
 
-  app.querySelectorAll<HTMLElement>('[data-wall]').forEach((w) => (w.style.backgroundImage = roseWall(Number(w.dataset.wall))));
   const sections = Array.from(app.querySelectorAll<HTMLElement>('.sec'));
   const drift = createDrift(sections);
 
@@ -222,6 +229,7 @@ const boot = () => {
   // Used by scripts/record.ts, which drives the page itself (?noscroll).
   (window as unknown as {__invite: object}).__invite = {scratch: scratch.auto};
 
+  fitArch(app.querySelector<HTMLElement>('[data-fit]')!);
   startReveal(app, reducedMotion);
   startCountdown(app.querySelector('#countdown')!);
   startFireworks(app.querySelector<HTMLCanvasElement>('.fireworks')!, reducedMotion);

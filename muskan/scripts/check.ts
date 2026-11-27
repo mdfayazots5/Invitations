@@ -114,12 +114,11 @@ const run = async () => {
         // and close enough for dark text on light backgrounds).
         const bgOf = (el: Element) => {
           if (el.closest('.btn-gold')) return hex('#e9b84e');
-          if (el.closest('.arch-body')) return hex('#f4cd85');
           if (el.closest('.venue')) return hex('#fcf6f2');
           if (el.closest('.choices button[aria-pressed="true"]')) return hex('#c0182f');
           const sec = el.closest('.sec')?.id;
           return hex(
-            {verse: '#fbefe8', events: '#fbefe8', venues: '#fbefe8', countdown: '#1c0d06', rsvp: '#7a1020', closing: '#b3172b', invitation: '#7a3410'}[sec ?? ''] ??
+            {verse: '#fbefe8', events: '#fbefe8', venues: '#fbefe8', countdown: '#1c0d06', rsvp: '#7a1020', closing: '#b3172b', invitation: '#bc8b5a' /* darkest corner of the painted panel under the 50% inner glow */}[sec ?? ''] ??
               '#3a040c',
           );
         };

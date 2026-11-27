@@ -497,120 +497,44 @@ body.entered [data-hero] {
     opacity: 0;
   }
 }
-/* ───────── invitation arch ───────── */
+/* ───────── invitation arch (public/art/arch.webp) ─────────
+   The image is zoomed (139% wide) so its glowing panel fills ~70% of the screen; the text box sits
+   exactly on the panel (measured from the image: x 23.5–74%, y 33–80%). */
 .invite {
-  padding: 0 0 70px;
-  background:
-    radial-gradient(ellipse 70% 40% at 50% 8%, rgba(255, 190, 90, 0.55), rgba(255, 190, 90, 0) 70%),
-    radial-gradient(ellipse 80% 30% at 50% 100%, rgba(255, 170, 70, 0.45), rgba(255, 170, 70, 0) 70%),
-    linear-gradient(180deg, #4a1606, #7a3410 40%, #5a1c08);
+  background: #1a0603;
 }
-.wall {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 19%;
-  background-size: 80px 150px;
-  background-repeat: repeat;
-  filter: saturate(1.1);
-}
-.wall-l {
-  left: 0;
-  -webkit-mask-image: linear-gradient(90deg, #000 60%, transparent);
-  mask-image: linear-gradient(90deg, #000 60%, transparent);
-}
-.wall-r {
-  right: 0;
-  -webkit-mask-image: linear-gradient(270deg, #000 60%, transparent);
-  mask-image: linear-gradient(270deg, #000 60%, transparent);
-}
-.invite > .band {
-  margin-bottom: 64px;
-}
-.invite-lights {
-  position: absolute;
-  top: 36px;
-  left: 0;
-  right: 0;
-  pointer-events: none;
-}
-.invite-lights svg {
-  width: 100%;
-  max-height: 120px;
-}
-.arch {
+.arch-scene {
   position: relative;
-  z-index: 2;
-  width: min(84%, 380px);
+  width: 100%;
+  max-width: 520px;
   margin: 0 auto;
-  filter: drop-shadow(0 18px 30px rgba(40, 8, 0, 0.6));
+  aspect-ratio: 1106 / 2720;
+  background: url('/art/arch.webp') 45.5% 0 / 139% auto no-repeat;
 }
-.arch-cap {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 300 / 190;
-}
-.arch-body {
-  margin-top: -1px;
-  padding: 0 16px 30px;
+.arch-text {
+  position: absolute;
+  left: 19%;
+  right: 19%;
+  top: 31.5%;
+  bottom: 20%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   color: var(--ink);
-  background:
-    radial-gradient(ellipse 70% 40% at 50% 0%, #fff4d2 0%, rgba(255, 244, 210, 0) 100%),
-    radial-gradient(ellipse 120% 80% at 50% 45%, #fde2a6 0%, #f6c06a 65%, #e2922f 100%);
-  border: solid transparent;
-  border-width: 0 8px 8px;
-  border-image: linear-gradient(180deg, #c79a45, #f3d58e, #a8792f) 1;
-  box-shadow:
-    inset 1px 0 #a46f2a,
-    inset -1px 0 #a46f2a,
-    inset 0 -1px #a46f2a;
-  margin-top: -25%; /* overlaps the cap's straight-sided lower part */
+}
+.arch-text::before {
+  /* inner glow, as in the video: lifts the panel's shaded corners so the dark ink reads everywhere */
+  content: '';
+  position: absolute;
+  inset: -6% -10%;
+  background: radial-gradient(ellipse 60% 56% at 50% 50%, rgba(255, 226, 170, 0.62) 0%, rgba(255, 226, 170, 0.52) 75%, rgba(255, 226, 170, 0) 100%);
+  filter: blur(4px);
+}
+.arch-flow {
   position: relative;
 }
-.vine {
-  position: absolute;
-  z-index: 3;
-  top: 30%;
-  bottom: -14px;
-  width: 30px;
-  background-size: 40px 75px;
-  background-repeat: repeat-y;
-  pointer-events: none;
-}
-.vine-l {
-  left: -14px;
-}
-.vine-r {
-  right: -14px;
-  background-position: 100% 30px;
-}
-.lantern-l,
-.lantern-r {
-  position: absolute;
-  z-index: 3;
-  bottom: 10px;
-  width: 46px;
-}
-.lantern-l {
-  left: 8%;
-}
-.lantern-r {
-  right: 8%;
-}
-.lantern {
-  display: block;
-  width: 100%;
-  animation: sway 4s ease-in-out infinite;
-  transform-origin: 50% 0;
-}
-@keyframes sway {
-  50% {
-    transform: rotate(3deg);
-  }
-}
-.arch-body > :first-child {
-  margin-top: 0;
+.arch-flow > * + * {
+  margin-top: 2px;
 }
 .bismillah-ar {
   font-family: 'Amiri', serif;
@@ -627,7 +551,7 @@ body.entered [data-hero] {
   color: #6b1a10;
   margin-top: -2px;
 }
-.arch-body .small {
+.arch-text .small {
   font-size: 14px;
   color: #6a4630;
 }
@@ -663,7 +587,7 @@ body.entered [data-hero] {
   line-height: 1.45;
   color: #5a3a28;
 }
-.arch-body .tiny {
+.arch-text .tiny {
   margin-top: 8px;
   color: #7a4a18;
 }
@@ -682,13 +606,13 @@ body.entered [data-hero] {
   letter-spacing: 0.08em;
   color: #5a1414;
 }
-.arch-body .name {
+.arch-text .name {
   margin-top: 12px;
   font-size: clamp(30px, 9vw, 40px);
   white-space: nowrap;
   color: #6b0f22;
 }
-.arch-body .and {
+.arch-text .and {
   font-size: 28px;
   color: #7a4a18;
   line-height: 1;
@@ -1220,4 +1144,27 @@ body.og {
     opacity: 1;
     transform: none;
   }
+}
+
+/* ───────── arch text inks (last, so they win over the shared text colours) ───────── */
+/* darker inks than elsewhere: the panel is a mid amber, not pale parchment */
+.arch-text .small,
+.arch-text .parents {
+  color: #3e1a08;
+  font-weight: 500;
+}
+.arch-text .lead,
+.arch-text .arch-label,
+.arch-text .and {
+  color: #4a2008;
+  font-weight: 600;
+}
+.arch-text .host {
+  color: #3e0c08;
+  font-weight: 600;
+}
+.arch-text .name,
+.arch-text .bismillah-ar,
+.arch-text .urdu {
+  color: #4a0a06;
 }
