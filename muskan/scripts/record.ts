@@ -20,17 +20,15 @@ import {startPreview, stopPreview, URL_BASE} from './serve.ts';
 
 // ── per-site settings ─────────────────────────────────────────────────────────────────────────
 const OUT = 'recordings/muskan-fayaz-nikah-valima.mp4';
-/** Page id → hold (ms) after its 1.1 s glide. Keep the whole video under 60 s for WhatsApp Status. */
+/** Page id → hold (ms) after its 1.1 s glide. The countdown and venue pages are hidden in the video
+ *  (frozen count / duplicates of the event cards). About 48 s in all: under WhatsApp Status's 60 s. */
 const TIMELINE: [string, number][] = [
-  ['#ayah', 5000],
-  ['#invitation', 5500],
-  ['#events-nikah', 3800],
-  ['#events-valima', 3800],
-  ['#countdown', 3200],
-  ['#venue-nikah', 3000],
-  ['#venue-valima', 3000],
-  ['#dua', 4500],
-  ['#closing', 4000],
+  ['#ayah', 5500],
+  ['#invitation', 6500],
+  ['#events-nikah', 5000],
+  ['#events-valima', 5000],
+  ['#dua', 5000],
+  ['#closing', 4500],
 ];
 // ──────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -41,8 +39,9 @@ const SCALE = 2.5; // 432×768 → 1080×1920
 const HD = {width: PHONE.width * SCALE, height: PHONE.height * SCALE};
 const MAX_MB = 40; // WhatsApp sends files this size fine; quality first
 const GLIDE = 1100;
-/** Page clock speed while capturing: 0.5 with a GPU, 0.2 with software rendering (set after launch). */
-let SLOW = 0.5;
+/** Page clock speed while capturing: 0.3 with a GPU, 0.15 with software rendering (set after launch).
+ *  Live capture of 1080×1920 runs at roughly 9–20 fps here, so 0.3 keeps every video at 30 fps or better. */
+let SLOW = 0.3;
 
 /** Runs in every frame before the page's scripts: slows the page clock to SLOW. */
 const TIME_WARP = (k: number) => {
@@ -151,7 +150,7 @@ const run = async () => {
       const e = c?.getExtension('WEBGL_debug_renderer_info');
       return e ? String(c!.getParameter(e.UNMASKED_RENDERER_WEBGL)) : 'none';
     });
-    if (/swiftshader/i.test(gl)) SLOW = 0.2;
+    if (/swiftshader/i.test(gl)) SLOW = 0.15;
     console.log(`renderer: ${gl.slice(0, 70)} · capture speed ${SLOW}×`);
     // Start the page over with its clock slowed (the warp must be in place before its scripts run).
     await page.addInitScript(TIME_WARP, SLOW);
