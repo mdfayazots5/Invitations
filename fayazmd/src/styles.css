@@ -915,3 +915,8 @@ body.video .page .btn-gold,
 body.video .replay {
   display: none !important;
 }
+
+/* In the video, the countdown would freeze at the moment of recording. (The venue page stays: it is the only one with the Valima details.) */
+body.video #countdown {
+  display: none !important;
+}

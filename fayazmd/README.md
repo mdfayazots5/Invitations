@@ -48,6 +48,7 @@ npm run record     # record recordings/fayaz-muskan-invite.mp4: true HD 1080×19
 - The site loads in a phone-sized frame (432×768) scaled 2.5× to 1080×1920. The layout is exactly the phone's, and text renders sharp at full size. `?dpr=2.5` makes the 3D sky and canvases draw at full resolution too.
 - Chrome's screencast captures each 1080×1920 frame. Capturing that live is slower than 30 fps, so the page runs in slow motion while it's captured: its clock and CSS animations run at half speed (a fifth without a GPU). The frames are then retimed to real speed, giving a smooth 30 fps.
 - `?video` hides what only works by tapping: the maps, VIEW ON MAPS, the music button, the page dots, the swipe hint and View again.
+- The video also leaves out the countdown, which would freeze at the moment of recording. The website still has it. The venue page stays, because it is the only one with the Valima venue, date and time.
 - The page timeline (page → hold time) is at the top of [scripts/record.ts](scripts/record.ts). Keep the video under 60 s so it also fits WhatsApp Status.
 
 ## Deploy (branch `FayazMD`)
