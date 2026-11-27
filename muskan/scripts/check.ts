@@ -30,10 +30,13 @@ const scrollThrough = (page: Page) =>
 const rest = (page: Page) =>
   page.evaluate(async () => {
     const app = document.getElementById('app')!;
+    // Settled = the same scroll position on 3 samples in a row (a slow frame can make a glide look still).
     let y = -1;
-    for (let i = 0; i < 40 && y !== app.scrollTop; i++) {
-      y = app.scrollTop;
+    let same = 0;
+    for (let i = 0; i < 60 && same < 3; i++) {
       await new Promise((r) => setTimeout(r, 250));
+      same = app.scrollTop === y ? same + 1 : 0;
+      y = app.scrollTop;
     }
     const pages = Array.from(document.querySelectorAll<HTMLElement>('.page'));
     const tops = pages.map((p) => p.offsetTop);
