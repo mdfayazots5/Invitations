@@ -252,8 +252,11 @@ export const startScene = (canvas: HTMLCanvasElement, reducedMotion: boolean): b
 
   const dummy = new Object3D();
   const progress = () => {
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    return max > 0 ? Math.min(1, window.scrollY / max) : 0;
+    // Pages scroll inside the fixed #app scroller, not the document.
+    const app = document.getElementById('app');
+    if (!app) return 0;
+    const max = app.scrollHeight - app.clientHeight;
+    return max > 0 ? Math.min(1, app.scrollTop / max) : 0;
   };
 
   let camY = 0;
@@ -320,7 +323,7 @@ export const startScene = (canvas: HTMLCanvasElement, reducedMotion: boolean): b
 
   if (reducedMotion) {
     renderer.render(scene, camera);
-    window.addEventListener('scroll', () => {
+    document.getElementById('app')?.addEventListener('scroll', () => {
       camY = -progress() * 40;
       camera.position.y = camY;
       rig.position.y = camY * 0.97;

@@ -61,6 +61,7 @@ export const createScratch = (onReveal?: () => void): {el: HTMLElement; auto: ()
     if (done) return;
     done = true;
     el.classList.add('done');
+    el.style.touchAction = 'auto'; // once revealed, a swipe starting on the date scrolls the page
     el.setAttribute('aria-label', C.scratchReveal);
     onReveal?.();
   };

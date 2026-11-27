@@ -1,5 +1,6 @@
 // All text on the family invite comes from here. Spelling is final (from the family's card):
 // "Ruby Garden", "Venkat Narsimha Garden", "Rajab-ul-Murajjab", "Mrs. Late Abdul Rahmath Sahab".
+// The family asked not to show "Pattedar" or "(Konayapally)" after the elders' names.
 
 export type InviteEvent = {
   key: 'nikah' | 'valima';
@@ -25,6 +26,18 @@ export const SITE_URL = 'https://fayazinvitation.netlify.app/';
 export const C = {
   bismillahAr: 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ',
   bismillahEn: 'In the name of Allah, the Most Beneficent, the Most Merciful',
+  /** Quran, Surah Ar-Rum 30:21 (first part, as quoted on nikah cards). Have it read by someone fluent before sharing. */
+  ayah: {
+    ar: 'وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُمْ مِنْ أَنْفُسِكُمْ أَزْوَاجًا لِتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُمْ مَوَدَّةً وَرَحْمَةً',
+    en: 'And of His signs is that He created for you from yourselves mates that you may find tranquility in them; and He placed between you affection and mercy.',
+    ref: 'SURAH AR-RUM · 30:21',
+  },
+  /** The Prophet's ﷺ dua for the newly married (Abu Dawud & Tirmidhi). */
+  dua: {
+    ar: 'بَارَكَ اللَّهُ لَكَ وَبَارَكَ عَلَيْكَ وَجَمَعَ بَيْنَكُمَا فِي خَيْرٍ',
+    en: 'May Allah bless you, shower His blessings upon you, and join you together in goodness.',
+    ref: 'Abu Dawud & Tirmidhi',
+  },
   groomShort: 'Fayaz',
   brideShort: 'Muskan',
   groomFull: 'Mohammed Fayaz',
@@ -33,8 +46,7 @@ export const C = {
   welcomeUrdu: 'آپ کی تشریف آوری باعث مسرت ہوگی',
   fromUrdu: 'المنتظرین: عزیز و اقارب',
   blessingsLabel: 'With the blessings of',
-  blessings: 'Late Mrs. & Mr. Abdul Khader Sahab Pattedar',
-  blessingsPlace: '(Konayapally)',
+  blessings: 'Late Mrs. & Mr. Abdul Khader Sahab',
   withJoy: 'With joy in our hearts',
   host: 'Mrs. Late Abdul Rahmath Sahab',
   hostLine: 'solicits your gracious presence on the auspicious occasion of the Nikah & Valima of her son',

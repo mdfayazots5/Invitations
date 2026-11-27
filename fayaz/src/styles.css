@@ -21,7 +21,6 @@
 
 html {
   background: var(--bg);
-  scroll-behavior: smooth;
 }
 
 body {
@@ -124,11 +123,20 @@ button {
   z-index: 0;
   pointer-events: none;
 }
+/* #app is the page scroller: fixed to exactly the visible screen, so the browser bar never
+   collapses and the next page can never peek in. Pages snap inside it. */
 #app {
-  position: relative;
+  position: fixed;
+  inset: 0;
   z-index: 1;
   max-width: 480px;
   margin: 0 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none; /* no scrollbar on the right: the page dots show the position */
   opacity: 0;
   transform: scale(0.96);
 }
@@ -149,9 +157,9 @@ section {
   opacity: 0;
   transform: translateY(24px);
   transition:
-    opacity 0.7s ease,
-    transform 0.7s ease;
-  transition-delay: calc(var(--d, 0) * 90ms);
+    opacity 0.5s ease,
+    transform 0.5s ease;
+  transition-delay: calc(var(--d, 0) * 45ms);
 }
 [data-reveal].in {
   opacity: 1;
@@ -321,7 +329,7 @@ body.entered .hero [data-hero] {
   line-height: 1.45;
 }
 .hero-name {
-  font-size: clamp(64px, 19vw, 96px);
+  font-size: clamp(50px, min(18vw, 9.5svh), 96px);
   line-height: 1.15;
   animation: shimmer 5s linear infinite;
 }
@@ -581,8 +589,8 @@ body.entered .hero [data-hero] {
 .map {
   display: block;
   width: 100%;
-  height: 320px;
-  margin: 18px 0 16px;
+  height: clamp(160px, 30svh, 300px);
+  margin: 14px 0 14px;
   border: 1px solid var(--gold);
   border-radius: 10px;
   filter: grayscale(0.25) contrast(0.95);
@@ -785,7 +793,7 @@ section {
   background: none !important;
 }
 .hero-arch {
-  margin: 40px 14px 56px;
+  margin: clamp(16px, 5svh, 40px) 14px clamp(20px, 6svh, 56px);
   background: rgba(6, 36, 31, 0.86);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
@@ -794,7 +802,7 @@ section {
     0 0 0 7px rgba(6, 36, 31, 0.6),
     0 0 0 8px rgba(201, 162, 74, 0.35),
     0 0 60px 10px rgba(0, 0, 0, 0.5);
-  padding: 96px 20px 92px;
+  padding: clamp(48px, 11svh, 96px) 20px clamp(46px, 10svh, 92px);
 }
 .bismillah-ar {
   font-family: 'Amiri', serif;
@@ -926,4 +934,190 @@ footer {
   border-radius: 999px;
   background: var(--panel);
   border: 1px solid rgba(201, 162, 74, 0.45);
+}
+
+/* ───────── pages: one section = one full screen ───────── */
+#app::-webkit-scrollbar {
+  display: none;
+}
+html,
+body {
+  overflow: hidden;
+  height: 100%;
+}
+body.locked #app {
+  overflow: hidden;
+}
+section.page,
+footer.page {
+  height: 100%;
+  padding: 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: always; /* a hard fling still stops on the very next page */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+.page-inner {
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  /* the pager scales a tall page down a little on small phones instead of clipping it */
+  transform: scale(var(--fit, 1));
+  transform-origin: 50% 50%;
+}
+.hero.page {
+  min-height: 0;
+}
+.panel {
+  padding: 28px 18px 26px;
+}
+
+/* Music toggle lives top-right: with full-screen pages, the bottom edge holds buttons and closing lines. */
+.music {
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  bottom: auto;
+  right: 12px;
+  width: 46px;
+  height: 46px;
+}
+
+/* Tappable map preview: swipes on it turn pages; a tap opens Google Maps. */
+.map-card {
+  display: block;
+  border-radius: 10px;
+}
+.map-card .map {
+  pointer-events: none;
+}
+
+/* Page dots on the right edge (replace the scrollbar) */
+.dots {
+  position: fixed;
+  right: max(4px, env(safe-area-inset-right, 0px));
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  transition: opacity 0.6s ease;
+}
+body.locked .dots {
+  opacity: 0;
+  pointer-events: none;
+}
+.dot {
+  width: 20px;
+  height: 20px; /* comfortable touch target around a tiny dot */
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.dot::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  border: 1px solid rgba(226, 194, 122, 0.85);
+  transition:
+    transform 0.3s ease,
+    background 0.3s ease;
+}
+.dot.on::before {
+  background: var(--gold-soft);
+  transform: scale(1.6);
+}
+
+/* One-time "tap or swipe" hint */
+.swipe-hint {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  transform: translate(-50%, 8px);
+  z-index: 30;
+  margin: 0;
+  padding: 7px 14px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 162, 74, 0.5);
+  background: var(--panel-solid);
+  color: var(--gold-soft);
+  font-size: 10px;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+}
+.swipe-hint.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* View again (last page) */
+.replay {
+  margin: 18px auto 0;
+  padding: 10px 20px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--gold);
+  background: transparent;
+  color: var(--gold-soft);
+  font-size: 11px;
+  cursor: pointer;
+}
+.replay:focus-visible {
+  outline: 2px solid var(--ivory);
+  outline-offset: 3px;
+}
+
+/* ───────── Arabic (Amiri): Bismillah, Quran verse, dua ───────── */
+[lang='ar'] {
+  font-family: 'Amiri', 'Traditional Arabic', serif;
+  font-weight: 700;
+  white-space: normal;
+}
+.ayah-ar {
+  font-size: clamp(22px, min(6.6vw, 4svh), 30px);
+  line-height: 2.15;
+  max-width: 380px;
+  margin: 0 auto;
+}
+.ayah-en {
+  font-size: 18px;
+  line-height: 1.6;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.dua-ar {
+  font-size: clamp(22px, min(6.2vw, 4svh), 28px);
+  line-height: 2;
+}
+.dua-en {
+  font-size: 17px;
+  line-height: 1.5;
+  max-width: 320px;
+  margin: 4px auto 0;
+}
+.dua-ref {
+  font-size: 13px;
+  margin-top: 2px;
+}
+/* Even line lengths (no single word left alone on the last line) */
+.ayah-ar,
+.ayah-en,
+.dua-ar,
+.dua-en,
+.quote {
+  text-wrap: balance;
+}
+
+/* Long venue names ("Venkat Narsimha Garden") must fit inside the panel on a 360 px phone. */
+.venue-name {
+  font-size: clamp(26px, 7.8vw, 44px);
+}
+/* Keep a clear strip at the top of every page for the music button (it never sits on a panel). */
+.page-inner {
+  padding-top: calc(58px + env(safe-area-inset-top, 0px));
 }
