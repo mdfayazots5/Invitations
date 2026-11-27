@@ -1,3 +1,4 @@
+import {isForcedDpr, pixelRatio} from './dpr';
 import {
   AdditiveBlending,
   AmbientLight,
@@ -48,7 +49,8 @@ export const startScene = (canvas: HTMLCanvasElement, reducedMotion: boolean): b
   }
   const cores = navigator.hardwareConcurrency || 4;
   const q = cores >= 8 ? 1 : cores >= 6 ? 0.8 : 0.6; // quality tier
-  let dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  // Phones: cap at 1.5 for speed. HD video (?dpr=): render at the full requested resolution.
+  let dpr = isForcedDpr ? pixelRatio() : Math.min(pixelRatio(), 1.5);
   renderer.setPixelRatio(dpr);
   renderer.setClearColor(0x000000, 0);
 
@@ -308,7 +310,7 @@ export const startScene = (canvas: HTMLCanvasElement, reducedMotion: boolean): b
     acc += dt;
     frames++;
     if (frames === 90) {
-      if (acc / frames > 0.024 && slow < 2) {
+      if (acc / frames > 0.024 && slow < 2 && !isForcedDpr) {
         slow++;
         petals.count = Math.max(16, Math.round(petals.count / 2));
         dpr = Math.max(0.75, dpr * 0.75);
