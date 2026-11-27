@@ -1,10 +1,8 @@
-# Netlify: this branch deploys only the fayaz/ invitation.
+# Netlify: this branch deploys only the fayaz/ family invitation (Vite site).
 [build]
   base = "fayaz"
-  publish = "site"
-  command = ""
+  command = "npm run build"
+  publish = "dist"
 
-[[headers]]
-  for = "/*.mp4"
-  [headers.values]
-    Cache-Control = "public, max-age=86400"
+[build.environment]
+  NODE_VERSION = "22"

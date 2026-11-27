@@ -1,38 +1,40 @@
-# Fayaz & Muskan: Nikah invitation
+# Fayaz & Muskan: family invite (Nikah & Valima)
 
-- **Video:** composition `Invite`, 36 s (1080 frames), 1080×1920, 30 fps. The full brief is in [nikah-video-prompt.md](nikah-video-prompt.md). An envelope opens, then one long "web page" scrolls from the hero through Save the Date (scratch to reveal), the invitation card, the wedding events, the Nikah and Valima cards, a countdown, RSVP and the closing.
-- **Landing page:** `site/`. It has the video, a 📍 Get Directions button for each venue, Add to Calendar, Download, and Share on WhatsApp.
+A mobile-first invite **website** for family and relatives, plus an **MP4** recorded from it for WhatsApp.
+Live at https://fayazinvitation.netlify.app/
 
-## Content
-All video text lives in **`src/data.ts`**. `site/index.html` repeats it by hand, so update both.
+- **Nikah**: Monday, 14 December 2026, 10:00 AM, Ruby Garden, Sripur Road, Nagarkurnool (lunch follows)
+- **Valima**: Tuesday, 15 December 2026, 8:00 PM, Venkat Narsimha Garden, Shad Nagar Road, Amangal (dinner)
 
-| Event  | When | Venue | Map pin |
-|--------|------|-------|---------|
-| Nikah  | Mon 14 Dec 2026 · 4 Rajab 1448 AH · 10:00 AM (Lunch follows) | Ruby Garden, Sripur Road, Nagarkurnool | Ruby Gardens Function Hall (16.4786, 78.3060) |
-| Valima | Tue 15 Dec 2026 · 5 Rajab-ul-Murajjab 1448 AH · 8:00 PM (Dinner) | Venkat Narsimha Garden, Shad Nagar Road, Amangal | Venkata Narasimha Gardens And Function Hall (16.8444, 78.5197) |
+## What guests see
+1. Emerald-and-gold arched doors. They tap them open and the song starts. The round button at the bottom-right pauses it.
+2. The gold bar **scratches itself** to reveal the dates.
+3. The page then **scrolls slowly on its own** through the invitation, both event cards, the countdown, both venue maps and the closing. It pauses at each section. Any touch, scroll or key stops it, and it resumes after 6 s idle.
+4. Behind everything, a **3D night sky** ([src/scene3d.ts](src/scene3d.ts), Three.js) shows hanging gold lanterns, a crescent moon, stars, falling rose and gold petals, and bokeh. The camera glides down through it as the page scrolls.
 
-## Assets (optional, drop in and re-render)
-| File | Used for | Without it |
-|------|----------|------------|
-| `public/bismillah.mp3` | soundtrack, faded in over 0.5 s and out over the last 1.5 s | silent video |
-| `public/art/hero.jpg` (1080×1920) | hero background and countdown strip | drawn pastel landscape and stage |
-| `public/art/envelope.jpg` (1080×1920) | envelope paper | drawn damask texture |
-| `public/art/seal.png` | wax seal | drawn gold "F&M" seal |
-| `public/art/peony-cluster.png` | envelope corners | drawn peonies |
-| `public/art/dove.png` | hero doves | drawn doves |
-| `public/art/garden-arch.jpg` (1080×1500) | invitation card background | drawn arch and roses |
-| `public/art/event-nikah.jpg`, `event-valima.jpg` (940×600) | event card illustrations | drawn arch and lanterns |
+There is no RSVP, calendar, download or video on the page.
 
-Generation prompts for each image are at the bottom of `nikah-video-prompt.md`. A missing file never breaks the render. It logs a warning and uses the drawn version.
+## Design notes
+- Readability first: every block of text sits on a frosted emerald panel, so the moving sky never mixes into the words. `npm run check` audits text contrast against WCAG AA.
+- 3D budget for mid-range phones: the scene loads after the doors open, DPR is capped at 1.5, and object counts scale with the device. It pauses when the tab is hidden and drops petals and resolution if frames get slow. Without WebGL it falls back to 2D gold dust; with "reduce motion" on, it shows a still frame.
 
-The countdown is calculated at the moment you render, so re-render closer to the date to refresh it.
+All page text lives in [src/invite.config.ts](src/invite.config.ts). Spelling is final: "Ruby Garden", "Venkat Narsimha Garden", "Rajab-ul-Murajjab", "Mrs. Late Abdul Rahmath Sahab".
 
 ## Commands (run inside `fayaz/`)
 ```bash
 npm install
-npm run studio    # preview and scrub the video
-npm run render    # -> site/nikah-invite.mp4   (commit this file)
-npm run poster    # -> site/poster.jpg
-npm run preview   # serve site/ locally
+npx playwright install chromium   # once, for the scripts below
+npm run dev        # develop at http://localhost:5173
+npm run build      # -> dist/
+npm run check      # QA at 360/390/430 px: doors, auto-scratch, auto-scroll, both events, maps,
+                   # no RSVP/calendar/video, text contrast, 3D sky running (screenshots in qa/)
+npm run og         # regenerate public/og-image.png (WhatsApp link preview), then build again
+npm run record     # record recordings/fayaz-muskan-nikah-valima.mp4 (1080×1920, song looped, ≤16 MB)
 ```
-After rendering, commit `site/` and push the `Fayaz` branch. The host redeploys.
+`check`, `og` and `record` serve the current `dist/` on port 4173, so run `npm run build` first.
+Add `?noscroll` to the URL to turn off the auto-scroll (the recorder uses it).
+
+## Deploy (branch `Fayaz`)
+Netlify reads the root `netlify.toml`: base `fayaz`, build `npm run build`, publish `dist`.
+`og:image` and `og:url` use the full `https://fayazinvitation.netlify.app/` address. WhatsApp caches previews, so an old card can show for a while after a redeploy.
+The MP4 lives in `recordings/`. It is not deployed; share it directly on WhatsApp.

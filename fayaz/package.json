@@ -1,25 +1,25 @@
 {
   "name": "invite-fayaz",
-  "version": "1.0.0",
   "private": true,
+  "version": "1.0.0",
+  "type": "module",
   "scripts": {
-    "studio": "remotion studio",
-    "render": "remotion render Invite site/nikah-invite.mp4 --codec=h264 --crf=16 --jpeg-quality=95",
-    "still": "remotion still Invite out/frame.png --frame=260",
-    "typecheck": "tsc --noEmit",
-    "poster": "remotion still Invite site/poster.jpg --frame=260 --image-format=jpeg --jpeg-quality=85",
-    "preview": "npx --yes serve site"
-  },
-  "dependencies": {
-    "@remotion/cli": "4.0.547",
-    "@remotion/google-fonts": "4.0.547",
-    "@remotion/transitions": "4.0.547",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "remotion": "4.0.547"
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 4173 --strictPort",
+    "check": "tsx scripts/check.ts",
+    "og": "tsx scripts/og-image.ts",
+    "record": "tsx scripts/record.ts"
   },
   "devDependencies": {
-    "@types/react": "^19.1.0",
-    "typescript": "^5.6.0"
+    "@types/node": "^22.10.0",
+    "@types/three": "^0.180.0",
+    "playwright": "1.65.1",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.0",
+    "vite": "^8.4.0"
+  },
+  "dependencies": {
+    "three": "^0.180.0"
   }
 }
