@@ -1,5 +1,5 @@
 import './styles.css';
-import {archCap, artDefs, crest, jaaliBand, lantern, ornament, palaceHall, roseWall} from './art';
+import {archCap, artDefs, crest, jaaliBand, lantern, ornament, roseWall} from './art';
 import {startCountdown} from './countdown';
 import {mountCurtain} from './curtain';
 import {createDrift} from './drift';
@@ -29,14 +29,12 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
 // ───────────────────────────── sections ─────────────────────────────
 
 const heroHtml = () => `<section id="hero" class="sec hero" aria-label="${esc(u.title)}">
-  <div class="hero-art">${palaceHall()}</div>
+  <div class="hero-art" aria-hidden="true"><div class="hero-sparkle"></div></div>
   <div class="hero-text">
-    <p class="script save" data-hero style="--h:0"><span class="save-1">${esc(C.saveTheDate[0])}</span><span class="save-2">${esc(C.saveTheDate[1])}</span></p>
-    <p class="caps hero-names" data-hero style="--h:1">${esc(C.firstShort)}<span class="amp">&amp;</span>${esc(C.secondShort)}</p>
-    <p class="urdu hero-urdu" data-hero style="--h:2" lang="ur" dir="rtl">${C.namesUrdu}</p>
-    <p class="caps hero-label" data-hero style="--h:3">${esc(C.heroLabel)}</p>
+    <p class="save" data-hero style="--h:0"><span class="save-1">${esc(C.saveTheDate[0])}</span><span class="save-2">${esc(C.saveTheDate[1])}</span></p>
   </div>
-  <div class="hero-card" data-hero style="--h:4"><div data-scratch-slot></div></div>
+  <p class="caps hero-names" data-hero style="--h:1">${esc(C.firstShort)}<span class="amp">&amp;</span>${esc(C.secondShort)}</p>
+  <div class="hero-card" data-hero style="--h:2"><div data-scratch-slot></div></div>
 </section>`;
 
 const inviteHtml = () => `<section id="invitation" class="sec invite" data-hold="11000">
@@ -55,6 +53,8 @@ const inviteHtml = () => `<section id="invitation" class="sec invite" data-hold=
     ${archCap()}
     <div class="arch-body">
       <p class="bismillah-ar" ${R} lang="ar" dir="rtl">${C.bismillahAr}</p>
+      <p class="caps tiny arch-label" ${R}>${esc(C.heroLabel)}</p>
+      <p class="urdu arch-urdu" ${R} lang="ur" dir="rtl">${C.namesUrdu}</p>
       <p class="italic small" ${R}>${esc(C.bismillahEn)}</p>
       <div ${R}>${ornament('#a46f2a')}</div>
       <p class="ayah-ar" ${R} lang="ar" dir="rtl">${C.ayah.ar}</p>

@@ -1,21 +1,17 @@
-import {crest, curtainValance, roseBed} from './art';
+import {crest} from './art';
 import {C} from './invite.config';
 
 /**
- * Opening screen: a red velvet stage curtain with a glowing gold F & M crest.
- * Tap → a line of gold light splits the curtain, the halves sweep aside, a warm flash fills the screen,
- * and the palace hall zooms in behind it. Resolves when the overlay is gone.
+ * Opening screen: the painted red velvet stage curtain (public/art/curtain.webp) with the glowing gold F & M crest
+ * in its spotlight. Tap → a gold line → an amber beam → a full-screen cream/amber flash → the palace hall. Resolves when the overlay is gone.
  * `onOpen` fires inside the tap (so the music is allowed to start).
  */
 export const mountCurtain = (root: HTMLElement, onOpen: () => void, reducedMotion: boolean): Promise<void> =>
   new Promise((resolve) => {
     const [a, b] = C.monogram;
     root.innerHTML = `<div class="curtain" role="button" tabindex="0" aria-label="${C.ui.doorsLabel}">
-      <div class="drape drape-l"></div><div class="drape drape-r"></div>
-      <div class="spot" aria-hidden="true"></div>
+      <div class="curtain-art" aria-hidden="true"></div>
       <div class="beams" aria-hidden="true"><i></i><i></i><i></i></div>
-      ${curtainValance()}
-      ${roseBed()}
       <div class="curtain-centre">${crest(a, b)}<p class="caps tap-hint">${C.ui.tapToEnter}</p></div>
       <div class="split" aria-hidden="true"></div>
       <div class="flash" aria-hidden="true"></div>
