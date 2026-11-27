@@ -2,40 +2,38 @@
 
 One repo, one **branch per person**. Each branch holds only that person's folder, so deploying a branch never publishes anyone else's invitation.
 
-| Branch   | Folder     | What it is                                  |
-|----------|------------|---------------------------------------------|
-| `main`   | none       | This README only. A clean base for new branches. |
-| `Fayaz`  | `fayaz/`   | Nikah invite: Mohammed Fayaz & Muskan Khanam (family, Remotion video + page) |
-| `FayazMD` | `fayazmd/` | Royal Doors invite for Fayaz's friends & colleagues (Vite website + recorded MP4) |
-| `Muskan` | `muskan/`  | (next)                                      |
-| `Rakesh` | `rakesh/`  | (next)                                      |
+| Branch    | Folder     | What it is                                  |
+|-----------|------------|---------------------------------------------|
+| `main`    | none       | This README only. A clean base for new branches. |
+| `Fayaz`   | `fayaz/`   | Family invite, Nikah & Valima: Mohammed Fayaz & Muskan Khanam (Vite website with 3D sky + recorded MP4) |
+| `FayazMD` | `fayazmd/` | Valima-only invite for Fayaz's friends & relatives (Vite website + recorded MP4) |
+| `Muskan`  | `muskan/`  | Bride's family invite, Nikah & Valima: Muskan Khanam & Mohammed Fayaz (rose & gold, 3D sky + recorded MP4) |
+| `Rakesh`  | `rakesh/`  | (next)                                      |
 
-Inside each person's folder:
-- `src/` is the Remotion video source, and `src/invite.ts` holds that person's names, dates and venues.
-- `site/` is the **deployed** landing page: `index.html`, the rendered `.mp4`, `poster.jpg` and `invite.ics`.
+Inside each person's folder (Vite site):
+- `src/invite.config.ts` holds that person's names, dates, venues and every line of page text.
+- `scripts/` holds QA (`check`), the link-preview image (`og`) and the MP4 recorder (`record`).
+- `recordings/` holds the MP4 to share on WhatsApp. It is not deployed.
 
 ## Start an invitation for a new person
 ```bash
 git checkout main
 git checkout -b Muskan
-git checkout Fayaz -- fayaz        # copy Fayaz's as a template
+git checkout Fayaz -- fayaz netlify.toml   # copy Fayaz's as a template
 git mv fayaz muskan
-# edit muskan/src/invite.ts, the scenes, and muskan/site/index.html
-# change base = "fayaz" to "muskan" in netlify.toml (copy it from Fayaz the same way)
-cd muskan && npm install && npm run render && npm run poster
+# edit muskan/src/invite.config.ts; change base = "fayaz" to "muskan" in netlify.toml
+cd muskan && npm install && npm run build && npm run check && npm run og && npm run build
 git add -A && git commit -m "Muskan invitation" && git push -u origin Muskan
 ```
 Never merge one person's branch into another, or into `main`.
 
 ## Deploy (choose the person's branch)
-No build step runs on the host. It serves the committed `site/` folder.
+The host runs a build: `netlify.toml` sets base `<folder>`, build `npm run build`, publish `dist`.
 
 | Host | Settings |
 |------|----------|
-| **Netlify** | Import repo, set **Branch to deploy** to `Fayaz`. `netlify.toml` already sets base `fayaz` and publish `site`. |
-| **Cloudflare Pages** | Production branch `Fayaz` · Framework *None* · Build command *(empty)* · Root directory `fayaz` · Output directory `site` |
-| **Render** (Static Site) | Branch `Fayaz` · Build command *(empty)* · Publish directory `fayaz/site` |
+| **Netlify** | Import repo, set **Branch to deploy** to `Fayaz`. `netlify.toml` does the rest. |
+| **Cloudflare Pages** | Production branch `Fayaz` · Root directory `fayaz` · Build `npm run build` · Output `dist` |
+| **Render** (Static Site) | Branch `Fayaz` · Root directory `fayaz` · Build `npm install && npm run build` · Publish `dist` |
 
 Every push to that branch redeploys that person's page only.
-
-**`FayazMD` is different:** it is a Vite site, so the host runs a build. Netlify reads the branch's `netlify.toml` (base `fayazmd`, build `npm run build`, publish `dist`). On Cloudflare Pages use root `fayazmd`, build `npm run build`, output `dist`. On Render use root `fayazmd`, build `npm install && npm run build`, publish `dist`. See `fayazmd/README.md`.
