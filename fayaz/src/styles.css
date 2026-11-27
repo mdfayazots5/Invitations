@@ -1131,3 +1131,10 @@ body.video .page .btn-gold,
 body.video .replay {
   display: none !important;
 }
+
+/* In the video, the countdown would freeze at the moment of recording, and the venue pages repeat the Nikah/Valima cards. */
+body.video #countdown,
+body.video #venue-nikah,
+body.video #venue-valima {
+  display: none !important;
+}
