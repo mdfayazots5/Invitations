@@ -7,15 +7,15 @@
  *
  * - Pages snap (CSS scroll-snap). Wheel/trackpad: one gesture = one page.
  * - Tap on empty space = next page. Dots on the right show (and jump to) the page.
- * - Auto-advance holds each page (`data-hold`, ms), then glides on; any input pauses it,
- *   and it resumes IDLE ms after the last input.
- * - "View again" on the last page glides back to the start.
+ * - Auto-advance holds each page (`data-hold`, ms), then glides on. As soon as the guest touches,
+ *   swipes, scrolls or taps a dot, it stops for good: from then on they turn the pages themselves.
+ * - "View again" on the last page glides back to the start and plays the show again.
  * - Pages taller than the screen are scaled down a little (never below MIN_FIT), not clipped.
  */
 const MIN_FIT = 0.8;
 const MARGIN = 14; // px kept clear above and below a page's content
 const GLIDE = 1100; // ms per page-to-page glide
-const IDLE = 6000; // ms without input before auto-advance resumes
+const HERO_HOLD = 4000; // ms on the first page when "View again" restarts the show
 const REVEAL = 900; // ms for a page's whole-page reveal to finish (see reveal.ts)
 const DEFAULT_HOLD = 4500;
 const TAP_MOVE = 10; // px: more movement than this is a swipe, not a tap
@@ -27,7 +27,7 @@ export type Pager = ReturnType<typeof createPager>;
 
 export const createPager = (app: HTMLElement) => {
   const pages = Array.from(app.querySelectorAll<HTMLElement>('.page'));
-  const listeners = new Set<() => void>(); // "the guest did something" (pauses auto-advance)
+  const listeners = new Set<() => void>(); // "the guest did something" (stops auto-advance)
   const touched = () => listeners.forEach((f) => f());
   const locked = () => document.body.classList.contains('locked');
 
@@ -188,11 +188,11 @@ export const createPager = (app: HTMLElement) => {
   );
   onScroll();
 
-  // ── auto-advance ──
+  // ── auto-advance: a show that runs until the guest takes over ──
   let autoOn = false;
+  let tookOver = false; // the guest touched / scrolled: from then on they turn the pages themselves
   let timer = 0;
   let myGlide = -1;
-  let lastInput = 0;
   const holdOf = (p: HTMLElement) => Number(p.dataset.hold) || DEFAULT_HOLD;
   const schedule = (ms: number) => {
     window.clearTimeout(timer);
@@ -200,33 +200,37 @@ export const createPager = (app: HTMLElement) => {
   };
   function next() {
     if (!autoOn) return;
-    const quiet = performance.now() - lastInput;
-    if (quiet < IDLE) return schedule(IDLE - quiet);
     const i = current();
     if (i >= pages.length - 1) return; // rest on the last page (View again restarts)
     myGlide = goTo(i + 1, () => {
-      if (i + 1 < pages.length - 1) schedule(REVEAL + holdOf(pages[i + 1]));
+      if (autoOn && i + 1 < pages.length - 1) schedule(REVEAL + holdOf(pages[i + 1]));
     });
   }
   listeners.add(() => {
-    lastInput = performance.now();
-    cancel(myGlide); // hand the scroll back to the guest; snap settles it on a whole page
-    if (autoOn) schedule(IDLE);
+    // Any touch, swipe, wheel, key or dot: the guest is in control now. Stop for good.
+    tookOver = true;
+    autoOn = false;
+    window.clearTimeout(timer);
+    cancel(myGlide); // hand the scroll back; snap settles it on a whole page
   });
 
   return {
     pages,
     current,
     goTo,
-    /** Turn pages on their own from now on. */
+    /** Turn pages on their own, unless the guest has already started scrolling themselves. */
     startAuto: () => {
+      if (tookOver) return;
       autoOn = true;
       next();
     },
-    /** Back to the first page; auto-advance picks up again after the usual idle time. */
+    /** "View again": back to the first page and play the show again from the start. */
     replay: () => {
-      touched();
-      goTo(0);
+      touched(); // stops anything in flight
+      goTo(0, () => {
+        autoOn = true;
+        schedule(REVEAL + HERO_HOLD);
+      });
     },
   };
 };

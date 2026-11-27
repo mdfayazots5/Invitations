@@ -8,7 +8,7 @@ Guests tap the doors open and the song **fades in** from silence over 2.5 s. The
 
 The site moves **page by page**: Hero · Quran verse · Invitation · Countdown · Venue · Closing.
 - Each page fills exactly one screen and snaps, so a resting screen is always one complete card, never half of two sections. The pages live in a fixed full-screen scroller (`#app`). That way the phone's browser bar never collapses and pushes the next page into view, and there is no scrollbar.
-- On their own, the pages turn after a reading-time hold. Any touch, scroll or key pauses this, and it resumes after 6 s idle.
+- On their own, the pages turn after a reading-time hold. As soon as the guest touches, swipes or scrolls, this stops for good and they turn the pages themselves. "↺ View again" plays the show again from the start.
 - A swipe turns exactly one page, even a hard fling. So does a tap on empty space or a mouse-wheel gesture. Gold dots on the right show the page, and tapping one jumps there. "↺ View again" on the last page goes back to the start.
 - The map is a preview: swiping over it still turns the page, and tapping it opens Google Maps.
 - On small phones (360×640), a tall page is scaled down slightly instead of being cut off.
@@ -20,7 +20,7 @@ All page text lives in [src/invite.config.ts](src/invite.config.ts). Spelling is
 The map pin uses the exact Google Maps location (Venkata Narasimha Gardens 16.8444, 78.5197).
 
 Tuning:
-- Glide, idle and fit settings are at the top of [src/pages.ts](src/pages.ts). Each page's hold time is its `data-hold` in [src/main.ts](src/main.ts).
+- Glide, hold and fit settings are at the top of [src/pages.ts](src/pages.ts). Each page's hold time is its `data-hold` in [src/main.ts](src/main.ts).
 - The song fade-in time is at the top of [src/music.ts](src/music.ts).
 - Add `?noscroll` to the URL to turn the auto-advance off (the recorder uses this).
 
@@ -41,7 +41,7 @@ npm run check      # QA at 360×640, 390×844, 430×932: overflow, names on one 
 npm run og         # regenerate public/og-image.png (1200×630 link preview), then build again
 npm run record     # record recordings/fayaz-muskan-invite.mp4 (1080×1920, H.264, ≤16 MB for WhatsApp)
 ```
-`check`, `og` and `record` serve the current `dist/`, so run `npm run build` first.
+`check`, `og` and `record` serve the current `dist/` on port 4173, so run `npm run build` first. They stop if the port is already taken, so they never test a stale build.
 
 ## Deploy (branch `FayazMD`)
 | Host | Settings |

@@ -92,14 +92,12 @@ const run = async () => {
         check('auto-advance turns to page 2', r1.idx === 1, `rests at ${r1.y}, page tops ${r1.tops.join(',')}`);
         check('resting page is fully revealed', r1.half === 0, `${r1.half} item(s) mid-fade`);
         check('active dot follows the page', r1.dot === r1.idx, `dot ${r1.dot}, page ${r1.idx}`);
+        // Once the guest touches or scrolls, the show stops for good: they turn the pages themselves.
         await page.mouse.wheel(0, 1);
         const r2 = await rest(page);
-        await page.waitForTimeout(3000);
+        await page.waitForTimeout(9000); // longer than any hold + glide
         const r3 = await rest(page);
-        check('auto-advance pauses on input', r3.y === r2.y && r3.idx >= 0, `${r2.y} → ${r3.y}`);
-        await page.waitForTimeout(6500); // idle → resumes and turns one page
-        const r4 = await rest(page);
-        check('auto-advance resumes after idle, on a page top', r4.idx === r3.idx + 1, `page ${r3.idx} → ${r4.idx}`);
+        check('auto-advance stops for good once the guest scrolls', r3.y === r2.y && r3.idx >= 0, `${r2.y} → ${r3.y}`);
 
         // A guest's own swipe lands exactly on the next page; a hard fling can't skip a page.
         await page.evaluate(() => (document.getElementById('app')!.scrollTop = 0));
@@ -125,6 +123,9 @@ const run = async () => {
         await page.click('[data-replay]');
         const r9 = await rest(page);
         check('View again returns to the first page (and a button tap does not turn the page)', r9.idx === 0, `page ${r9.idx}`);
+        await page.waitForTimeout(6500); // hero hold (4 s) + reveal + glide
+        const r10 = await rest(page);
+        check('View again plays the show again', r10.idx === 1, `page ${r10.idx}`);
       } else {
         await page.mouse.wheel(0, 1); // pause auto-advance so the layout pass below drives the page
       }
@@ -175,12 +176,19 @@ const run = async () => {
           const range = document.createRange();
           range.selectNodeContents(el);
           const t = range.getBoundingClientRect();
-          if (t.height > lh * 1.5 || t.left < 0 || t.right > window.innerWidth) bad.push(`${el.textContent} (${Math.round(t.left)}→${Math.round(t.right)})`);
+          // Must stay inside its own panel / page content box, not just the screen.
+          const box = el.closest<HTMLElement>('.panel, .page-inner, .hero-arch') ?? document.body;
+          const bs = getComputedStyle(box);
+          const br = box.getBoundingClientRect();
+          const left = Math.max(0, br.left + parseFloat(bs.paddingLeft) - 1);
+          const right = Math.min(window.innerWidth, br.right - parseFloat(bs.paddingRight) + 1);
+          if (t.height > lh * 1.5 || t.left < left || t.right > right)
+            bad.push(`${el.textContent} (${Math.round(t.left)}→${Math.round(t.right)} in ${Math.round(left)}→${Math.round(right)})`);
         });
         return {overflowX, bad};
       });
       check(`${width}: no horizontal scroll`, layout.overflowX <= 0, `overflow ${layout.overflowX}px`);
-      check(`${width}: script lines fit on one line`, layout.bad.length === 0, layout.bad.join('; '));
+      check(`${width}: script lines fit on one line, inside their panel`, layout.bad.length === 0, layout.bad.join('; '));
 
       if (width === 390) {
         // D: countdown matches the first future event
