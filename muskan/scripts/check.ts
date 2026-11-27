@@ -12,7 +12,7 @@ const SIZES = [
   {width: 390, height: 844},
   {width: 430, height: 932},
 ];
-const SECTIONS = ['hero', 'invitation', 'events', 'countdown', 'rsvp', 'venues', 'closing'];
+const SECTIONS = ['hero', 'invitation', 'verse', 'events', 'countdown', 'rsvp', 'venues', 'closing'];
 const results: {name: string; ok: boolean; info?: string}[] = [];
 const check = (name: string, ok: boolean, info?: string) => results.push({name, ok, info});
 
@@ -119,7 +119,7 @@ const run = async () => {
           if (el.closest('.choices button[aria-pressed="true"]')) return hex('#c0182f');
           const sec = el.closest('.sec')?.id;
           return hex(
-            {events: '#fbefe8', venues: '#fbefe8', countdown: '#1c0d06', rsvp: '#7a1020', closing: '#b3172b', invitation: '#7a3410'}[sec ?? ''] ??
+            {verse: '#fbefe8', events: '#fbefe8', venues: '#fbefe8', countdown: '#1c0d06', rsvp: '#7a1020', closing: '#b3172b', invitation: '#7a3410'}[sec ?? ''] ??
               '#3a040c',
           );
         };

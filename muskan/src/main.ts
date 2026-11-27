@@ -1,5 +1,5 @@
 import './styles.css';
-import {archCap, artDefs, crest, jaaliBand, lantern, ornament, roseWall} from './art';
+import {archCap, artDefs, crest, jaaliBand, lantern, ornament, paperGrain, roseWall} from './art';
 import {startCountdown} from './countdown';
 import {mountCurtain} from './curtain';
 import {createDrift} from './drift';
@@ -53,13 +53,9 @@ const inviteHtml = () => `<section id="invitation" class="sec invite" data-hold=
     ${archCap()}
     <div class="arch-body">
       <p class="bismillah-ar" ${R} lang="ar" dir="rtl">${C.bismillahAr}</p>
+      <p class="italic small" ${R}>${esc(C.bismillahEn)}</p>
       <p class="caps tiny arch-label" ${R}>${esc(C.heroLabel)}</p>
       <p class="urdu arch-urdu" ${R} lang="ur" dir="rtl">${C.namesUrdu}</p>
-      <p class="italic small" ${R}>${esc(C.bismillahEn)}</p>
-      <div ${R}>${ornament('#a46f2a')}</div>
-      <p class="ayah-ar" ${R} lang="ar" dir="rtl">${C.ayah.ar}</p>
-      <p class="italic ayah-en" ${R}>“${esc(C.ayah.en)}”</p>
-      <p class="caps tiny" ${R}>${esc(C.ayah.ref)}</p>
       <div ${R}>${ornament('#a46f2a')}</div>
       <p class="caps lead" ${R}>${esc(C.withJoy)}</p>
       <p class="host" ${R}>${esc(C.host)}</p>
@@ -78,13 +74,23 @@ const inviteHtml = () => `<section id="invitation" class="sec invite" data-hold=
   </div>
 </section>`;
 
+/** Surah Ar-Rum 30:21 in its own short, pale section between the arch and the events. */
+const verseHtml = () => `<section id="verse" class="sec light verse" data-hold="7000">
+  ${band()}
+  <div class="light-inner">
+    <p class="caps kicker" ${R}>✦ ${esc(C.ayah.ref)} ✦</p>
+    <p class="verse-ar" ${R} lang="ar" dir="rtl">${C.ayah.ar}</p>
+    <div ${R}>${ornament('#c98b8f')}</div>
+    <p class="italic verse-en" ${R}>“${esc(C.ayah.en)}”</p>
+  </div>
+</section>`;
+
 const eventItem = (e: InviteEvent, i: number) => `<li class="ev" ${R}>
   <span class="ev-dot" aria-hidden="true"></span>
   <p class="caps ev-no">✦ ${u.eventNo} ${pad2(i + 1)}</p>
   <p class="script ev-title">${esc(e.title)} <span class="urdu ev-urdu" lang="ur" dir="rtl">${e.urdu}</span></p>
   <p class="ev-when">${esc(`${e.day}, ${e.date} · ${e.time}`)}</p>
-  <p class="ev-hijri">${esc(e.hijri)}</p>
-  <p class="caps ev-venue">${esc(e.venue)} · ${esc(e.address)}</p>
+  <p class="caps ev-venue">${esc(e.venue)}</p>
   <p class="italic ev-blurb">${esc(e.blurb)} · ${esc(e.note)}</p>
 </li>`;
 
@@ -139,6 +145,7 @@ const venueCard = (e: InviteEvent) => `<article class="venue" ${R}>
   <p class="caps ev-no">✦ ${esc(e.title.toUpperCase())} ✦</p>
   <p class="script venue-name">${esc(e.venue)}</p>
   <p class="ev-when">${esc(`${e.day}, ${e.date} · ${e.time}`)}</p>
+  <p class="ev-hijri">${esc(e.hijri)}</p>
   <p class="italic">${esc(e.address)}</p>
   <a class="btn-outline caps" href="${esc(e.mapPlaceUrl)}" target="_blank" rel="noopener">📍 ${u.openMaps}</a>
 </article>`;
@@ -195,12 +202,13 @@ const ogCard = () => {
 const boot = () => {
   document.body.insertAdjacentHTML('afterbegin', artDefs());
   document.documentElement.style.setProperty('--jaali', jaaliBand());
+  document.documentElement.style.setProperty('--paper', paperGrain());
   if (params.has('og')) {
     ogCard();
     return;
   }
   const app = document.getElementById('app')!;
-  app.innerHTML = heroHtml() + inviteHtml() + eventsHtml() + countdownHtml() + rsvpHtml() + venuesHtml() + closingHtml();
+  app.innerHTML = heroHtml() + inviteHtml() + verseHtml() + eventsHtml() + countdownHtml() + rsvpHtml() + venuesHtml() + closingHtml();
 
   app.querySelectorAll<HTMLElement>('[data-wall]').forEach((w) => (w.style.backgroundImage = roseWall(Number(w.dataset.wall))));
   const sections = Array.from(app.querySelectorAll<HTMLElement>('.sec'));

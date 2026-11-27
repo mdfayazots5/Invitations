@@ -237,17 +237,36 @@ export const roseWall = (seed: number) => {
 
 // ───────────────────────────── jaali border band ─────────────────────────────
 
-/** Gold lattice band between sections (CSS background tile, 44×36). */
-export const jaaliBand = () =>
-  svgUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="44" height="36" viewBox="0 0 44 36">
-    <defs><linearGradient id="j" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a5762c"/><stop offset=".45" stop-color="#ffe29a"/><stop offset="1" stop-color="#b3832f"/></linearGradient></defs>
-    <rect width="44" height="36" fill="#5a0b14"/>
-    <rect y="0" width="44" height="3" fill="url(#j)"/><rect y="33" width="44" height="3" fill="url(#j)"/>
-    <g fill="none" stroke="url(#j)" stroke-width="1.8">
-      <path d="M22,5 L39,18 L22,31 L5,18Z"/><path d="M0,5 L5,9 M0,31 L5,27 M44,5 L39,9 M44,31 L39,27"/>
-      <path d="M22,11 C26,14 26,22 22,25 C18,22 18,14 22,11Z"/><path d="M14,18 C17,14 27,14 30,18 C27,22 17,22 14,18Z"/>
+/** Embossed gold filigree band between sections (CSS background tile, 48×40), like the video's carved gold strip. */
+export const jaaliBand = () => {
+  const lace = `<path d="M24,6 C32,10 40,14 42,20 C40,26 32,30 24,34 C16,30 8,26 6,20 C8,14 16,10 24,6Z"/>
+    <path d="M24,12 C29,15 33,17 34,20 C33,23 29,25 24,28 C19,25 15,23 14,20 C15,17 19,15 24,12Z"/>
+    <path d="M0,6 C4,10 6,14 6,20 C6,26 4,30 0,34 M48,6 C44,10 42,14 42,20 C42,26 44,30 48,34"/>
+    <path d="M24,6 C24,2 28,2 30,4 M24,6 C24,2 20,2 18,4 M24,34 C24,38 28,38 30,36 M24,34 C24,38 20,38 18,36"/>
+    <path d="M17,20 H31 M24,15 V25"/>`;
+  return svgUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="48" height="40" viewBox="0 0 48 40">
+    <defs>
+      <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe7a8"/><stop offset=".45" stop-color="#e3a43e"/><stop offset=".75" stop-color="#b8741f"/><stop offset="1" stop-color="#ffd27a"/></linearGradient>
+      <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a0a06"/><stop offset=".5" stop-color="#5c1408"/><stop offset="1" stop-color="#3a0a06"/></linearGradient>
+    </defs>
+    <rect width="48" height="40" fill="url(#bg)"/>
+    <g fill="none" stroke-linecap="round">
+      <g stroke="#1a0402" stroke-width="2.6" transform="translate(.8 .9)">${lace}</g>
+      <g stroke="url(#g)" stroke-width="2">${lace}</g>
+      <g stroke="#fff4cf" stroke-width=".6" stroke-opacity=".7" transform="translate(-.4 -.5)">${lace}</g>
     </g>
-    <circle cx="22" cy="18" r="2" fill="#ffe29a"/><circle cx="0" cy="18" r="2.4" fill="url(#j)"/><circle cx="44" cy="18" r="2.4" fill="url(#j)"/>
+    <circle cx="24" cy="20" r="2.4" fill="#ffe7a8"/><circle cx="24" cy="20" r="1" fill="#8a4a10"/>
+    <rect width="48" height="3.5" fill="url(#g)"/><rect y="36.5" width="48" height="3.5" fill="url(#g)"/>
+    <rect y="3.5" width="48" height=".8" fill="#1a0402" fill-opacity=".7"/><rect y="35.7" width="48" height=".8" fill="#1a0402" fill-opacity=".7"/>
+  </svg>`);
+};
+
+/** Faint paper / marble grain for the pale sections (CSS background tile). */
+export const paperGrain = () =>
+  svgUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220">
+    <filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .55  0 0 0 0 .35  0 0 0 0 .35  0 0 0 .09 0"/></filter>
+    <filter id="m"><feTurbulence type="fractalNoise" baseFrequency=".012 .03" numOctaves="3" seed="4" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .8  0 0 0 0 .55  0 0 0 0 .55  0 0 0 .07 0"/></filter>
+    <rect width="220" height="220" filter="url(#m)"/><rect width="220" height="220" filter="url(#n)"/>
   </svg>`);
 
 /** Small gold ornament: line · diamond · line. */
