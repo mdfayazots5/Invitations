@@ -24,7 +24,7 @@ export type InviteEvent = {
   mapPlaceUrl: string;
 };
 
-export const SITE_URL = 'https://muskaninvitation.netlify.app/';
+export const SITE_URL = 'https://muskankhanam.netlify.app/';
 
 export const C = {
   bismillahAr: 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ',

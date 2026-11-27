@@ -1157,34 +1157,36 @@ body.og {
   background-size: 54px 44px;
 }
 .og-inner {
+  /* WhatsApp may show a centred square crop of the 1200×630 image: keep everything inside ~560 px wide. */
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 30px;
 }
 .og-crest {
-  width: 270px;
+  width: 190px;
+  margin-bottom: -6px;
 }
 .og-crest .crest {
   animation: none;
 }
 .og-text {
-  text-align: left;
+  text-align: center;
 }
 .og-save {
-  font-size: 96px;
+  font-size: 74px;
   color: #ffd98a;
   line-height: 1.05;
   text-shadow: 0 0 20px rgba(255, 170, 60, 0.45);
 }
 .og-names {
-  font-size: 30px;
+  font-size: 26px;
   color: #fff3d6;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 .og-when {
-  margin-top: 14px;
-  font-size: 17px;
+  margin-top: 10px;
+  font-size: 14px;
   color: #f3d58e;
 }
 

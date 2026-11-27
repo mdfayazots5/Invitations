@@ -5,7 +5,8 @@ import {startPreview, stopPreview, URL_BASE} from './serve.ts';
 
 const run = async () => {
   const server = await startPreview();
-  const browser = await chromium.launch();
+  // CHROME_PATH: use an already-installed Chromium instead of Playwright's download.
+  const browser = await chromium.launch({executablePath: process.env.CHROME_PATH || undefined});
   try {
     const page = await browser.newPage({viewport: {width: 1200, height: 630}, reducedMotion: 'reduce'});
     await page.goto(`${URL_BASE}/?og`, {waitUntil: 'networkidle'});
