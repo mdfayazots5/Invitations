@@ -39,10 +39,17 @@ npm run check      # QA at 360×640, 390×844, 430×932: doors, auto-scratch, au
                    # guest scrolls), swipe/tap/dots/View again, pages fill + fit the screen, no scrollbar,
                    # both events, Arabic + Amiri, maps, no RSVP/calendar/video, text contrast, 3D sky (qa/)
 npm run og         # regenerate public/og-image.png (WhatsApp link preview), then build again
-npm run record     # record recordings/fayaz-muskan-nikah-valima.mp4 (1080×1920, song looped, ≤16 MB)
+npm run record     # record recordings/fayaz-muskan-nikah-valima.mp4: true HD 1080×1920 at 30 fps, with the song (see "The video")
 ```
 `check`, `og` and `record` serve the current `dist/` on port 4173, so run `npm run build` first. They stop if the port is already taken, so they never test a stale build.
 Add `?noscroll` to the URL to turn off the auto-advance (the recorder uses it).
+
+## The video
+`npm run record` makes the MP4 to share on WhatsApp. It is **true HD**, not upscaled:
+- The site loads in a phone-sized frame (432×768) scaled 2.5× to 1080×1920. The layout is exactly the phone's, and text renders sharp at full size. `?dpr=2.5` makes the 3D sky and canvases draw at full resolution too.
+- Chrome's screencast captures each 1080×1920 frame. Capturing that live is slower than 30 fps, so the page runs in slow motion while it's captured: its clock and CSS animations run at half speed (a fifth without a GPU). The frames are then retimed to real speed, giving a smooth 30 fps.
+- `?video` hides what only works by tapping: the maps, VIEW ON MAPS, the music button, the page dots, the swipe hint and View again.
+- The page timeline (page → hold time) is at the top of [scripts/record.ts](scripts/record.ts). Keep the video under 60 s so it also fits WhatsApp Status.
 
 ## Deploy (branch `Fayaz`)
 Netlify reads the root `netlify.toml`: base `fayaz`, build `npm run build`, publish `dist`.

@@ -1,70 +1,101 @@
-// PROMPT 2: record the invite website as a vertical 1080×1920 MP4, like a person opening it on a phone.
-// npm run build && npx tsx scripts/record.ts
+// Records the invite as a true-HD vertical MP4 (1080×1920), like a person opening it on a phone.
+// npm run build && npm run record
+//
+// How it gets real HD: the site loads in a 432×768 frame (so it lays out exactly like a phone) on a
+// 1080×1920 page scaled 2.5×. Chrome renders text and vectors at the full size, `?dpr=2.5` makes the
+// canvases (3D sky, gold dust) draw at full resolution, and Chrome's screencast captures 1080×1920
+// frames with their timestamps. Playwright's own recordVideo can't do this: it captures CSS pixels
+// (432×768) and the result had to be upscaled, which looked soft.
+//
+// Smoothness: capturing 1080×1920 live is slower than 30 fps (about 19 fps on this laptop's GPU), so the
+// page runs in slow motion while it's captured: its clock (rAF, performance.now, Date, timers) and its CSS
+// animations run at SLOW speed, and the frames are retimed back to real speed. Result: a smooth 30 fps video.
+//
+// `?video` hides what only works by tapping (maps, buttons, music toggle, page dots, hints);
+// `?noscroll` lets this script turn the pages to its own timeline.
 import {execFileSync} from 'node:child_process';
-import {existsSync, mkdirSync, rmSync, statSync} from 'node:fs';
-import {chromium, type Page} from 'playwright';
+import {existsSync, mkdirSync, rmSync, statSync, writeFileSync} from 'node:fs';
+import {chromium, type Frame, type Page} from 'playwright';
 import {startPreview, stopPreview, URL_BASE} from './serve.ts';
 
+// ── per-site settings ─────────────────────────────────────────────────────────────────────────
 const OUT = 'recordings/fayaz-muskan-nikah-valima.mp4';
-const MUSIC = 'public/music.mp3';
-const RAW_DIR = 'out/raw';
-// A 432×768 CSS viewport keeps the phone layout. Playwright records the video at CSS-pixel size
-// (a larger `size` only pads the frame with grey), so we record 432×768 and ffmpeg scales it to 1080×1920.
-const VIEW = {width: 432, height: 768};
-const MAX_MB = 16;
+/** Page id → hold (ms) after its 1.1 s glide. Keep the whole video under 60 s for WhatsApp Status. */
+const TIMELINE: [string, number][] = [
+  ['#ayah', 5000],
+  ['#invitation', 5500],
+  ['#events-nikah', 3800],
+  ['#events-valima', 3800],
+  ['#countdown', 3200],
+  ['#venue-nikah', 3000],
+  ['#venue-valima', 3000],
+  ['#dua', 4500],
+  ['#closing', 4000],
+];
+// ──────────────────────────────────────────────────────────────────────────────────────────────
 
-/** Fake fingertip: 70px translucent circle that follows the pointer, ripples on press, fades when idle. */
-const FINGER = () => {
-  const style = document.createElement('style');
-  style.textContent = `
-    #finger{position:fixed;left:0;top:0;width:70px;height:70px;margin:-35px 0 0 -35px;border-radius:50%;
-      background:radial-gradient(circle,rgba(255,255,255,.7) 0%,rgba(255,255,255,.45) 50%,rgba(255,255,255,0) 72%);
-      box-shadow:0 4px 18px rgba(0,0,0,.35);pointer-events:none;z-index:2147483647;opacity:0;transition:opacity .25s,transform .12s}
-    #finger.on{opacity:1}#finger.down{transform:scale(.85)}
-    .finger-ripple{position:fixed;width:70px;height:70px;margin:-35px 0 0 -35px;border-radius:50%;border:2px solid rgba(255,255,255,.9);
-      pointer-events:none;z-index:2147483646;animation:fr .6s ease-out forwards}
-    @keyframes fr{to{transform:scale(2.4);opacity:0}}`;
-  document.documentElement.appendChild(style);
-  const f = document.createElement('div');
-  f.id = 'finger';
-  let idle = 0;
-  const show = (e: MouseEvent) => {
-    if (!f.isConnected) document.body.appendChild(f);
-    f.style.left = `${e.clientX}px`;
-    f.style.top = `${e.clientY}px`;
-    f.classList.add('on');
-    clearTimeout(idle);
-    idle = window.setTimeout(() => f.classList.remove('on'), 700);
-  };
-  addEventListener('mousemove', show, true);
-  addEventListener(
-    'mousedown',
-    (e) => {
-      show(e);
-      f.classList.add('down');
-      const r = document.createElement('div');
-      r.className = 'finger-ripple';
-      r.style.left = `${e.clientX}px`;
-      r.style.top = `${e.clientY}px`;
-      document.body.appendChild(r);
-      setTimeout(() => r.remove(), 650);
-    },
-    true,
-  );
-  addEventListener('mouseup', () => f.classList.remove('down'), true);
+const MUSIC = 'public/music.mp3';
+const FRAMES = 'out/frames';
+const PHONE = {width: 432, height: 768};
+const SCALE = 2.5; // 432×768 → 1080×1920
+const HD = {width: PHONE.width * SCALE, height: PHONE.height * SCALE};
+const MAX_MB = 40; // WhatsApp sends files this size fine; quality first
+const GLIDE = 1100;
+/** Page clock speed while capturing: 0.5 with a GPU, 0.2 with software rendering (set after launch). */
+let SLOW = 0.5;
+
+/** Runs in every frame before the page's scripts: slows the page clock to SLOW. */
+const TIME_WARP = (k: number) => {
+  const pn = performance.now.bind(performance);
+  const p0 = pn();
+  performance.now = () => p0 + (pn() - p0) * k;
+  const dn = Date.now;
+  const d0 = dn();
+  Date.now = () => d0 + (dn() - d0) * k;
+  const raf = window.requestAnimationFrame.bind(window);
+  // Hand every frame the warped clock: with CSS animations slowed, Chrome's own rAF timestamps run on a
+  // different base than performance.now(), and code comparing the two (the scratch bar) would never finish.
+  window.requestAnimationFrame = (cb) => raf(() => cb(performance.now()));
+  const st = window.setTimeout.bind(window);
+  window.setTimeout = ((fn: TimerHandler, ms?: number, ...a: unknown[]) => st(fn, (ms ?? 0) / k, ...a)) as typeof window.setTimeout;
+  const si = window.setInterval.bind(window);
+  window.setInterval = ((fn: TimerHandler, ms?: number, ...a: unknown[]) => si(fn, (ms ?? 0) / k, ...a)) as typeof window.setInterval;
 };
 
-const wait = (page: Page, ms: number) => page.waitForTimeout(ms);
+/** Host page: the site in a phone-sized frame scaled to 1080×1920, plus a fingertip for the tap. */
+const host = (src: string) => `<!doctype html><html><head><style>
+  html,body{margin:0;width:${HD.width}px;height:${HD.height}px;overflow:hidden;background:#000}
+  iframe{border:0;width:${PHONE.width}px;height:${PHONE.height}px;transform:scale(${SCALE});transform-origin:0 0}
+  #finger{position:fixed;left:0;top:0;width:170px;height:170px;margin:-85px 0 0 -85px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.7) 0%,rgba(255,255,255,.45) 50%,rgba(255,255,255,0) 72%);
+    box-shadow:0 10px 40px rgba(0,0,0,.35);pointer-events:none;z-index:9;opacity:0;transition:opacity .25s,transform .12s}
+  #finger.on{opacity:1}#finger.down{transform:scale(.85)}
+  .ripple{position:fixed;width:170px;height:170px;margin:-85px 0 0 -85px;border-radius:50%;border:4px solid rgba(255,255,255,.9);
+    pointer-events:none;z-index:8;animation:fr .6s ease-out forwards}
+  @keyframes fr{to{transform:scale(2.4);opacity:0}}
+</style></head><body><iframe src="${src}" allow="autoplay"></iframe><div id="finger"></div>
+<script>
+  const f = document.getElementById('finger');
+  let idle = 0;
+  const show = (e) => { f.style.left = e.clientX + 'px'; f.style.top = e.clientY + 'px'; f.classList.add('on');
+    clearTimeout(idle); idle = setTimeout(() => f.classList.remove('on'), 700); };
+  addEventListener('mousemove', show, true);
+  addEventListener('mousedown', (e) => { show(e); f.classList.add('down'); const r = document.createElement('div');
+    r.className = 'ripple'; r.style.left = e.clientX + 'px'; r.style.top = e.clientY + 'px'; document.body.appendChild(r);
+    setTimeout(() => r.remove(), 650); }, true);
+  addEventListener('mouseup', () => f.classList.remove('down'), true);
+</script></body></html>`;
 
-/** Smooth eased scroll of the #app page scroller (easeInOutCubic) using rAF steps. */
-const scrollTo = (page: Page, selector: string, offset = 0, ms = 1200) =>
-  page.evaluate(
-    ([sel, off, dur]) =>
+/** Waits `ms` of *video* time (the page runs at SLOW speed while capturing). */
+const wait = (page: Page, ms: number) => page.waitForTimeout(ms / SLOW);
+
+/** Eased glide of the site's #app page scroller (easeInOutCubic) to a page top. */
+const glideTo = (site: Frame, selector: string, ms = GLIDE) =>
+  site.evaluate(
+    ([sel, dur]) =>
       new Promise<void>((resolve) => {
         const app = document.getElementById('app')!;
-        const el = sel === 'bottom' ? null : document.querySelector<HTMLElement>(sel as string);
-        const max = app.scrollHeight - app.clientHeight;
-        const target = Math.min(max, el ? el.offsetTop + (off as number) : max);
+        const target = Math.min(app.scrollHeight - app.clientHeight, document.querySelector<HTMLElement>(sel as string)!.offsetTop);
         const start = app.scrollTop;
         const t0 = performance.now();
         const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -76,7 +107,7 @@ const scrollTo = (page: Page, selector: string, offset = 0, ms = 1200) =>
         };
         requestAnimationFrame(step);
       }),
-    [selector, offset, ms] as const,
+    [selector, ms] as const,
   );
 
 const tap = async (page: Page, x: number, y: number, travel = 14) => {
@@ -87,100 +118,131 @@ const tap = async (page: Page, x: number, y: number, travel = 14) => {
 };
 
 const run = async () => {
-  rmSync(RAW_DIR, {recursive: true, force: true});
-  mkdirSync(RAW_DIR, {recursive: true});
+  rmSync(FRAMES, {recursive: true, force: true});
+  mkdirSync(FRAMES, {recursive: true});
   mkdirSync('recordings', {recursive: true});
   const server = await startPreview();
   // SwiftShader WebGL so the 3D sky renders in headless Chromium.
-  const browser = await chromium.launch({args: ['--enable-unsafe-swiftshader']});
-  let rawPath = '';
-  let trimStart = 0;
+  // Use the GPU when there is one (much faster); SwiftShader is the fallback.
+  const browser = await chromium.launch({args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', '--enable-unsafe-swiftshader']});
+  const frames: {file: string; t: number}[] = [];
+  let endT = 0;
   try {
-    const context = await browser.newContext({
-      viewport: VIEW,
-      deviceScaleFactor: 2.5,
-      isMobile: true,
-      hasTouch: true,
-      recordVideo: {dir: RAW_DIR, size: VIEW},
-    });
-    const t0 = Date.now();
+    const context = await browser.newContext({viewport: HD, deviceScaleFactor: 1});
     const page = await context.newPage();
-    // tsx/esbuild wraps named functions in __name(); provide it inside the page for evaluated callbacks.
+    // tsx/esbuild wraps named functions in __name(); provide it inside the pages for evaluated callbacks.
     await page.addInitScript('window.__name = (f) => f;');
-    await page.addInitScript(FINGER);
-    // Our eased rAF scroll drives every frame; CSS smooth-scrolling would fight it and overshoot.
+    // Our eased glide drives every frame; CSS smooth scrolling or snapping would fight it.
     await page.addInitScript(() => {
       addEventListener('DOMContentLoaded', () => {
         document.documentElement.style.scrollBehavior = 'auto';
-        document.getElementById('app')!.style.scrollSnapType = 'none'; // our glides land on exact page tops
+        const app = document.getElementById('app');
+        if (app) app.style.scrollSnapType = 'none';
       });
     });
-    await page.goto(`${URL_BASE}/?noscroll`, {waitUntil: 'networkidle'});
-    await page.evaluate(() => document.fonts.ready);
+    // Serve the host page from the site's own origin, so the frame shares its process and the
+    // animation-speed setting below applies to it.
+    const hostUrl = `${URL_BASE}/__record-host`;
+    await page.route(hostUrl, (r) => r.fulfill({contentType: 'text/html', body: host(`${URL_BASE}/?noscroll&video&dpr=${SCALE}`)}));
+    await page.goto(hostUrl, {waitUntil: 'load'});
+    const site = (await (await page.$('iframe'))!.contentFrame())!;
+    const gl = await site.evaluate(() => {
+      const c = document.createElement('canvas').getContext('webgl');
+      const e = c?.getExtension('WEBGL_debug_renderer_info');
+      return e ? String(c!.getParameter(e.UNMASKED_RENDERER_WEBGL)) : 'none';
+    });
+    if (/swiftshader/i.test(gl)) SLOW = 0.2;
+    console.log(`renderer: ${gl.slice(0, 70)} · capture speed ${SLOW}×`);
+    // Start the page over with its clock slowed (the warp must be in place before its scripts run).
+    await page.addInitScript(TIME_WARP, SLOW);
+    await page.reload({waitUntil: 'load'});
+    const warped = (await (await page.$('iframe'))!.contentFrame())!;
+    await warped.waitForLoadState('networkidle');
+    await warped.evaluate(() => document.fonts.ready);
     await wait(page, 300);
-    trimStart = (Date.now() - t0) / 1000; // drop the blank page-load frames
 
-    // 0–2.5 s: idle on the doors
-    await page.mouse.move(VIEW.width * 0.7, VIEW.height * 0.95);
-    await wait(page, 1700);
-    // 2.5 s: tap the doors, then the opening + walk-through
-    await tap(page, VIEW.width / 2, VIEW.height * 0.5, 18);
+    // Capture: every composited frame at 1080×1920, saved with its timestamp.
+    const cdp = await context.newCDPSession(page);
+    // CSS transitions and animations (doors, reveals, shimmer) slow down with the clock.
+    await cdp.send('Animation.enable');
+    await cdp.send('Animation.setPlaybackRate', {playbackRate: SLOW});
+    cdp.on('Page.screencastFrame', (f) => {
+      const file = `${FRAMES}/${String(frames.length).padStart(5, '0')}.jpg`;
+      writeFileSync(file, Buffer.from(f.data, 'base64'));
+      frames.push({file, t: f.metadata.timestamp ?? Date.now() / 1000});
+      void cdp.send('Page.screencastFrameAck', {sessionId: f.sessionId}).catch(() => undefined);
+    });
+    await cdp.send('Page.startScreencast', {format: 'jpeg', quality: 92, maxWidth: HD.width, maxHeight: HD.height});
+
+    // 0–1.4 s: idle on the doors, then tap them; opening + walk-through
+    await page.mouse.move(HD.width * 0.7, HD.height * 0.95);
+    await wait(page, 1400);
+    await tap(page, HD.width / 2, HD.height * 0.5, 18);
     await wait(page, 3200);
-    // hero hold while the gold bar scratches itself and the date appears
-    await page.waitForSelector('.scratch.done', {timeout: 8000});
-    await wait(page, 1800);
+    // hero hold while the gold bar scratches itself and the dates appear
+    await warped.waitForSelector('.scratch.done', {timeout: 8000 / SLOW});
+    await wait(page, 1500);
 
-    // Page by page, like the site's own auto-advance: glide 1.1 s, then hold each page to read it.
-    for (const [sel, hold] of [
-      ['#ayah', 5500],
-      ['#invitation', 6000],
-      ['#events-nikah', 4200],
-      ['#events-valima', 4200],
-      ['#countdown', 3800],
-      ['#venue-nikah', 3800],
-      ['#venue-valima', 3800],
-      ['#dua', 5000],
-      ['#closing', 4200],
-    ] as const) {
-      await scrollTo(page, sel, 0, 1100);
+    // Page by page, like the site's own auto-advance: glide, then hold each page to read it.
+    for (const [sel, hold] of TIMELINE) {
+      await glideTo(warped, sel);
       await wait(page, hold);
     }
-
-    const video = page.video()!;
+    endT = Date.now() / 1000;
+    await cdp.send('Page.stopScreencast');
     await context.close();
-    rawPath = await video.path();
   } finally {
     await browser.close();
     stopPreview(server);
   }
+  if (frames.length < 10) throw new Error(`only ${frames.length} frames captured`);
+
+  // Frames arrive only when something changes: give each one its real on-screen duration.
+  const t0 = frames[0].t;
+  const last = Math.max(endT, frames[frames.length - 1].t + 1 / 30 / SLOW);
+  const lines = frames.flatMap((f, i) => {
+    const next = i + 1 < frames.length ? frames[i + 1].t : last;
+    return [`file '${f.file.split('/').pop()}'`, `duration ${Math.max(0.001, (next - f.t) * SLOW).toFixed(4)}`];
+  });
+  lines.push(`file '${frames[frames.length - 1].file.split('/').pop()}'`); // concat demuxer needs the last file twice
+  writeFileSync(`${FRAMES}/list.txt`, lines.join('\n'));
+  const dur = (last - t0) * SLOW; // video seconds
 
   const hasMusic = existsSync(MUSIC);
   const encode = (crf: number) => {
-    const dur = Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', rawPath]).toString()) - trimStart;
-    const args = ['-y', '-v', 'error', '-ss', trimStart.toFixed(2), '-i', rawPath];
-    // Loop the song: the family video runs longer than the 40 s track.
+    const args = ['-y', '-v', 'error', '-f', 'concat', '-safe', '0', '-i', `${FRAMES}/list.txt`];
+    // Loop the song if the video runs past the 40 s track; it rises gently and fades out at the end.
     if (hasMusic) args.push('-stream_loop', '-1', '-i', MUSIC);
-    args.push('-vf', 'scale=1080:1920:flags=lanczos,fps=30', '-c:v', 'libx264', '-crf', String(crf), '-preset', 'slow', '-pix_fmt', 'yuv420p', '-movflags', '+faststart');
+    args.push(
+      '-vf', `fps=30,scale=${HD.width}:${HD.height}:flags=lanczos,format=yuv420p`,
+      '-c:v', 'libx264', '-profile:v', 'high', '-preset', 'slow', '-crf', String(crf), '-movflags', '+faststart',
+    );
     if (hasMusic) {
       args.push(
         '-filter_complex',
         `[1:a]atrim=0:${dur.toFixed(2)},afade=t=in:d=2.5,afade=t=out:st=${(dur - 1.5).toFixed(2)}:d=1.5[a]`,
-        '-map', '0:v', '-map', '[a]', '-c:a', 'aac', '-b:a', '160k', '-shortest',
+        '-map', '0:v', '-map', '[a]', '-c:a', 'aac', '-b:a', '192k', '-shortest',
       );
     } else args.push('-an');
-    args.push(OUT);
+    args.push('-t', dur.toFixed(2), OUT);
     execFileSync('ffmpeg', args, {stdio: 'inherit'});
   };
 
-  let crf = 17;
+  let crf = 18;
   encode(crf);
-  while (statSync(OUT).size / 1e6 > MAX_MB && crf < 29) {
-    crf += 3;
+  while (statSync(OUT).size / 1e6 > MAX_MB && crf < 26) {
+    crf += 2;
     console.log(`> ${MAX_MB} MB, re-encoding at crf ${crf}`);
     encode(crf);
   }
-  const duration = execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', OUT]).toString().trim();
-  console.log(`\n${OUT}\nduration ${Number(duration).toFixed(1)} s · ${(statSync(OUT).size / 1e6).toFixed(1)} MB · crf ${crf} · music: ${hasMusic ? 'yes' : 'none (public/music.mp3 missing)'}`);
+  rmSync(FRAMES, {recursive: true, force: true});
+  const probe = execFileSync('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height:format=duration', '-of', 'csv=p=0', OUT])
+    .toString()
+    .trim()
+    .replace(/\s+/g, ' ');
+  console.log(
+    `\n${OUT}\n${probe} · ${(statSync(OUT).size / 1e6).toFixed(1)} MB · crf ${crf} · ${frames.length} frames (${(frames.length / dur).toFixed(0)} fps captured) · music: ${hasMusic ? 'yes' : 'none'}`,
+  );
 };
 
 run().catch((e) => {

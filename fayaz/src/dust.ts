@@ -1,3 +1,4 @@
+import {isForcedDpr, pixelRatio} from './dpr';
 import {glowSprite} from './glow';
 
 /** Fixed full-screen canvas: 60 gold particles drifting upward, flickering, wrapping around. */
@@ -6,7 +7,7 @@ export const startDust = (canvas: HTMLCanvasElement) => {
   if (!ctx) return;
   let w = 0;
   let h = 0;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const dpr = Math.min(pixelRatio(), isForcedDpr ? 3 : 2);
   const resize = () => {
     w = window.innerWidth;
     h = window.innerHeight;
