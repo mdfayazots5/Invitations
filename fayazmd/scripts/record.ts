@@ -56,20 +56,21 @@ const FINGER = () => {
 
 const wait = (page: Page, ms: number) => page.waitForTimeout(ms);
 
-/** Smooth eased scroll (easeInOutCubic) using rAF steps. */
+/** Smooth eased scroll of the #app page scroller (easeInOutCubic) using rAF steps. */
 const scrollTo = (page: Page, selector: string, offset = 0, ms = 1200) =>
   page.evaluate(
     ([sel, off, dur]) =>
       new Promise<void>((resolve) => {
+        const app = document.getElementById('app')!;
         const el = sel === 'bottom' ? null : document.querySelector<HTMLElement>(sel as string);
-        const max = document.documentElement.scrollHeight - innerHeight;
-        const target = Math.min(max, el ? el.getBoundingClientRect().top + scrollY + (off as number) : max);
-        const start = scrollY;
+        const max = app.scrollHeight - app.clientHeight;
+        const target = Math.min(max, el ? el.offsetTop + (off as number) : max);
+        const start = app.scrollTop;
         const t0 = performance.now();
         const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
         const step = (now: number) => {
           const t = Math.min(1, (now - t0) / (dur as number));
-          window.scrollTo(0, start + (target - start) * ease(t));
+          app.scrollTop = start + (target - start) * ease(t);
           if (t < 1) requestAnimationFrame(step);
           else resolve();
         };
@@ -108,7 +109,10 @@ const run = async () => {
     await page.addInitScript(FINGER);
     // Our eased rAF scroll drives every frame; CSS smooth-scrolling would fight it and overshoot.
     await page.addInitScript(() => {
-      addEventListener('DOMContentLoaded', () => (document.documentElement.style.scrollBehavior = 'auto'));
+      addEventListener('DOMContentLoaded', () => {
+        document.documentElement.style.scrollBehavior = 'auto';
+        document.getElementById('app')!.style.scrollSnapType = 'none'; // our glides land on exact page tops
+      });
     });
     await page.goto(`${URL_BASE}/?noscroll`, {waitUntil: 'networkidle'});
     await page.evaluate(() => document.fonts.ready);
@@ -125,19 +129,17 @@ const run = async () => {
     await page.waitForSelector('.scratch.done', {timeout: 8000});
     await wait(page, 1800);
 
-    // slow, reading-pace scrolls (like the page's own auto-scroll, compressed to fit the music)
-    await scrollTo(page, '#invitation', 10, 2200);
-    await wait(page, 2400);
-    await scrollTo(page, '#invitation .quote', -360, 2200);
-    await wait(page, 2400);
-    await scrollTo(page, '#countdown', -10, 2200);
-    await wait(page, 4000);
-    await scrollTo(page, '#venue', -10, 2200);
-    await wait(page, 2400);
-    await scrollTo(page, '#venue .map', -160, 2000);
-    await wait(page, 3000);
-    await scrollTo(page, 'bottom', 0, 2000);
-    await wait(page, 2400);
+    // Page by page, like the site's own auto-advance: glide 1.1 s, then hold each page to read it.
+    for (const [sel, hold] of [
+      ['#ayah', 6000],
+      ['#invitation', 6500],
+      ['#countdown', 4000],
+      ['#venue', 4500],
+      ['#closing', 4500],
+    ] as const) {
+      await scrollTo(page, sel, 0, 1100);
+      await wait(page, hold);
+    }
 
     const video = page.video()!;
     await context.close();
@@ -151,12 +153,13 @@ const run = async () => {
   const encode = (crf: number) => {
     const dur = Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', rawPath]).toString()) - trimStart;
     const args = ['-y', '-v', 'error', '-ss', trimStart.toFixed(2), '-i', rawPath];
-    if (hasMusic) args.push('-i', MUSIC);
+    // Loop the song in case the video runs past the 40 s track.
+    if (hasMusic) args.push('-stream_loop', '-1', '-i', MUSIC);
     args.push('-vf', 'scale=1080:1920:flags=lanczos,fps=30', '-c:v', 'libx264', '-crf', String(crf), '-preset', 'slow', '-pix_fmt', 'yuv420p', '-movflags', '+faststart');
     if (hasMusic) {
       args.push(
         '-filter_complex',
-        `[1:a]atrim=0:${dur.toFixed(2)},afade=t=in:d=1,afade=t=out:st=${(dur - 1.5).toFixed(2)}:d=1.5[a]`,
+        `[1:a]atrim=0:${dur.toFixed(2)},afade=t=in:d=2.5,afade=t=out:st=${(dur - 1.5).toFixed(2)}:d=1.5[a]`,
         '-map', '0:v', '-map', '[a]', '-c:a', 'aac', '-b:a', '160k', '-shortest',
       );
     } else args.push('-an');

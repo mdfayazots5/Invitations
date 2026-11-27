@@ -1,6 +1,32 @@
 import {C} from './invite.config';
 
-/** Fixed music toggle. Hidden automatically if the track can't be loaded. */
+const FADE_IN = 2.5; // s: first start, on the door tap
+const FADE_RESUME = 0.6; // s: when the guest presses play again
+
+/**
+ * Fixed music toggle. Hidden automatically if the track can't be loaded.
+ * The song never starts at full volume: it rises from silence over FADE_IN seconds.
+ * iPhone Safari ignores `audio.volume`, so the fade runs through a Web Audio gain node;
+ * where Web Audio is missing, it steps `audio.volume` instead.
+ *
+ * iPhone silent switch: Web Audio is muted by the ringer switch unless the page asks for the
+ * "playback" audio session (Safari 17+). On older iPhones without that API we skip Web Audio and
+ * play the plain <audio> element, which ignores the switch: hearing the song matters more than the fade.
+ * The song pauses when the guest leaves the page (switches app, takes a call) and fades back in on return.
+ */
+type AudioSessionNav = Navigator & {audioSession?: {type: string}};
+const nav = navigator as AudioSessionNav;
+if (nav.audioSession) {
+  try {
+    nav.audioSession.type = 'playback';
+  } catch {
+    /* not allowed here: fine */
+  }
+}
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+/** Web Audio is safe unless this is an older iPhone that can't opt out of the silent switch. */
+const canUseWebAudio = !isIOS || !!nav.audioSession;
+
 export const createMusic = () => {
   const audio = new Audio();
   audio.loop = true;
@@ -28,9 +54,68 @@ export const createMusic = () => {
     btn.remove();
   });
 
+  // Built lazily inside the first tap (browsers only allow audio to start from a gesture).
+  let ctx: AudioContext | null = null;
+  let gain: GainNode | null = null;
+  const setupGraph = () => {
+    if (ctx || !canUseWebAudio) return;
+    const AC = window.AudioContext ?? (window as unknown as {webkitAudioContext?: typeof AudioContext}).webkitAudioContext;
+    if (!AC) return;
+    try {
+      ctx = new AC();
+      gain = ctx.createGain();
+      gain.gain.value = 0;
+      ctx.createMediaElementSource(audio).connect(gain).connect(ctx.destination);
+    } catch {
+      ctx = null;
+      gain = null;
+    }
+  };
+
+  let rampRaf = 0;
+  const fadeIn = (seconds: number) => {
+    if (ctx && gain) {
+      void ctx.resume();
+      const now = ctx.currentTime;
+      gain.gain.cancelScheduledValues(now);
+      gain.gain.setValueAtTime(0.0001, now);
+      // Exponential rise sounds even to the ear (a linear one jumps loud at the start).
+      gain.gain.exponentialRampToValueAtTime(1, now + seconds);
+      return;
+    }
+    cancelAnimationFrame(rampRaf);
+    audio.volume = 0;
+    const t0 = performance.now();
+    const step = (t: number) => {
+      const k = Math.min(1, (t - t0) / (seconds * 1000));
+      audio.volume = k * k; // ease-in
+      if (k < 1) rampRaf = requestAnimationFrame(step);
+    };
+    rampRaf = requestAnimationFrame(step);
+  };
+
+  const play = (seconds: number) => {
+    setupGraph();
+    fadeIn(seconds);
+    audio.play().catch(() => sync());
+  };
+
   btn.addEventListener('click', () => {
-    if (audio.paused) audio.play().catch(() => undefined);
+    if (audio.paused) play(FADE_RESUME);
     else audio.pause();
+  });
+
+  // Leaving the page (other app, phone call, screen off) pauses; coming back fades in again,
+  // but only if it was playing before.
+  let resumeOnReturn = false;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      resumeOnReturn = !audio.paused;
+      audio.pause();
+    } else if (resumeOnReturn) {
+      resumeOnReturn = false;
+      play(FADE_RESUME);
+    }
   });
 
   return {
@@ -38,7 +123,7 @@ export const createMusic = () => {
     start: () => {
       if (!btn.isConnected) return;
       btn.hidden = false;
-      audio.play().catch(() => sync());
+      play(FADE_IN);
     },
   };
 };

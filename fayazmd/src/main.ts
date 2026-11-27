@@ -1,12 +1,11 @@
 import './styles.css';
-import {startAutoScroll} from './autoscroll';
 import {startCountdown} from './countdown';
 import {mountDoors} from './doors';
 import {startDust} from './dust';
-import {startFireworks} from './fireworks';
 import {C, mapEmbedUrl} from './invite.config';
 import {createMusic} from './music';
 import {divider, laceBackground, stringLights} from './ornaments';
+import {createPager} from './pages';
 import {startReveal} from './reveal';
 import {createScratch} from './scratch';
 
@@ -24,8 +23,9 @@ const AUTO_SCROLL_DELAY = 2600;
 const heroHtml = () => {
   let h = 0;
   const line = (html: string) => html.replace('<p', `<p data-hero style="--h:${h++}"`).replace('<div', `<div data-hero style="--h:${h - 1}"`);
-  return `<section class="hero" id="hero" aria-label="${esc(C.groomShort)} ${u.and} ${esc(C.brideShort)}">
+  return `<section class="hero page" id="hero" aria-label="${esc(C.groomShort)} ${u.and} ${esc(C.brideShort)}">
     <div class="hero-arch">
+      ${line(`<p class="bismillah-ar gold-text" lang="ar" dir="rtl">${C.bismillahAr}</p>`)}
       ${line(`<p class="bismillah italic muted">${esc(C.bismillahEn)}</p>`)}
       ${line(`<div>${divider()}</div>`)}
       ${line(`<p class="script gold-text hero-name">${esc(C.groomShort)}</p>`)}
@@ -42,7 +42,16 @@ const heroHtml = () => {
   </section>`;
 };
 
-const invitationHtml = () => `<section id="invitation">
+/** Quran verse page (Ar-Rum 30:21): Arabic, then its meaning. */
+const ayahHtml = () => `<section id="ayah" class="page" data-hold="7000"><div class="page-inner">
+  <p class="caps gold" ${R}>${esc(C.ayah.ref)}</p>
+  <div ${R}>${divider()}</div>
+  <p class="ayah-ar gold-text" ${R} lang="ar" dir="rtl">${C.ayah.ar}</p>
+  <div ${R}>${divider()}</div>
+  <p class="ayah-en italic" ${R}>“${esc(C.ayah.en)}”</p>
+</div></section>`;
+
+const invitationHtml = () => `<section id="invitation" class="page" data-hold="7000"><div class="page-inner">
   ${stringLights()}
   <p class="caps gold" ${R} style="margin-top:22px">${u.invitationLabel}</p>
   <div ${R}>${divider()}</div>
@@ -54,10 +63,10 @@ const invitationHtml = () => `<section id="invitation">
   <p class="italic muted" ${R} style="font-size:16px">${esc(C.brideParents)}</p>
   <p class="italic muted" ${R} style="font-size:16px;margin-top:16px">${esc(C.blessings)}</p>
   <p class="quote italic" ${R}>“${esc(C.quote)}”</p>
-</section>`;
+</div></section>`;
 
-const countdownHtml = () => `<section class="countdown" id="countdown">
-  <canvas class="fireworks" aria-hidden="true"></canvas>
+const countdownHtml = () => `<section class="countdown page" id="countdown" data-hold="4500">
+  <div class="page-inner">
   <p class="caps gold" ${R}>${u.countdownLabel}</p>
   <p class="script gold-text title-lg" ${R}>${u.countdownTitle}</p>
   <p class="italic muted" ${R} data-next></p>
@@ -68,9 +77,10 @@ const countdownHtml = () => `<section class="countdown" id="countdown">
   </div>
   <p class="script gold-text title-lg" data-done hidden>${u.alhamdulillah}</p>
   <div style="margin-top:36px">${stringLights()}</div>
+  </div>
 </section>`;
 
-const venueHtml = (e = valima) => `<section id="venue">
+const venueHtml = (e = valima) => `<section id="venue" class="page" data-hold="5000"><div class="page-inner">
   <p class="caps gold" ${R}>${u.venueLabel}</p>
   <div ${R}>${divider()}</div>
   <div class="venue-block" id="venue-${e.key}">
@@ -79,17 +89,24 @@ const venueHtml = (e = valima) => `<section id="venue">
     <p class="italic" ${R}>${esc(e.address)}</p>
     <p class="venue-when" ${R}>${esc(`${e.day}, ${e.date}`)}<br />${esc(`${e.time} · ${e.note}`)}</p>
     <p class="italic muted" ${R} style="font-size:15px">${esc(e.hijri)}</p>
-    <iframe class="map" ${R} title="${esc(u.mapTitle.replace('{venue}', e.venue))}" loading="lazy"
-      referrerpolicy="no-referrer-when-downgrade" src="${mapEmbedUrl(e)}"></iframe>
+    <a class="map-card" ${R} href="${esc(e.mapPlaceUrl)}" target="_blank" rel="noopener" aria-label="Open ${esc(e.venue)} in Google Maps">
+      <iframe class="map" tabindex="-1" title="${esc(u.mapTitle.replace('{venue}', e.venue))}" loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade" src="${mapEmbedUrl(e)}"></iframe>
+    </a>
     <a class="btn-gold" ${R} href="${esc(e.mapPlaceUrl)}" target="_blank" rel="noopener">${u.viewOnMaps}</a>
   </div>
-</section>`;
+</div></section>`;
 
-const footerHtml = () => `<footer>
-  <div ${R}>${divider()}</div>
+const footerHtml = () => `<footer class="page" id="closing"><div class="page-inner">
+  ${stringLights()}
+  <p class="dua-ar gold-text" ${R} lang="ar" dir="rtl" style="margin-top:18px">${C.dua.ar}</p>
+  <p class="dua-en italic" ${R}>${esc(C.dua.en)}</p>
+  <p class="dua-ref muted" ${R}>(${esc(C.dua.ref)})</p>
+  <div ${R} style="margin-top:12px">${divider()}</div>
   <p class="script gold-text footer-names" ${R}>${esc(u.footerNames)}</p>
   <p class="italic muted" ${R}>${esc(C.footerLine)}</p>
-</footer>`;
+  <button type="button" class="replay caps" ${R} data-replay>↺ View again</button>
+</div></footer>`;
 
 const ogCard = () => {
   document.body.classList.add('og', 'entered');
@@ -114,19 +131,18 @@ const boot = () => {
     return;
   }
   const app = document.getElementById('app')!;
-  app.innerHTML = heroHtml() + invitationHtml() + countdownHtml() + venueHtml() + footerHtml();
+  app.innerHTML = heroHtml() + ayahHtml() + invitationHtml() + countdownHtml() + venueHtml() + footerHtml();
   app.querySelector<HTMLElement>('.hero')!.style.backgroundImage = laceBackground();
+  const pager = createPager(app);
+  app.querySelector('[data-replay]')!.addEventListener('click', () => pager.replay());
 
-  // Once the date is revealed (by the guest or automatically), let the page drift down on its own.
+  // Once the date is revealed (by the guest or automatically), turn the pages on their own.
   let scrolling = false;
   const beginAutoScroll = () => {
-    // ?noscroll: used by scripts/record.ts, which times its own scrolling to the 40 s music cut.
+    // ?noscroll: used by scripts/record.ts, which times its own page turns to the 40 s music cut.
     if (scrolling || reducedMotion || new URLSearchParams(location.search).has('noscroll')) return;
     scrolling = true;
-    window.setTimeout(
-      () => startAutoScroll(['#invitation', '#countdown', '#venue', '.map'].map((s) => app.querySelector<HTMLElement>(s)!)),
-      AUTO_SCROLL_DELAY,
-    );
+    window.setTimeout(() => pager.startAuto(), AUTO_SCROLL_DELAY);
   };
 
   // The scratch bar takes the slot's place (and its position in the hero stagger).
@@ -140,12 +156,10 @@ const boot = () => {
   startCountdown(app.querySelector('#countdown')!);
   if (!reducedMotion) {
     startDust(document.getElementById('dust') as HTMLCanvasElement);
-    const cd = app.querySelector<HTMLElement>('#countdown')!;
-    startFireworks(cd, cd.querySelector('canvas')!);
   }
 
   const music = createMusic();
-  window.scrollTo(0, 0);
+  app.scrollTop = 0;
   mountDoors(document.getElementById('doors-root')!, () => music.start(), reducedMotion).then(() =>
     window.setTimeout(scratch.auto, reducedMotion ? 0 : AUTO_SCRATCH_DELAY),
   );
