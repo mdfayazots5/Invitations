@@ -34,7 +34,7 @@ export const startCountdown = (root: HTMLElement) => {
       root.querySelector<HTMLElement>('[data-done]')!.hidden = false;
       return false;
     }
-    when.textContent = `${ev.day}, ${ev.date} · ${ev.time}`;
+    when.textContent = C.ui.countdownUntil.replace('{date}', ev.date).replace('{event}', ev.title);
     const s = Math.floor((new Date(ev.startISO).getTime() - now) / 1000);
     const vals = [Math.floor(s / 86400), Math.floor((s % 86400) / 3600), Math.floor((s % 3600) / 60), s % 60];
     vals.forEach((v, i) => set(i, String(v).padStart(2, '0')));

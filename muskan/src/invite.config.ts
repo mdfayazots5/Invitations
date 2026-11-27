@@ -12,6 +12,8 @@ export type InviteEvent = {
   hijri: string;
   time: string;
   note: string;
+  /** One italic line on the events timeline. */
+  blurb: string;
   venue: string;
   address: string;
   startISO: string;
@@ -56,8 +58,13 @@ export const C = {
   /** Line under the second name. */
   secondParents: 'son of Mrs. Late Abdul Rahmath Sahab',
   heroLabel: 'NIKAH & VALIMA',
-  scratchReveal: '14th & 15th December 2026',
-  scratchSub: 'Monday & Tuesday',
+  /** Curtain crest letters (the family asked for F & M). */
+  monogram: ['F', 'M'] as [string, string],
+  saveTheDate: ['Save', 'the Date'] as [string, string],
+  scratchReveal: '14 & 15 · 12 · 2026',
+  scratchSub: 'Monday & Tuesday · December 2026',
+  /** RSVP replies open WhatsApp to this number (country code, digits only). */
+  rsvpWhatsApp: '919515824929',
   events: [
     {
       key: 'nikah',
@@ -68,6 +75,7 @@ export const C = {
       hijri: '4 Rajab 1448 AH',
       time: '10:00 AM',
       note: 'Lunch follows',
+      blurb: 'The sacred union, in the presence of family & elders',
       venue: 'Ruby Garden',
       address: 'Sripur Road, Nagarkurnool',
       startISO: '2026-12-14T10:00:00+05:30',
@@ -85,6 +93,7 @@ export const C = {
       hijri: '5 Rajab-ul-Murajjab 1448 AH',
       time: '8:00 PM',
       note: 'Dinner',
+      blurb: 'A celebration feast with the newlyweds',
       venue: 'Venkat Narsimha Garden',
       address: 'Shad Nagar Road, Amangal',
       startISO: '2026-12-15T20:00:00+05:30',
@@ -107,7 +116,7 @@ export const C = {
     ogDescription:
       'Nikah: Monday, 14 December 2026 · 10 AM · Ruby Garden, Nagarkurnool. Valima: Tuesday, 15 December 2026 · 8 PM · Venkat Narsimha Garden, Amangal.',
     tapToEnter: 'TAP TO OPEN',
-    doorsLabel: 'Open the invitation doors',
+    doorsLabel: 'Open the curtain',
     and: '&',
     inshaAllah: '— Insha Allah —',
     scratchLabel: 'SCRATCH TO REVEAL',
@@ -116,6 +125,24 @@ export const C = {
     invitationLabel: 'THE INVITATION',
     with: 'with',
     eventsLabel: 'THE CELEBRATIONS',
+    eventsTitle: 'Wedding Events',
+    eventNo: 'EVENT',
+    countdownKicker: 'THE WAIT BEGINS',
+    countdownUntil: 'Until {date} · The {event}',
+    rsvpTitle: 'Kindly RSVP',
+    rsvpName: 'YOUR NAME',
+    rsvpNamePh: 'Enter your full name',
+    rsvpJoin: 'WILL YOU JOIN US?',
+    rsvpYes: 'Joyfully Accept',
+    rsvpNo: 'Regretfully Decline',
+    rsvpSend: 'SEND BLESSINGS',
+    rsvpNeedName: 'Please enter your name',
+    rsvpNeedChoice: 'Please choose Accept or Decline',
+    rsvpMsgYes: 'Assalamu Alaikum! {name} joyfully accepts the invitation to the Nikah & Valima of Muskan & Fayaz. Insha Allah, see you there.',
+    rsvpMsgNo: 'Assalamu Alaikum! {name} regretfully cannot attend the Nikah & Valima of Muskan & Fayaz, and sends duas and blessings to the couple.',
+    venueKicker: 'FIND YOUR WAY',
+    venueTitle: 'Venues',
+    openMaps: 'OPEN IN GOOGLE MAPS',
     countdownLabel: 'COUNTING THE MOMENTS',
     /** "|" splits the title over two script lines (one line is too wide for a phone). */
     countdownTitle: 'Until We Say|Qubool Hai',
