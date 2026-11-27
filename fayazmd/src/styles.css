@@ -905,3 +905,13 @@ body.locked .dots {
 .bismillah {
   text-wrap: balance;
 }
+
+/* ───────── ?video (the recorded MP4): nothing that only works by tapping ───────── */
+body.video .music,
+body.video .dots,
+body.video .swipe-hint,
+body.video .map-card,
+body.video .page .btn-gold,
+body.video .replay {
+  display: none !important;
+}

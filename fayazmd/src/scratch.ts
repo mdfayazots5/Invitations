@@ -1,3 +1,4 @@
+import {pixelRatio} from './dpr';
 import {C} from './invite.config';
 
 const BRUSH = 26;
@@ -22,7 +23,7 @@ export const createScratch = (onReveal?: () => void): {el: HTMLElement; auto: ()
   let h = 0;
 
   const paint = () => {
-    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    const dpr = Math.min(pixelRatio(), 3);
     w = el.clientWidth;
     h = el.clientHeight;
     canvas.width = Math.round(w * dpr);

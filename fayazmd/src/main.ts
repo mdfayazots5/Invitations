@@ -10,6 +10,8 @@ import {startReveal} from './reveal';
 import {createScratch} from './scratch';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+// ?video: the recorded MP4. Hides what only works by tapping (map, buttons, music toggle, page dots, hints).
+if (new URLSearchParams(location.search).has('video')) document.body.classList.add('video');
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const R = 'data-reveal';
 const u = C.ui;
