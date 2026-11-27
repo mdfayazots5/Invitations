@@ -1,17 +1,15 @@
-# Fayaz & Muskan: Royal Doors invite (friends & colleagues)
+# Fayaz & Muskan: Valima invite (friends & relatives)
 
-A black-and-gold, mobile-first invite **website**, plus an **MP4** recorded from it. The full brief is in [royal-doors-invite-prompt.md](royal-doors-invite-prompt.md).
+A black-and-gold, mobile-first invite **website** for the **Valima only** (Tuesday, 15 December 2026, 8 PM, Venkat Narsimha Garden, Amangal), plus an **MP4** recorded from it. The original brief is in [royal-doors-invite-prompt.md](royal-doors-invite-prompt.md). That brief covered the Nikah too; this site no longer does.
 
-Guests tap the doors open, scratch to reveal the dates, see a live countdown with fireworks, send an RSVP on WhatsApp and open the venue maps.
+Live at https://mdfayazinvitation.netlify.app/
 
-## Before sharing: fill the TODOs
-In [src/invite.config.ts](src/invite.config.ts):
-- `rsvpDeadline`, for example `7th December 2026`
-- `whatsappNumber`: digits only, with country code, for example `919876543210`. RSVPs arrive here.
-- `contacts[].phone`: shown on the RSVP section as a tap-to-call link
+Guests tap the doors open. The gold bar then **scratches itself** to reveal the date, and the page **scrolls down slowly on its own**. It holds briefly at each section; any touch, scroll or key pauses it, and it resumes after 6 s idle. Guests see a live countdown with fireworks and can open the venue map. There is no RSVP form.
 
-All page text lives in that file. Spelling is final: "Ruby Garden", "Venkat Narsimha Garden", "Rajab-ul-Murajjab".
-The map pins use the exact Google Maps locations (Ruby Gardens Function Hall 16.4786, 78.3060 · Venkata Narasimha Gardens 16.8444, 78.5197).
+All page text lives in [src/invite.config.ts](src/invite.config.ts). Spelling is final: "Venkat Narsimha Garden", "Rajab-ul-Murajjab".
+The map pin uses the exact Google Maps location (Venkata Narasimha Gardens 16.8444, 78.5197).
+
+Tuning: scroll speed, hold and idle times are at the top of [src/autoscroll.ts](src/autoscroll.ts). The scratch/scroll start delays are in [src/main.ts](src/main.ts). Add `?noscroll` to the URL to turn the auto-scroll off (the recorder uses this).
 
 ## Music (optional)
 Put the song at `public/music.mp3`. It starts when guests tap the doors, and the round button at the bottom-right pauses it.
@@ -23,8 +21,8 @@ npm install
 npx playwright install chromium   # once, for the scripts below
 npm run dev        # develop at http://localhost:5173
 npm run build      # -> dist/
-npm run check      # QA at 360/390/430/768 px: overflow, names on one line, console errors,
-                   # doors, scratch, countdown, RSVP → wa.me, map pins (screenshots in qa/)
+npm run check      # QA at 360/390/430/768 px: overflow, names on one line, console errors, no Nikah/TODO text,
+                   # doors, auto-scratch, auto-scroll + pause on input, countdown, map pin (screenshots in qa/)
 npm run og         # regenerate public/og-image.png (1200×630 link preview), then build again
 npm run record     # record recordings/fayaz-muskan-invite.mp4 (1080×1920, H.264, ≤16 MB for WhatsApp)
 ```
@@ -37,4 +35,4 @@ npm run record     # record recordings/fayaz-muskan-invite.mp4 (1080×1920, H.26
 | Cloudflare Pages | Branch `FayazMD` · root directory `fayazmd` · build `npm run build` · output `dist` |
 | Render (Static Site) | Branch `FayazMD` · root directory `fayazmd` · build `npm install && npm run build` · publish `dist` |
 
-After the first deploy, change `og:image` in `index.html` to the full URL (for example `https://your-site/og-image.png`) so WhatsApp shows the preview image reliably.
+`og:image` and `og:url` in `index.html` use the full `https://mdfayazinvitation.netlify.app/` address so WhatsApp shows the preview image. Change them if the site moves. WhatsApp caches link previews, so an old card can show for a while after a redeploy.

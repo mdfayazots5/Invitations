@@ -3,8 +3,12 @@ import {C} from './invite.config';
 const BRUSH = 26;
 const REVEAL_AT = 0.55;
 
-/** Gold-foil scratch bar over the hidden date. Returns the element to insert. */
-export const createScratch = (): HTMLElement => {
+/**
+ * Gold-foil scratch bar over the hidden date.
+ * `auto()` scratches it by itself (a zig-zag brush, ~1.6 s) unless the guest already started.
+ * `onReveal` fires once when the date is shown, however it was revealed.
+ */
+export const createScratch = (onReveal?: () => void): {el: HTMLElement; auto: () => void} => {
   const el = document.createElement('div');
   el.className = 'scratch';
   el.tabIndex = 0;
@@ -58,6 +62,7 @@ export const createScratch = (): HTMLElement => {
     done = true;
     el.classList.add('done');
     el.setAttribute('aria-label', C.scratchReveal);
+    onReveal?.();
   };
 
   const cleared = () => {
@@ -86,10 +91,8 @@ export const createScratch = (): HTMLElement => {
 
   let last: {x: number; y: number} | null = null;
   let moves = 0;
-  const erase = (e: PointerEvent) => {
-    const r = canvas.getBoundingClientRect();
-    const x = e.clientX - r.left;
-    const y = e.clientY - r.top;
+  let touched = false;
+  const erase = (x: number, y: number) => {
     ctx.globalCompositeOperation = 'destination-out';
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -103,14 +106,19 @@ export const createScratch = (): HTMLElement => {
     if (moves % 8 === 0 && cleared() >= REVEAL_AT) reveal();
   };
 
+  const eraseAt = (e: PointerEvent) => {
+    const r = canvas.getBoundingClientRect();
+    erase(e.clientX - r.left, e.clientY - r.top);
+  };
   canvas.addEventListener('pointerdown', (e) => {
     if (done) return;
+    touched = true;
     canvas.setPointerCapture(e.pointerId);
     last = null;
-    erase(e);
+    eraseAt(e);
   });
   canvas.addEventListener('pointermove', (e) => {
-    if (!done && e.buttons) erase(e);
+    if (!done && e.buttons) eraseAt(e);
   });
   canvas.addEventListener('pointerup', () => {
     last = null;
@@ -123,7 +131,33 @@ export const createScratch = (): HTMLElement => {
     }
   });
 
+  /** Sweep the brush left-right, top to bottom, like a finger rubbing the foil. */
+  const auto = () => {
+    if (done || touched) return;
+    if (!w || !h) {
+      reveal();
+      return;
+    }
+    const ROWS = 5;
+    const DURATION = 1600;
+    const t0 = performance.now();
+    last = null;
+    const step = (now: number) => {
+      if (done || touched) return;
+      const p = Math.min(1, (now - t0) / DURATION);
+      const pos = p * ROWS; // which pass, and how far along it
+      const row = Math.min(ROWS - 1, Math.floor(pos));
+      const f = pos - row;
+      const x = row % 2 ? w - 6 - f * (w - 12) : 6 + f * (w - 12);
+      const y = 8 + ((h - 16) * (row + f)) / ROWS;
+      erase(x, y);
+      if (p < 1) requestAnimationFrame(step);
+      else reveal();
+    };
+    requestAnimationFrame(step);
+  };
+
   // Paint once fonts are ready (the label uses Cinzel) and when the bar is attached.
   requestAnimationFrame(() => document.fonts.ready.then(paint));
-  return el;
+  return {el, auto};
 };

@@ -6,7 +6,7 @@ One repo, one **branch per person**. Each branch holds only that person's folder
 |----------|------------|---------------------------------------------|
 | `main`   | none       | This README only. A clean base for new branches. |
 | `Fayaz`  | `fayaz/`   | Nikah invite: Mohammed Fayaz & Muskan Khanam (family, Remotion video + page) |
-| `FayazMD` | `fayazmd/` | Royal Doors invite for Fayaz's friends & colleagues (Vite website + recorded MP4) |
+| `FayazMD` | `fayazmd/` | Valima-only Royal Doors invite for Fayaz's friends & relatives (Vite website + recorded MP4) |
 | `Muskan` | `muskan/`  | (next)                                      |
 | `Rakesh` | `rakesh/`  | (next)                                      |
 

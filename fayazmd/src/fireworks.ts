@@ -2,7 +2,8 @@ import {glowSprite} from './glow';
 
 type Particle ={x: number; y: number; vx: number; vy: number; life: number; color: string; size: number};
 
-const COLORS = ['#F6E3A6', '#FFFFFF', '#E9D3A1', '#F3E2C0', '#E9CF8A'];
+// No pure white: with additive blending it bloomed into a blob over the title text.
+const COLORS = ['#F6E3A6', '#E9D3A1', '#F3E2C0', '#E9CF8A'];
 
 /** Golden flower-shaped bursts on a canvas over `section`, fired when it is in view. */
 export const startFireworks = (section: HTMLElement, canvas: HTMLCanvasElement) => {
@@ -24,19 +25,32 @@ export const startFireworks = (section: HTMLElement, canvas: HTMLCanvasElement) 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   };
 
+  /** Bottom edge (section coordinates) of the countdown text: title, date line and dials. */
+  const textBottom = () => {
+    const s = section.getBoundingClientRect().top;
+    return Math.max(0, ...Array.from(section.querySelectorAll<HTMLElement>('[data-reveal]')).map((el) => el.getBoundingClientRect().bottom - s));
+  };
+
+  // A burst travels about SPREAD × base px before it fades (speed damped by 0.985 over ~90 frames).
+  const SPREAD = 50;
+
   const burst = () => {
-    // Burst to the sides so the centred title and dials stay readable.
-    const side = Math.random() < 0.5 ? 0.08 : 0.72;
-    const cx = w * (side + Math.random() * 0.2);
-    const cy = h * (0.08 + Math.random() * 0.45);
+    // The text spans the full width on phones, so burst only in the band below the dials:
+    // gravity then pulls the sparks down into the string lights, away from the text.
+    // The canvas mask fades them out before the section's bottom edge.
+    const top = textBottom() + 12;
+    const x = w * (0.08 + Math.random() * 0.84);
+    const y = top + 40 + Math.random() * 30;
+    const radius = Math.min(90, y - top, x, w - x);
+    if (radius < 30 || y > h) return;
+    const base = (radius / SPREAD) * (0.85 + Math.random() * 0.15);
     const petals = 5 + Math.floor(Math.random() * 3);
-    const base = 2.2 + Math.random() * 1.2;
     const color = COLORS[Math.floor(Math.random() * COLORS.length)];
     for (let i = 0; i < 70; i++) {
       const a = (i / 70) * Math.PI * 2;
       // flower shape: speed modulated by |cos(petals·a/2)|
       const sp = base * (0.55 + 0.45 * Math.abs(Math.cos((petals * a) / 2))) * (0.92 + Math.random() * 0.16);
-      parts.push({x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, color: i % 4 ? color : '#FFFFFF', size: 1.2 + Math.random() * 1.3});
+      parts.push({x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, color, size: 1 + Math.random() * 1.1});
     }
   };
 

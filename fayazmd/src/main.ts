@@ -1,4 +1,5 @@
 import './styles.css';
+import {startAutoScroll} from './autoscroll';
 import {startCountdown} from './countdown';
 import {mountDoors} from './doors';
 import {startDust} from './dust';
@@ -7,13 +8,18 @@ import {C, mapEmbedUrl} from './invite.config';
 import {createMusic} from './music';
 import {divider, laceBackground, stringLights} from './ornaments';
 import {startReveal} from './reveal';
-import {startRsvp} from './rsvp';
 import {createScratch} from './scratch';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const R = 'data-reveal';
 const u = C.ui;
+const valima = C.events[0];
+
+/** Hero stagger: last line lands ~0.6 s + 9 × 120 ms + 0.8 s after the doors finish. */
+const AUTO_SCRATCH_DELAY = 2200;
+/** Time to enjoy the revealed date before the page starts to drift. */
+const AUTO_SCROLL_DELAY = 2600;
 
 const heroHtml = () => {
   let h = 0;
@@ -64,67 +70,19 @@ const countdownHtml = () => `<section class="countdown" id="countdown">
   <div style="margin-top:36px">${stringLights()}</div>
 </section>`;
 
-const rsvpHtml = () => `<section id="rsvp">
-  <p class="caps gold" ${R}>${u.rsvpLabel}</p>
-  <p class="script gold-text title-lg" ${R}>${u.rsvpTitle}</p>
-  <p class="italic" ${R}>${esc(u.rsvpIntro.replace('{deadline}', C.rsvpDeadline))}</p>
-  <form class="form" novalidate ${R}>
-    <div class="field">
-      <label class="caps" for="rsvp-name">${u.name}</label>
-      <input class="input" id="rsvp-name" name="name" autocomplete="name" placeholder="${esc(u.namePlaceholder)}" />
-      <span class="err" data-err="name" role="alert"></span>
-    </div>
-    <div class="field">
-      <span class="caps" id="att-label">${u.attendance}</span>
-      <div class="pills" role="group" aria-labelledby="att-label">
-        <button type="button" class="pill" data-attend="yes" aria-pressed="false">${u.joyfully}</button>
-        <button type="button" class="pill" data-attend="no" aria-pressed="false">${u.regrets}</button>
-      </div>
-      <span class="err" data-err="attendance" role="alert"></span>
-    </div>
-    <div class="field">
-      <label class="caps" for="rsvp-guests">${u.guests}</label>
-      <input class="input small" id="rsvp-guests" name="guests" type="number" inputmode="numeric" min="1" max="20" value="1" />
-      <span class="err" data-err="guests" role="alert"></span>
-    </div>
-    <div class="field" data-events-field>
-      <span class="caps" id="ev-label">${u.eventsLabel}</span>
-      <div class="pills" role="group" aria-labelledby="ev-label">
-        ${C.events.map((e) => `<button type="button" class="pill" data-event="${e.key}" data-label="${esc(e.title)}" aria-pressed="true">${esc(e.pill)}</button>`).join('')}
-      </div>
-      <span class="err" data-err="events" role="alert"></span>
-    </div>
-    <button type="submit" class="btn-gold">${u.send}</button>
-  </form>
-  <div class="thanks" hidden>
-    <p class="script gold-text title-lg">${u.thanksTitle}</p>
-    <p class="italic">${u.thanksLine}</p>
-  </div>
-  ${C.contacts
-    .map(
-      (c) => `<div class="contact" ${R}><span class="caps gold">${esc(c.name)}</span><span aria-hidden="true">☎</span>
-        <a href="tel:${c.phone.replace(/[^\d+]/g, '')}">${esc(c.phone)}</a></div>`,
-    )
-    .join('')}
-</section>`;
-
-const venueHtml = () => `<section id="venue">
-  ${stringLights()}
-  <p class="caps gold" ${R} style="margin-top:22px">${u.venueLabel}</p>
+const venueHtml = (e = valima) => `<section id="venue">
+  <p class="caps gold" ${R}>${u.venueLabel}</p>
   <div ${R}>${divider()}</div>
-  ${C.events
-    .map(
-      (e) => `<div class="venue-block" id="venue-${e.key}">
-      <p class="caps" ${R} style="font-size:15px">${esc(e.title.toUpperCase())}</p>
-      <p class="script gold-text venue-name" ${R}>${esc(e.venue)}</p>
-      <p class="italic" ${R}>${esc(e.address)}</p>
-      <p class="muted" ${R} style="font-size:15px">${esc(`${e.day}, ${e.date} · ${e.time} · ${e.note}`)}</p>
-      <iframe class="map" ${R} title="${esc(u.mapTitle.replace('{venue}', e.venue))}" loading="lazy"
-        referrerpolicy="no-referrer-when-downgrade" src="${mapEmbedUrl(e)}"></iframe>
-      <a class="btn-gold" ${R} href="${esc(e.mapPlaceUrl)}" target="_blank" rel="noopener">${u.viewOnMaps}</a>
-    </div>`,
-    )
-    .join('')}
+  <div class="venue-block" id="venue-${e.key}">
+    <p class="caps" ${R} style="font-size:15px">${esc(e.title.toUpperCase())}</p>
+    <p class="script gold-text venue-name" ${R}>${esc(e.venue)}</p>
+    <p class="italic" ${R}>${esc(e.address)}</p>
+    <p class="venue-when" ${R}>${esc(`${e.day}, ${e.date}`)}<br />${esc(`${e.time} · ${e.note}`)}</p>
+    <p class="italic muted" ${R} style="font-size:15px">${esc(e.hijri)}</p>
+    <iframe class="map" ${R} title="${esc(u.mapTitle.replace('{venue}', e.venue))}" loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade" src="${mapEmbedUrl(e)}"></iframe>
+    <a class="btn-gold" ${R} href="${esc(e.mapPlaceUrl)}" target="_blank" rel="noopener">${u.viewOnMaps}</a>
+  </div>
 </section>`;
 
 const footerHtml = () => `<footer>
@@ -140,10 +98,12 @@ const ogCard = () => {
   card.className = 'og-card';
   card.style.backgroundImage = laceBackground();
   card.innerHTML = `<div class="og-inner">
-    <p class="italic muted" style="font-size:24px">${esc(C.bismillahEn)}</p>
+    <p class="italic muted og-bismillah">${esc(C.bismillahEn)}</p>
     ${divider()}
-    <p class="script gold-text og-names">${esc(u.footerNames)}</p>
-    <p class="caps gold" style="font-size:20px;margin-top:8px">${esc(C.heroLabel)} · 14 &amp; 15 DECEMBER 2026</p>
+    <p class="script gold-text og-names">${esc(C.groomShort)}</p>
+    <p class="italic muted og-amp">${u.and}</p>
+    <p class="script gold-text og-names">${esc(C.brideShort)}</p>
+    <p class="caps gold og-when">${esc(C.heroLabel)} · 15 DEC 2026</p>
   </div>`;
   document.body.appendChild(card);
 };
@@ -154,18 +114,30 @@ const boot = () => {
     return;
   }
   const app = document.getElementById('app')!;
-  app.innerHTML = heroHtml() + invitationHtml() + countdownHtml() + rsvpHtml() + venueHtml() + footerHtml();
+  app.innerHTML = heroHtml() + invitationHtml() + countdownHtml() + venueHtml() + footerHtml();
   app.querySelector<HTMLElement>('.hero')!.style.backgroundImage = laceBackground();
+
+  // Once the date is revealed (by the guest or automatically), let the page drift down on its own.
+  let scrolling = false;
+  const beginAutoScroll = () => {
+    // ?noscroll: used by scripts/record.ts, which times its own scrolling to the 40 s music cut.
+    if (scrolling || reducedMotion || new URLSearchParams(location.search).has('noscroll')) return;
+    scrolling = true;
+    window.setTimeout(
+      () => startAutoScroll(['#invitation', '#countdown', '#venue', '.map'].map((s) => app.querySelector<HTMLElement>(s)!)),
+      AUTO_SCROLL_DELAY,
+    );
+  };
+
   // The scratch bar takes the slot's place (and its position in the hero stagger).
   const slot = app.querySelector<HTMLElement>('[data-scratch-slot]')!;
-  const bar = createScratch();
-  bar.setAttribute('data-hero', '');
-  bar.style.setProperty('--h', slot.style.getPropertyValue('--h'));
-  slot.replaceWith(bar);
+  const scratch = createScratch(beginAutoScroll);
+  scratch.el.setAttribute('data-hero', '');
+  scratch.el.style.setProperty('--h', slot.style.getPropertyValue('--h'));
+  slot.replaceWith(scratch.el);
 
   startReveal(app, reducedMotion);
   startCountdown(app.querySelector('#countdown')!);
-  startRsvp(app.querySelector('#rsvp')!);
   if (!reducedMotion) {
     startDust(document.getElementById('dust') as HTMLCanvasElement);
     const cd = app.querySelector<HTMLElement>('#countdown')!;
@@ -174,7 +146,9 @@ const boot = () => {
 
   const music = createMusic();
   window.scrollTo(0, 0);
-  mountDoors(document.getElementById('doors-root')!, () => music.start(), reducedMotion);
+  mountDoors(document.getElementById('doors-root')!, () => music.start(), reducedMotion).then(() =>
+    window.setTimeout(scratch.auto, reducedMotion ? 0 : AUTO_SCRATCH_DELAY),
+  );
 };
 
 boot();

@@ -8,7 +8,8 @@ import {startPreview, stopPreview, URL_BASE} from './serve.ts';
 const OUT = 'recordings/fayaz-muskan-invite.mp4';
 const MUSIC = 'public/music.mp3';
 const RAW_DIR = 'out/raw';
-// A 432×768 CSS viewport at DPR 2.5 = 1080×1920 device pixels: keeps the phone layout at full resolution.
+// A 432×768 CSS viewport keeps the phone layout. Playwright records the video at CSS-pixel size
+// (a larger `size` only pads the frame with grey), so we record 432×768 and ffmpeg scales it to 1080×1920.
 const VIEW = {width: 432, height: 768};
 const MAX_MB = 16;
 
@@ -84,11 +85,6 @@ const tap = async (page: Page, x: number, y: number, travel = 14) => {
   await page.mouse.up();
 };
 
-const center = async (page: Page, selector: string) => {
-  const b = (await (await page.$(selector))!.boundingBox())!;
-  return {x: b.x + b.width / 2, y: b.y + b.height / 2, box: b};
-};
-
 const run = async () => {
   rmSync(RAW_DIR, {recursive: true, force: true});
   mkdirSync(RAW_DIR, {recursive: true});
@@ -103,7 +99,7 @@ const run = async () => {
       deviceScaleFactor: 2.5,
       isMobile: true,
       hasTouch: true,
-      recordVideo: {dir: RAW_DIR, size: {width: 1080, height: 1920}},
+      recordVideo: {dir: RAW_DIR, size: VIEW},
     });
     const t0 = Date.now();
     const page = await context.newPage();
@@ -114,7 +110,7 @@ const run = async () => {
     await page.addInitScript(() => {
       addEventListener('DOMContentLoaded', () => (document.documentElement.style.scrollBehavior = 'auto'));
     });
-    await page.goto(URL_BASE, {waitUntil: 'networkidle'});
+    await page.goto(`${URL_BASE}/?noscroll`, {waitUntil: 'networkidle'});
     await page.evaluate(() => document.fonts.ready);
     await wait(page, 300);
     trimStart = (Date.now() - t0) / 1000; // drop the blank page-load frames
@@ -125,48 +121,23 @@ const run = async () => {
     // 2.5 s: tap the doors, then the opening + walk-through
     await tap(page, VIEW.width / 2, VIEW.height * 0.5, 18);
     await wait(page, 3200);
-    // hero hold
-    await wait(page, 1500);
+    // hero hold while the gold bar scratches itself and the date appears
+    await page.waitForSelector('.scratch.done', {timeout: 8000});
+    await wait(page, 1800);
 
-    // scratch the gold bar: 10 zig-zag strokes
-    const {box} = await center(page, '.scratch canvas');
-    await page.mouse.move(box.x + 6, box.y + 8, {steps: 10});
-    await page.mouse.down();
-    for (let s = 0; s < 10; s++) {
-      const x = s % 2 ? box.x + 8 : box.x + box.width - 8;
-      const y = box.y + 8 + ((box.height - 16) * s) / 9;
-      await page.mouse.move(x, y, {steps: 14});
-    }
-    await page.mouse.up();
-    await page.focus('.scratch');
-    await page.keyboard.press('Enter'); // make sure it is revealed even if the strokes fell short
-    await wait(page, 1000);
-
-    await scrollTo(page, '#invitation', 10);
-    await wait(page, 3000);
-    await scrollTo(page, '#countdown', -10);
+    // slow, reading-pace scrolls (like the page's own auto-scroll, compressed to fit the music)
+    await scrollTo(page, '#invitation', 10, 2200);
+    await wait(page, 2400);
+    await scrollTo(page, '#invitation .quote', -360, 2200);
+    await wait(page, 2400);
+    await scrollTo(page, '#countdown', -10, 2200);
     await wait(page, 4000);
-
-    // Scroll so the whole form (name → send) is on screen, then fill it like a guest would.
-    await scrollTo(page, '#rsvp .form', -150);
-    const name = await center(page, '#rsvp-name');
-    await tap(page, name.x, name.y);
-    await page.keyboard.type('Your Name', {delay: 90});
-    const joy = await center(page, '[data-attend="yes"]');
-    await tap(page, joy.x, joy.y);
-    const guests = await center(page, '#rsvp-guests');
-    await tap(page, guests.x, guests.y);
-    await page.locator('#rsvp-guests').selectText();
-    await page.keyboard.type('2', {delay: 120});
-    await page.locator('#rsvp-guests').blur();
-    await wait(page, 1200);
-
-    await scrollTo(page, '#venue-nikah', -20);
-    await wait(page, 2500);
-    await scrollTo(page, '#venue-valima', -20);
-    await wait(page, 2500);
-    await scrollTo(page, 'bottom');
-    await wait(page, 2000);
+    await scrollTo(page, '#venue', -10, 2200);
+    await wait(page, 2400);
+    await scrollTo(page, '#venue .map', -160, 2000);
+    await wait(page, 3000);
+    await scrollTo(page, 'bottom', 0, 2000);
+    await wait(page, 2400);
 
     const video = page.video()!;
     await context.close();

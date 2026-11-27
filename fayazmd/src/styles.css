@@ -466,6 +466,9 @@ body.entered .hero [data-hero] {
   width: 100%;
   height: 100%;
   pointer-events: none;
+  /* fade sparks out before the section's clipped edges */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 8%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 8%, #000 78%, transparent 100%);
 }
 .title-lg {
   font-size: clamp(38px, 12.5vw, 52px);
@@ -521,78 +524,7 @@ body.entered .hero [data-hero] {
   margin-top: 8px;
 }
 
-/* ───────── E: rsvp ───────── */
-.form {
-  text-align: left;
-  margin-top: 26px;
-}
-.field {
-  margin-bottom: 20px;
-}
-.field > .caps {
-  display: block;
-  font-size: 11px;
-  color: var(--gold);
-  margin-bottom: 8px;
-}
-.input {
-  width: 100%;
-  height: 48px;
-  padding: 0 14px;
-  border-radius: 8px;
-  border: 1px solid var(--gold-30);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--ivory);
-  font-family: var(--serif);
-  font-size: 18px;
-}
-.input::placeholder {
-  color: rgba(185, 174, 156, 0.7);
-  font-style: italic;
-}
-.input:focus {
-  outline: none;
-  border-color: var(--gold);
-}
-.input.small {
-  width: 110px;
-}
-.pills {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.pill {
-  flex: 1;
-  min-width: 120px;
-  height: 46px;
-  border-radius: 999px;
-  border: 1px solid var(--gold);
-  background: transparent;
-  font-family: var(--caps);
-  font-size: 12px;
-  letter-spacing: 0.18em;
-  cursor: pointer;
-  transition:
-    background 0.25s,
-    color 0.25s;
-}
-.pill[aria-pressed='true'] {
-  background: var(--gold-grad);
-  color: #1a140a;
-  border-color: transparent;
-}
-.err {
-  display: block;
-  color: var(--err);
-  font-size: 15px;
-  font-style: italic;
-  min-height: 0;
-  margin-top: 6px;
-}
-.err:empty {
-  display: none;
-}
+/* ───────── gold button ───────── */
 .btn-gold {
   position: relative;
   overflow: hidden;
@@ -629,32 +561,19 @@ body.entered .hero [data-hero] {
     left: 130%;
   }
 }
-.btn-gold:focus-visible,
-.pill:focus-visible {
+.btn-gold:focus-visible {
   outline: 2px solid var(--ivory);
   outline-offset: 3px;
 }
-.thanks {
-  padding: 30px 0 10px;
-}
-.contact {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 28px;
-  padding: 12px 22px;
-  border: 1px solid var(--gold);
-  border-radius: 10px;
-}
-.contact a {
-  color: var(--ivory);
-  text-decoration: none;
-  font-size: 18px;
-}
 
-/* ───────── F: venue ───────── */
-.venue-block + .venue-block {
-  margin-top: 54px;
+/* ───────── E: venue ───────── */
+.venue-when {
+  font-family: var(--caps);
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  line-height: 1.7;
+  color: var(--gold);
+  margin-top: 10px;
 }
 .venue-name {
   font-size: clamp(30px, 9.4vw, 46px);
@@ -669,7 +588,7 @@ body.entered .hero [data-hero] {
   filter: grayscale(0.25) contrast(0.95);
 }
 
-/* ───────── G: footer ───────── */
+/* ───────── F: footer ───────── */
 footer {
   position: relative;
   padding: 30px 24px 100px;
@@ -742,20 +661,36 @@ body.og {
   justify-content: center;
   background-size: 96px 96px;
 }
+/* WhatsApp shows a centred square crop of the 1200×630 image: keep everything inside ~560 px wide. */
 .og-inner {
-  width: 1040px;
-  height: 470px;
+  width: 540px;
+  height: 590px;
   background: var(--black);
-  border-radius: 999px / 160px;
+  border-radius: 50% 50% 50% 50% / 190px 190px 90px 90px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding-top: 40px;
   box-shadow: 0 0 0 1px rgba(201, 162, 74, 0.5);
 }
+.og-bismillah {
+  font-size: 17px;
+  max-width: 340px;
+  line-height: 1.4;
+}
 .og-names {
-  font-size: 130px;
-  line-height: 1.2;
+  font-size: 104px;
+  line-height: 1.05;
+}
+.og-amp {
+  font-size: 34px;
+  line-height: 1;
+}
+.og-when {
+  font-size: 20px;
+  letter-spacing: 0.24em;
+  margin-top: 18px;
 }
 
 /* ───────── reduced motion ───────── */
@@ -781,8 +716,4 @@ body.og {
 .countdown > :not(.fireworks) {
   position: relative;
   z-index: 1;
-}
-.contact {
-  flex-wrap: wrap;
-  justify-content: center;
 }

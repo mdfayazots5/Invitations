@@ -1,6 +1,6 @@
 // QA: npm run build && npx tsx scripts/check.ts
 // Checks 360/390/430/768 widths for overflow, names on one line, console errors,
-// and exercises doors → scratch → countdown → RSVP → maps. Screenshots go to qa/.
+// and exercises doors → auto-scratch → auto-scroll → countdown → map. Screenshots go to qa/.
 import {mkdirSync} from 'node:fs';
 import {chromium, type Page} from 'playwright';
 import {C, mapEmbedUrl} from '../src/invite.config.ts';
@@ -46,23 +46,31 @@ const run = async () => {
       check(`${width}: doors open and unlock scroll`, doorsGone && unlocked);
       await page.screenshot({path: `qa/${width}-1-hero.png`});
 
-      // B: scratch
-      const bar = (await page.$('.scratch canvas'))!;
-      const box = (await bar.boundingBox())!;
-      await page.mouse.move(box.x + 4, box.y + 6);
-      await page.mouse.down();
-      for (let s = 0; s < 10; s++) {
-        const x = s % 2 ? box.x + 6 : box.x + box.width - 6;
-        const y = box.y + 6 + ((box.height - 12) * s) / 9;
-        await page.mouse.move(x, y, {steps: 12});
-      }
-      await page.mouse.up();
-      await page.waitForTimeout(700);
-      check(`${width}: scratch reveals the date`, await page.$eval('.scratch', (el) => el.classList.contains('done')));
+      // B: scratch reveals itself, with no input from the guest
+      await page.waitForTimeout(4500);
+      check(`${width}: scratch auto-reveals the date`, await page.$eval('.scratch', (el) => el.classList.contains('done')));
       await page.screenshot({path: `qa/${width}-2-scratched.png`});
+
+      // C: the page then drifts down on its own, and stops when the guest touches it
+      if (width === 360) {
+        await page.waitForTimeout(6000);
+        const y1 = await page.evaluate(() => window.scrollY);
+        check('auto-scroll moves the page', y1 > 40, `scrollY ${y1}`);
+        await page.mouse.wheel(0, 1);
+        await page.waitForTimeout(300);
+        const y2 = await page.evaluate(() => window.scrollY);
+        await page.waitForTimeout(2000);
+        const y3 = await page.evaluate(() => window.scrollY);
+        check('auto-scroll pauses on input', Math.abs(y3 - y2) <= 2, `${y2} → ${y3}`);
+      } else {
+        await page.mouse.wheel(0, 1); // pause auto-scroll so the layout pass below drives the page
+      }
 
       // layout: no horizontal scroll, script names on one line and inside the viewport
       await scrollThrough(page);
+      const text = await page.evaluate(() => document.body.innerText);
+      const banned = ['Nikah', 'NIKAH', 'Ruby', 'TODO', 'RSVP'].filter((w) => text.includes(w));
+      check(`${width}: Valima only (no Nikah / TODO text)`, banned.length === 0, banned.join(', '));
       const layout = await page.evaluate(() => {
         const overflowX = document.documentElement.scrollWidth - window.innerWidth;
         const bad: string[] = [];
@@ -88,28 +96,7 @@ const run = async () => {
         check('countdown days', Math.abs(days - expected) <= 1, `shows ${days}, expected ${expected}`);
         check('countdown next-event line', (await page.textContent('[data-next]'))!.includes(next.date));
 
-        // E: RSVP validation + WhatsApp URL
-        await page.evaluate(() => {
-          (window as unknown as {__wa: string[]}).__wa = [];
-          window.open = ((url: string) => {
-            (window as unknown as {__wa: string[]}).__wa.push(url);
-            return null;
-          }) as typeof window.open;
-        });
-        await page.click('#rsvp .btn-gold');
-        const errs = await page.$$eval('#rsvp .err', (els) => els.filter((e) => e.textContent).length);
-        check('RSVP shows errors when empty', errs >= 2, `${errs} errors`);
-        await page.fill('#rsvp-name', 'Test Guest');
-        await page.click('[data-attend="yes"]');
-        await page.fill('#rsvp-guests', '2');
-        await page.click('#rsvp .btn-gold');
-        const wa = await page.evaluate(() => (window as unknown as {__wa: string[]}).__wa[0] ?? '');
-        const text = decodeURIComponent(wa.split('text=')[1] ?? '');
-        check('RSVP builds wa.me message', wa.startsWith('https://wa.me/') && text.includes('Test Guest') && text.includes('Guests: 2') && text.includes('Nikah, Valima'), text.replace(/\n/g, ' | '));
-        check('RSVP thank-you state', await page.isVisible('#rsvp .thanks'));
-        await page.screenshot({path: `qa/${width}-4-rsvp-thanks.png`, fullPage: false});
-
-        // F: maps
+        // E: map
         const frames = await page.$$eval('iframe.map', (els) => els.map((e) => e.getAttribute('src')));
         const links = await page.$$eval('#venue a.btn-gold', (els) => els.map((e) => e.getAttribute('href')));
         check('map embeds use exact pins', frames.join() === C.events.map(mapEmbedUrl).join(), frames.join(' , '));
