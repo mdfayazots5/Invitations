@@ -118,42 +118,43 @@ export const curtainValance = () => {
   </svg>`;
 };
 
-/** A row of red roses for the foot of the curtain. viewBox 400×90. */
+/** A thin row of layered roses and leaves for the foot of the curtain. viewBox 400×60. */
 export const roseBed = (seed = 3) => {
-  const r = rng(seed);
   let s = '';
-  for (let row = 0; row < 3; row++) {
-    for (let i = 0; i < 12; i++) {
-      const k = 30 + r() * 16 + row * 6;
-      const x = i * 36 - 14 + r() * 14 + (row % 2) * 16;
-      const y = 26 + row * 22 + r() * 8;
-      s += `<use href="#${r() < 0.7 ? 'rose-red' : 'rose-wine'}" x="${x}" y="${y - k / 2}" width="${k}" height="${k}"/>`;
-    }
-  }
-  return `<svg class="rose-bed" viewBox="0 0 400 100" preserveAspectRatio="xMidYMax slice" aria-hidden="true">${s}</svg>`;
+  for (let i = 0; i < 15; i++) s += roseCluster(i * 28 + 2, 42 + (i % 2) * 6, 34 + (i % 3) * 6, seed * 31 + i, ['rose-red', 'rose-wine', 'rose-red']);
+  return `<svg class="rose-bed" viewBox="0 0 400 64" preserveAspectRatio="xMidYMax slice" aria-hidden="true">${s}</svg>`;
 };
 
-/** Gold filigree crest with two script letters (the curtain's centrepiece). viewBox 240×240. */
+/** Ornate gold crest with two script letters on a glowing gold centre (the curtain's centrepiece). viewBox 240×240. */
 export const crest = (a: string, b: string) => {
   const curl = (sx: number) => `<g transform="translate(120 120) scale(${sx} 1)">
     <path d="M58,-6 C78,-26 102,-18 100,2 C98,16 82,18 78,6 C76,-2 86,-6 88,0" />
     <path d="M58,8 C82,22 100,40 88,60 C80,72 64,64 70,54 C74,48 80,52 78,56" />
     <path d="M52,-28 C62,-52 86,-56 92,-40 C96,-30 86,-24 82,-32" />
-    <path d="M40,48 C46,70 30,90 12,86" />
-    <path d="M44,-46 C40,-70 22,-84 6,-80" />
-    <circle cx="100" cy="2" r="2.4" fill="url(#g-gold)"/><circle cx="92" cy="-40" r="2" fill="url(#g-gold)"/>
-    <path d="M70,24 q10,-2 14,8 q-10,2 -14,-8z" fill="url(#g-gold)"/>
-    <path d="M66,-22 q10,0 13,-10 q-10,0 -13,10z" fill="url(#g-gold)"/>
+    <path d="M40,48 C46,70 30,90 12,86" /><path d="M44,-46 C40,-70 22,-84 6,-80" />
+    <path d="M62,-2 C86,-4 104,-20 112,-36 M66,14 C92,18 108,30 114,48" stroke-width="1.2"/>
+    <path d="M30,62 C38,82 56,94 72,90 C80,88 80,78 72,78 M28,-64 C36,-84 54,-96 70,-92 C78,-90 78,-80 70,-80" stroke-width="1.6"/>
+    <circle cx="100" cy="2" r="3" fill="url(#g-gold)"/><circle cx="92" cy="-40" r="2.4" fill="url(#g-gold)"/>
+    <circle cx="112" cy="-36" r="2" fill="url(#g-gold)"/><circle cx="114" cy="48" r="2" fill="url(#g-gold)"/>
+    <path d="M70,24 q12,-3 17,9 q-12,3 -17,-9z M66,-22 q12,0 16,-12 q-12,0 -16,12z M18,80 q4,12 -6,18 q-4,-12 6,-18z M14,-78 q6,-10 -4,-18 q-6,10 4,18z" fill="url(#g-gold)"/>
   </g>`;
+  const beads = Array.from({length: 28}, (_, i) => {
+    const t = (i / 28) * Math.PI * 2;
+    return `<circle cx="${(120 + Math.cos(t) * 60).toFixed(1)}" cy="${(120 + Math.sin(t) * 60).toFixed(1)}" r="1.8" fill="url(#g-gold)"/>`;
+  }).join('');
   return `<svg class="crest" viewBox="0 0 240 240" aria-hidden="true">
-    <circle cx="120" cy="120" r="110" fill="url(#g-glow)" opacity=".85"/>
-    <g fill="none" stroke="url(#g-gold)" stroke-width="2.2" stroke-linecap="round">${curl(1)}${curl(-1)}
-      <circle cx="120" cy="120" r="54"/><circle cx="120" cy="120" r="48" stroke-width="1" stroke-dasharray="2 3"/>
-      <path d="M120,58 l6,-12 l-6,-10 l-6,10z M120,182 l6,12 l-6,10 l-6,-10z" fill="url(#g-gold)"/>
+    <defs><radialGradient id="g-crest-core" cx=".5" cy=".45" r=".6"><stop offset="0" stop-color="#ffe7a6"/><stop offset=".45" stop-color="#ffb43a"/><stop offset="1" stop-color="#b8560c"/></radialGradient></defs>
+    <circle cx="120" cy="120" r="118" fill="url(#g-glow)"/>
+    <g fill="none" stroke="url(#g-gold)" stroke-width="3" stroke-linecap="round">${curl(1)}${curl(-1)}
+      <circle cx="120" cy="120" r="56" stroke-width="3.4"/><circle cx="120" cy="120" r="65" stroke-width="1.4"/>
+      <path d="M120,54 l8,-12 l-8,-14 l-8,14z M120,186 l8,12 l-8,14 l-8,-14z" fill="url(#g-gold)"/>
+      <path d="M96,40 q24,-24 48,0" stroke-width="2"/>
     </g>
-    <circle cx="120" cy="120" r="46" fill="#7a0a1c" fill-opacity=".55"/>
-    <text x="104" y="128" text-anchor="middle" class="crest-l">${a}</text>
-    <text x="120" y="132" text-anchor="middle" class="crest-amp">&amp;</text>
+    ${beads}
+    <circle cx="120" cy="120" r="53" fill="url(#g-crest-core)"/>
+    <circle cx="120" cy="120" r="47" fill="none" stroke="#fff1c4" stroke-opacity=".6" stroke-dasharray="2 3"/>
+    <text x="103" y="128" text-anchor="middle" class="crest-l">${a}</text>
+    <text x="120" y="131" text-anchor="middle" class="crest-amp">&amp;</text>
     <text x="138" y="146" text-anchor="middle" class="crest-l">${b}</text>
   </svg>`;
 };
@@ -175,8 +176,8 @@ export const palaceHall = () => {
   for (let i = 0; i < 11; i++) {
     const h = 14 + i * 3.2;
     const half = 70 + i * 17;
-    stairs += `<path d="M${200 - half},${y} H${200 + half} L${200 + half + 8},${y + h} H${200 - half - 8}Z" fill="${i % 2 ? '#f6d8c6' : '#fbe6d8'}"/>
-      <path d="M${200 - half},${y} H${200 + half}" stroke="#fff8ef" stroke-width="1.4"/>
+    stairs += `<path d="M${200 - half},${y} H${200 + half} L${200 + half + 8},${y + h} H${200 - half - 8}Z" fill="${i % 2 ? '#efbf98' : '#f6d2ae'}"/>
+      <path d="M${200 - half},${y} H${200 + half}" stroke="#ffe9c4" stroke-width="1.4"/>
       <path d="M${200 - half - 8},${y + h} H${200 + half + 8}" stroke="#d9a58c" stroke-opacity=".6" stroke-width="1"/>`;
     y += h;
   }
@@ -200,6 +201,19 @@ export const palaceHall = () => {
       candles += `<rect x="${x - 2}" y="${yy - 12}" width="4" height="12" fill="#fff4e0"/><use href="#glow" x="${x - 9}" y="${yy - 24}" width="18" height="18"/>`;
     }
   }
+  // candle lights in tiers along the walls, and soft warm bokeh
+  let flames = '';
+  for (const yy of [300, 380, 460, 530]) {
+    for (let i = 0; i < 9; i++) {
+      const x = i < 4 ? 8 + i * 18 : 392 - (i - 4) * 18;
+      if (i === 8) continue;
+      flames += `<rect x="${x - 1.5}" y="${yy}" width="3" height="9" fill="#fff1d6"/><use href="#glow" x="${x - 8}" y="${yy - 14}" width="16" height="16"/>`;
+    }
+  }
+  for (let i = 0; i < 26; i++) {
+    const k = 8 + r() * 22;
+    flames += `<circle cx="${(r() * 400).toFixed(1)}" cy="${(120 + r() * 460).toFixed(1)}" r="${k.toFixed(1)}" fill="#ffd27a" fill-opacity="${(0.06 + r() * 0.12).toFixed(2)}"/>`;
+  }
   // twinkles in the air
   let dots = '';
   for (let i = 0; i < 70; i++) {
@@ -214,9 +228,9 @@ export const palaceHall = () => {
     <path d="M${x - 6},262 V578 M${x + 6},262 V578" stroke="#b27530" stroke-opacity=".35"/>`;
   return `<svg class="palace" viewBox="0 0 400 860" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <defs>
-      <linearGradient id="g-hall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a1d0c"/><stop offset=".2" stop-color="#b5641f"/><stop offset=".45" stop-color="#eaa649"/><stop offset=".7" stop-color="#f5cf93"/><stop offset="1" stop-color="#f2c9a6"/></linearGradient>
-      <radialGradient id="g-arch-in" cx=".5" cy=".55" r=".7"><stop offset="0" stop-color="#fff7e2"/><stop offset=".5" stop-color="#ffd690"/><stop offset="1" stop-color="#e59a3c"/></radialGradient>
-      <radialGradient id="g-hall-glow" cx=".5" cy=".42" r=".55"><stop offset="0" stop-color="#fff5dc" stop-opacity=".95"/><stop offset="1" stop-color="#ffcf7a" stop-opacity="0"/></radialGradient>
+      <linearGradient id="g-hall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2e0a04"/><stop offset=".16" stop-color="#7a2e0c"/><stop offset=".4" stop-color="#d07a26"/><stop offset=".66" stop-color="#eea552"/><stop offset="1" stop-color="#e8a06a"/></linearGradient>
+      <radialGradient id="g-arch-in" cx=".5" cy=".55" r=".7"><stop offset="0" stop-color="#ffefc4"/><stop offset=".45" stop-color="#f9bd5e"/><stop offset="1" stop-color="#cf7424"/></radialGradient>
+      <radialGradient id="g-hall-glow" cx=".5" cy=".42" r=".55"><stop offset="0" stop-color="#fff0c8" stop-opacity=".7"/><stop offset="1" stop-color="#ffb84a" stop-opacity="0"/></radialGradient>
       <linearGradient id="g-drape" x1="0" x2="1"><stop offset="0" stop-color="#3b030b"/><stop offset=".5" stop-color="#9c1027"/><stop offset="1" stop-color="#4a0510"/></linearGradient>
     </defs>
     <rect width="400" height="860" fill="url(#g-hall)"/>
@@ -228,11 +242,11 @@ export const palaceHall = () => {
     ${sideArch(40)}${sideArch(360)}
     <path d="${mughalArch(200, 210, 150, 330, 600)}" fill="url(#g-arch-in)" stroke="url(#g-gold)" stroke-width="6"/>
     <path d="${mughalArch(200, 186, 172, 336, 600)}" fill="none" stroke="#fff3d6" stroke-width="1.6" stroke-dasharray="3 4"/>
-    <path d="${mughalArch(200, 150, 214, 350, 600)}" fill="#fff1d2" fill-opacity=".55" stroke="#e2a95a" stroke-width="2"/>
-    <path d="${mughalArch(200, 110, 262, 370, 600)}" fill="#fffaf0" fill-opacity=".6" stroke="#e8b46a" stroke-width="1.5"/>
+    <path d="${mughalArch(200, 150, 214, 350, 600)}" fill="#ffe2a0" fill-opacity=".45" stroke="#e2a95a" stroke-width="2"/>
+    <path d="${mughalArch(200, 110, 262, 370, 600)}" fill="#fff2cf" fill-opacity=".5" stroke="#e8b46a" stroke-width="1.5"/>
     <ellipse cx="200" cy="400" rx="230" ry="260" fill="url(#g-hall-glow)"/>
-    ${pillar(84)}${pillar(316)}
-    <rect x="0" y="590" width="400" height="270" fill="#f3d3bd"/>
+    ${pillar(84)}${pillar(316)}${flames}
+    <rect x="0" y="590" width="400" height="270" fill="#e9b088"/>
     ${stairs}${candles}${roses}
     <!-- chandeliers -->
     <use href="#chandelier" x="125" y="40" width="150" height="140"/>
@@ -284,40 +298,67 @@ export const archCap = () => {
     }
     return `${d} L${rgt},190`;
   };
-  return `<svg class="arch-cap" viewBox="0 0 300 190" preserveAspectRatio="none" aria-hidden="true">
-    <defs><radialGradient id="g-parch" cx=".5" cy="1" r="1"><stop offset="0" stop-color="#fbe4b4"/><stop offset=".7" stop-color="#f4cd85"/><stop offset="1" stop-color="#e7ac5a"/></radialGradient></defs>
+  // roses climbing the outer edge of the arch (left side, mirrored on the right)
+  let climb = '';
+  const K = 0.62;
+  for (let i = 0; i < 9; i++) {
+    const t = i / 11;
+    const x = 150 * (1 - Math.cos((t * Math.PI) / 2));
+    const yy = SPRING - (SPRING - 4) * (Math.sin((t * Math.PI * K) / 2) / Math.sin((Math.PI * K) / 2));
+    const size = 30 - i * 1.8;
+    climb += roseCluster(x + 2, yy + 4, size, 300 + i) + roseCluster(300 - x - 2, yy + 4, size, 400 + i);
+  }
+  climb += roseCluster(4, 160, 32, 501) + roseCluster(296, 160, 32, 502) + roseCluster(4, 186, 30, 503) + roseCluster(296, 186, 30, 504);
+  return `<svg class="arch-cap" viewBox="0 0 300 190" aria-hidden="true" overflow="visible">
+    <defs><radialGradient id="g-parch" cx=".5" cy=".9" r=".85"><stop offset="0" stop-color="#fff4d2"/><stop offset=".45" stop-color="#fbd68c"/><stop offset=".8" stop-color="#f0a948"/><stop offset="1" stop-color="#d9812c"/></radialGradient></defs>
     <path d="${cusps(-7, 4, 0)} V190Z" fill="url(#g-gold)"/>
+    <path d="${cusps(-6, 8, 4)}" fill="none" stroke="#7a4a12" stroke-width="3" stroke-dasharray="1.2 3"/>
     <path d="${cusps(-6, 12, 8)} V190Z" fill="url(#g-parch)"/>
-    <path d="${cusps(-6, 12, 8)}" fill="none" stroke="#a46f2a" stroke-width="1.2"/>
+    <path d="${cusps(-6, 12, 8)}" fill="none" stroke="#a46f2a" stroke-width="1.4"/>
     <path d="${cusps(-5, 20, 15)}" fill="none" stroke="#b98336" stroke-width="1" stroke-dasharray="1.5 3"/>
+    <path d="${cusps(-4, 30, 24)}" fill="none" stroke="#c98d3e" stroke-opacity=".55" stroke-width=".8"/>
     <path d="M150,-14 l5,8 l-5,10 l-5,-10z" fill="url(#g-gold)"/>
-    <use href="#chandelier" x="118" y="38" width="64" height="62"/>
+    <use href="#chandelier" x="112" y="34" width="76" height="72"/>
+    ${climb}
   </svg>`;
 };
 
-/** Repeating column of roses + leaves for the walls beside the arch (CSS background tile, 80×150). */
+/** A hanging Moroccan lantern with a warm glow. viewBox 60×120. */
+export const lantern = () => `<svg class="lantern" viewBox="0 0 60 120" aria-hidden="true" overflow="visible">
+  <circle cx="30" cy="74" r="40" fill="url(#g-glow)" opacity=".8"/>
+  <path d="M30,0 V20" stroke="url(#g-gold)" stroke-width="1.5"/>
+  <path d="M22,20 h16 l-3,8 h-10z" fill="url(#g-gold)"/>
+  <path d="M25,28 C8,44 8,92 20,106 H40 C52,92 52,44 35,28Z" fill="#ffcf6e" fill-opacity=".55" stroke="url(#g-gold)" stroke-width="2"/>
+  <path d="M30,30 V104 M20,40 C14,60 14,84 22,104 M40,40 C46,60 46,84 38,104" stroke="#a46f2a" stroke-width="1.2" fill="none"/>
+  <ellipse cx="30" cy="70" rx="7" ry="11" fill="#fff6d8"/>
+  <path d="M18,106 h24 l-4,8 h-16z" fill="url(#g-gold)"/><circle cx="30" cy="118" r="2.5" fill="url(#g-gold)"/>
+</svg>`;
+
+/** Repeating column of roses + leaves (CSS background tile, 80×150). Red, wine and blush only. */
 export const roseWall = (seed: number) => {
   const r = rng(seed);
-  const rose = (x: number, y: number, k: number, c0: string, c1: string, c2: string) => `<g transform="translate(${x} ${y}) scale(${k})">
-    <circle r="17" fill="${c1}"/><circle r="11" fill="${c0}" fill-opacity=".55"/>
-    <path d="M0,0 m-2.5,0 a2.5,2.5 0 1,1 5,0 a5,5 0 1,1 -10,0 a7.5,7.5 0 1,1 15,0 a10,10 0 1,1 -20,1" fill="none" stroke="${c2}" stroke-opacity=".7" stroke-width="1.6"/>
-    <path d="M-14,-4 C-11,-14 2,-18 10,-12" fill="none" stroke="${c0}" stroke-opacity=".7" stroke-width="1.4"/></g>`;
+  const rose = (x: number, y: number, k: number, c0: string, c1: string, c2: string) => {
+    const petals = Array.from({length: 6}, (_, i) =>
+      `<ellipse cx="0" cy="-9" rx="9.5" ry="9" transform="rotate(${i * 60 + 15})" fill="${c1}" stroke="${c2}" stroke-opacity=".5" stroke-width=".8"/>`).join('');
+    return `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${k.toFixed(2)})">${petals}
+      <circle r="12.5" fill="${c0}" stroke="${c2}" stroke-opacity=".4"/>
+      <path d="M0,0 m-2,0 a2,2 0 1,1 4,0 a4,4 0 1,1 -8,0 a6,6 0 1,1 12,0 a8,8 0 1,1 -16,1" fill="none" stroke="${c2}" stroke-opacity=".65" stroke-width="1.3"/></g>`;
+  };
   const leaf = (x: number, y: number, a: number) =>
-    `<path transform="translate(${x} ${y}) rotate(${a})" d="M0,0 C6,-8 18,-9 26,0 C18,9 6,8 0,0Z" fill="#2c4a1c"/>`;
-  const reds = [
-    ['#f0465c', '#a3122a', '#3d030c'],
-    ['#ffd6da', '#e597a2', '#8a3c4a'],
-    ['#ffb067', '#e07a2a', '#6b2c08'],
-    ['#c2324a', '#6e0a1f', '#22020a'],
+    `<path transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${a.toFixed(0)})" d="M0,0 C6,-8 18,-9 26,0 C18,9 6,8 0,0Z" fill="${r() < 0.5 ? '#2c4a1c' : '#3d5e26'}"/>`;
+  const cols = [
+    ['#d8293f', '#a3122a', '#3d030c'],
+    ['#f6c6cc', '#e597a2', '#8a3c4a'],
+    ['#a51a33', '#6e0a1f', '#22020a'],
+    ['#d8293f', '#b3132c', '#4f0612'],
   ];
   let s = '';
-  for (let i = 0; i < 10; i++) s += leaf(r() * 80, r() * 150, r() * 360);
-  for (let i = 0; i < 7; i++) {
-    const c = reds[Math.floor(r() * reds.length)];
-    s += rose(8 + r() * 64, 8 + (i * 150) / 7 + r() * 10, 0.55 + r() * 0.45, c[0], c[1], c[2]);
+  for (let i = 0; i < 14; i++) s += leaf(r() * 80, r() * 150, r() * 360);
+  for (let i = 0; i < 8; i++) {
+    const c = cols[Math.floor(r() * cols.length)];
+    s += rose(6 + r() * 68, (i * 150) / 8 + r() * 12, 0.5 + r() * 0.4, c[0], c[1], c[2]);
   }
-  // little glowing fairy lights in the flowers
-  for (let i = 0; i < 4; i++) s += `<circle cx="${r() * 80}" cy="${r() * 150}" r="1.6" fill="#fff1c2"/>`;
+  for (let i = 0; i < 5; i++) s += `<circle cx="${(r() * 80).toFixed(1)}" cy="${(r() * 150).toFixed(1)}" r="1.4" fill="#fff1c2"/>`;
   return svgUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="80" height="150" viewBox="0 0 80 150">${s}</svg>`);
 };
 

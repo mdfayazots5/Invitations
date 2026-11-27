@@ -12,6 +12,7 @@ export const mountCurtain = (root: HTMLElement, onOpen: () => void, reducedMotio
     const [a, b] = C.monogram;
     root.innerHTML = `<div class="curtain" role="button" tabindex="0" aria-label="${C.ui.doorsLabel}">
       <div class="drape drape-l"></div><div class="drape drape-r"></div>
+      <div class="spot" aria-hidden="true"></div>
       <div class="beams" aria-hidden="true"><i></i><i></i><i></i></div>
       ${curtainValance()}
       ${roseBed()}
@@ -37,13 +38,16 @@ export const mountCurtain = (root: HTMLElement, onOpen: () => void, reducedMotio
         finish();
         return;
       }
-      // 0 → split line grows (0.5 s) → curtain sweeps aside + flash (1.4 s) → hall zooms in under the flash
+      // As in the video: the curtain stays put. 0 s a gold line appears down the middle and the crest fades;
+      // 0.6 s it widens into an amber beam; 1.7 s a full-screen flash, cream then deep amber, for ~2.5 s;
+      // the hall starts its zoom under the flash and shows as the flash fades.
       el.classList.add('opening');
+      window.setTimeout(() => el.classList.add('beam'), 600);
       window.setTimeout(() => {
         el.classList.add('open');
-        window.setTimeout(() => document.body.classList.add('entered'), 700);
-        window.setTimeout(finish, 2300);
-      }, 550);
+        window.setTimeout(() => document.body.classList.add('entered'), 1900);
+        window.setTimeout(finish, 3300);
+      }, 1700);
     };
     el.addEventListener('click', open);
     el.addEventListener('keydown', (e) => {

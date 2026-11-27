@@ -142,18 +142,18 @@ input {
   bottom: 0;
   width: 50.5%;
   background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 22%, rgba(0, 0, 0, 0) 70%, rgba(0, 0, 0, 0.6) 100%),
+    radial-gradient(ellipse 120% 70% at 50% 45%, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.55) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 22%, rgba(0, 0, 0, 0) 70%, rgba(0, 0, 0, 0.65) 100%),
     repeating-linear-gradient(
       90deg,
-      #3d040c 0px,
-      #7c0a1d 9px,
-      #b8152f 17px,
-      #d9233f 20px,
-      #a3122a 26px,
-      #63061a 36px,
-      #3d040c 44px
+      #22020a 0px,
+      #5a0614 8px,
+      #9c0f26 15px,
+      #c71d36 18px,
+      #8a0c22 24px,
+      #44040f 34px,
+      #22020a 40px
     );
-  transition: transform 1.5s var(--ease);
 }
 .drape-l {
   left: 0;
@@ -162,6 +162,15 @@ input {
 .drape-r {
   right: 0;
   transform-origin: 100% 0;
+}
+.spot {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(ellipse 38% 26% at 50% 46%, rgba(255, 170, 50, 0.85), rgba(255, 120, 20, 0) 70%),
+    linear-gradient(90deg, rgba(255, 140, 30, 0) 22%, rgba(255, 140, 30, 0.42) 40%, rgba(255, 170, 60, 0.55) 50%, rgba(255, 140, 30, 0.42) 60%, rgba(255, 140, 30, 0) 78%);
 }
 .beams {
   position: absolute;
@@ -212,8 +221,8 @@ input {
   left: 0;
   bottom: 0;
   width: 100%;
-  height: 15vh;
-  transition: transform 1.3s var(--ease), opacity 1s;
+  height: 10vh;
+  min-height: 60px;
 }
 .curtain-centre {
   position: absolute;
@@ -233,13 +242,13 @@ input {
 .crest-l {
   font-family: var(--script);
   font-size: 54px;
-  fill: #ffe3a0;
+  fill: #6b1a06;
 }
 .crest-amp {
   font-family: var(--serif);
   font-style: italic;
   font-size: 18px;
-  fill: #ffe3a0;
+  fill: #6b1a06;
 }
 @keyframes breathe {
   50% {
@@ -264,19 +273,22 @@ input {
   bottom: 0;
   width: 4px;
   margin-left: -2px;
-  background: linear-gradient(180deg, #fff3c4, #ffb02e 50%, #fff3c4);
+  background: linear-gradient(180deg, #ffd27a, #ff9a1e 50%, #ffd27a);
   box-shadow:
-    0 0 18px 6px rgba(255, 176, 46, 0.85),
-    0 0 60px 20px rgba(255, 140, 30, 0.5);
+    0 0 18px 6px rgba(255, 160, 40, 0.8),
+    0 0 60px 20px rgba(255, 130, 20, 0.45);
   transform: scaleY(0);
-  transition: transform 0.5s var(--ease), width 1.2s var(--ease), margin 1.2s var(--ease), opacity 1s;
+  transition:
+    transform 0.5s var(--ease),
+    width 0.7s var(--ease),
+    margin 0.7s var(--ease);
 }
 .flash {
   position: absolute;
   inset: 0;
   opacity: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse at 50% 50%, #fffaf0 0%, #ffe1a8 40%, #f2a33c 100%);
+  background: #fff3dc;
 }
 .curtain.opening .split {
   transform: scaleY(1);
@@ -285,40 +297,45 @@ input {
   opacity: 0;
   transform: translate(-50%, -54%) scale(0.9);
 }
-.curtain.open .drape-l {
-  transform: translateX(-102%) scaleX(0.6);
-}
-.curtain.open .drape-r {
-  transform: translateX(102%) scaleX(0.6);
-}
-.curtain.open .valance {
-  transform: translateY(-105%);
-}
-.curtain.open .rose-bed {
-  transform: translateY(60%);
-  opacity: 0;
-}
-.curtain.open .split {
-  width: 120vw;
-  margin-left: -60vw;
-  opacity: 0;
+.curtain.beam .split {
+  width: 16vw;
+  margin-left: -8vw;
 }
 .curtain.open .flash {
-  animation: flash 2.2s ease forwards;
+  animation: flash 2.6s ease forwards;
+}
+.curtain.open {
+  pointer-events: none;
+}
+.curtain.open > :not(.flash) {
+  visibility: hidden;
+  transition: visibility 0s 0.35s;
 }
 .curtain.open {
   background: transparent;
-  pointer-events: none;
+  transition: background 0s 0.35s;
 }
+/* cream burst → deep amber → fade to the hall (the video's 3 s / 4 s / 5 s) */
 @keyframes flash {
   0% {
     opacity: 0;
+    background: #fffaf0;
   }
-  25% {
+  12% {
     opacity: 1;
+    background: #fff6e6;
+  }
+  40% {
+    opacity: 1;
+    background: #f9d79a;
+  }
+  70% {
+    opacity: 1;
+    background: #f0a02e;
   }
   100% {
     opacity: 0;
+    background: #e8911f;
   }
 }
 
@@ -356,12 +373,12 @@ body.entered .hero-art {
   position: absolute;
   left: 0;
   right: 0;
-  top: 21%;
+  top: 18%;
   padding: 0 16px;
 }
 .save {
   color: #6b0f22;
-  font-size: clamp(64px, 21vw, 92px);
+  font-size: clamp(58px, 19vw, 86px);
   line-height: 0.95;
   text-shadow: 0 0 22px rgba(255, 246, 220, 0.85);
 }
@@ -372,14 +389,15 @@ body.entered .hero-art {
   margin-left: 0.6em;
 }
 .hero-names {
-  margin-top: 14px;
-  font-size: clamp(17px, 5.4vw, 22px);
+  margin-top: 12px;
+  font-size: clamp(20px, 6.2vw, 26px);
   letter-spacing: 0.34em;
   font-weight: 600;
-  color: #7a3d0a;
+  color: #ffd97a;
   text-shadow:
-    0 0 10px rgba(255, 248, 230, 0.95),
-    0 0 3px rgba(255, 248, 230, 0.9);
+    0 1px 1px #4a1400,
+    0 0 8px rgba(80, 20, 0, 0.85),
+    0 0 18px rgba(80, 20, 0, 0.5);
 }
 .hero-names .amp {
   display: block;
@@ -390,17 +408,27 @@ body.entered .hero-art {
   margin: 2px 0;
 }
 .hero-urdu {
-  color: #6b0f22;
+  color: #fff1d0;
   font-size: 17px;
   line-height: 2.3;
   margin: 2px 0 10px;
-  text-shadow: 0 0 8px rgba(255, 248, 230, 0.95);
+  text-shadow:
+    0 1px 2px #4a1400,
+    0 0 10px rgba(80, 20, 0, 0.8);
 }
 .hero-label {
-  color: #7a3d0a;
+  color: #ffe6a8;
   font-weight: 600;
   font-size: 11px;
-  text-shadow: 0 0 8px rgba(255, 248, 230, 0.95);
+  text-shadow:
+    0 1px 2px #4a1400,
+    0 0 10px rgba(80, 20, 0, 0.8);
+}
+.hero-card {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: calc(6% + env(safe-area-inset-bottom));
 }
 [data-hero] {
   opacity: 0;
@@ -412,24 +440,15 @@ body.entered [data-hero] {
   transition:
     opacity 1.2s ease,
     transform 1.4s var(--ease);
-  transition-delay: calc(1.2s + var(--h) * 0.35s);
+  transition-delay: calc(0.3s + var(--h) * 0.3s);
 }
 
-/* ───────── date (scratch card) ───────── */
-.date {
-  background: radial-gradient(ellipse at 50% 50%, #7a1220 0%, #4a0710 70%, #2e030a 100%);
-}
-.date-inner {
-  padding: 34px 20px 32px;
-}
-.date .kicker {
-  color: var(--gold);
-}
+/* ───────── scratch card (on the hall's stairs) ───────── */
 .scratch {
   position: relative;
-  width: min(330px, 100%);
-  height: 120px;
-  margin: 18px auto 14px;
+  width: min(340px, 100%);
+  height: clamp(104px, 15svh, 130px);
+  margin: 0 auto;
   border-radius: 10px;
   outline: none;
   touch-action: none;
@@ -446,14 +465,24 @@ body.entered [data-hero] {
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-family: var(--serif) !important;
-  font-style: italic;
-  font-size: clamp(26px, 8vw, 33px);
-  letter-spacing: 0.04em;
   transform: scale(0.92);
   transition: transform 0.6s var(--ease);
+}
+.sr-date {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(30px, 9.4vw, 38px);
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  color: #f6d28e;
+}
+.sr-sub {
+  font-style: italic;
+  font-size: 15px;
+  color: #f3dcc0;
 }
 .scratch.done .scratch-reveal {
   transform: scale(1);
@@ -487,13 +516,9 @@ body.entered [data-hero] {
     opacity: 0;
   }
 }
-.date-sub {
-  color: #f3dcc0;
-}
-
 /* ───────── invitation arch ───────── */
 .invite {
-  padding: 70px 0 56px;
+  padding: 0 0 70px;
   background:
     radial-gradient(ellipse 70% 40% at 50% 8%, rgba(255, 190, 90, 0.55), rgba(255, 190, 90, 0) 70%),
     radial-gradient(ellipse 80% 30% at 50% 100%, rgba(255, 170, 70, 0.45), rgba(255, 170, 70, 0) 70%),
@@ -518,9 +543,12 @@ body.entered [data-hero] {
   -webkit-mask-image: linear-gradient(270deg, #000 60%, transparent);
   mask-image: linear-gradient(270deg, #000 60%, transparent);
 }
+.invite > .band {
+  margin-bottom: 64px;
+}
 .invite-lights {
   position: absolute;
-  top: 6px;
+  top: 36px;
   left: 0;
   right: 0;
   pointer-events: none;
@@ -547,7 +575,8 @@ body.entered [data-hero] {
   padding: 0 16px 30px;
   color: var(--ink);
   background:
-    radial-gradient(ellipse at 50% 30%, #fbe4b4 0%, #f4cd85 70%, #e7ac5a 100%);
+    radial-gradient(ellipse 70% 40% at 50% 0%, #fff4d2 0%, rgba(255, 244, 210, 0) 100%),
+    radial-gradient(ellipse 120% 80% at 50% 45%, #fde2a6 0%, #f6c06a 65%, #e2922f 100%);
   border: solid transparent;
   border-width: 0 8px 8px;
   border-image: linear-gradient(180deg, #c79a45, #f3d58e, #a8792f) 1;
@@ -557,6 +586,47 @@ body.entered [data-hero] {
     inset 0 -1px #a46f2a;
   margin-top: -25%; /* overlaps the cap's straight-sided lower part */
   position: relative;
+}
+.vine {
+  position: absolute;
+  z-index: 3;
+  top: 30%;
+  bottom: -14px;
+  width: 30px;
+  background-size: 40px 75px;
+  background-repeat: repeat-y;
+  pointer-events: none;
+}
+.vine-l {
+  left: -14px;
+}
+.vine-r {
+  right: -14px;
+  background-position: 100% 30px;
+}
+.lantern-l,
+.lantern-r {
+  position: absolute;
+  z-index: 3;
+  bottom: 10px;
+  width: 46px;
+}
+.lantern-l {
+  left: 8%;
+}
+.lantern-r {
+  right: 8%;
+}
+.lantern {
+  display: block;
+  width: 100%;
+  animation: sway 4s ease-in-out infinite;
+  transform-origin: 50% 0;
+}
+@keyframes sway {
+  50% {
+    transform: rotate(3deg);
+  }
 }
 .arch-body > :first-child {
   margin-top: 0;
@@ -580,8 +650,8 @@ body.entered [data-hero] {
   color: #6b1a10;
 }
 .ayah-en {
-  margin-top: 6px;
-  font-size: 15.5px;
+  margin-top: 4px;
+  font-size: 14.5px;
   line-height: 1.45;
   color: #5a3a28;
 }
@@ -744,11 +814,11 @@ body.entered [data-hero] {
   margin: 26px auto 18px;
 }
 .box {
-  width: 70px;
+  width: 72px;
 }
 .box-face {
   position: relative;
-  height: 72px;
+  height: 84px;
   overflow: hidden;
   border-radius: 6px;
   border: 1.5px solid #e2b765;
@@ -760,7 +830,7 @@ body.entered [data-hero] {
 }
 .digit {
   position: absolute;
-  inset: 0;
+  inset: 0 0 18px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -786,11 +856,13 @@ body.entered [data-hero] {
     opacity: 0;
   }
 }
-.box .caps {
-  display: block;
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  margin-top: 8px;
+.box .unit {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  font-size: 8.5px;
+  letter-spacing: 0.16em;
   color: #f3d58e;
 }
 .count-until {
@@ -874,8 +946,10 @@ body.entered [data-hero] {
   border-radius: 8px;
   font-size: 12.5px;
   color: #3a1a04;
-  background: linear-gradient(100deg, #c98a2b, #ffe29a 45%, #f2b23e 70%, #ffcf6e);
-  box-shadow: 0 8px 22px rgba(255, 160, 40, 0.35);
+  background: linear-gradient(100deg, #f59e1b, #ffe08a 42%, #ffb52e 70%, #ffd36b);
+  box-shadow:
+    0 0 0 1px rgba(255, 230, 160, 0.6),
+    0 8px 26px rgba(255, 160, 40, 0.5);
   cursor: pointer;
 }
 
@@ -934,6 +1008,15 @@ body.entered [data-hero] {
   color: #ffd98a;
   font-size: 22px;
 }
+.closing .small-star {
+  font-size: 15px;
+  margin-top: 8px;
+}
+.closing-more {
+  margin-top: 30px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 217, 138, 0.3);
+}
 .dua-ar {
   font-family: 'Amiri', serif;
   font-weight: 700;
@@ -952,9 +1035,10 @@ body.entered [data-hero] {
   font-size: 13px;
 }
 .presence {
-  margin-top: 18px;
-  font-size: clamp(30px, 9vw, 38px);
-  line-height: 1.3;
+  margin: 10px auto 0;
+  max-width: 340px;
+  font-size: clamp(38px, 11.4vw, 48px);
+  line-height: 1.28;
   color: #ffd98a;
   text-shadow: 0 0 12px rgba(255, 170, 60, 0.35);
 }
@@ -995,11 +1079,11 @@ body.entered [data-hero] {
 /* ───────── music button ───────── */
 .music {
   position: fixed;
-  right: 14px;
-  top: calc(14px + env(safe-area-inset-top));
+  right: 12px;
+  bottom: calc(14px + env(safe-area-inset-bottom));
   z-index: 40;
-  width: 46px;
-  height: 46px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: 1px solid #e2b765;
   background: rgba(40, 4, 10, 0.55);
@@ -1014,7 +1098,7 @@ body.entered [data-hero] {
   display: none;
 }
 .music svg {
-  width: 22px;
+  width: 19px;
 }
 .music .bar {
   transform-origin: 50% 100%;

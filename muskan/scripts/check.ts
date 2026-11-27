@@ -12,7 +12,7 @@ const SIZES = [
   {width: 390, height: 844},
   {width: 430, height: 932},
 ];
-const SECTIONS = ['hero', 'date', 'invitation', 'events', 'countdown', 'rsvp', 'venues', 'closing'];
+const SECTIONS = ['hero', 'invitation', 'events', 'countdown', 'rsvp', 'venues', 'closing'];
 const results: {name: string; ok: boolean; info?: string}[] = [];
 const check = (name: string, ok: boolean, info?: string) => results.push({name, ok, info});
 
@@ -38,18 +38,25 @@ const run = async () => {
       check(`${width}: curtain shows the ${C.monogram.join(' & ')} crest`, (await page.textContent('.crest'))?.replace(/\s/g, '') === `${C.monogram[0]}&${C.monogram[1]}`);
       check(`${width}: page is locked behind the curtain`, await page.evaluate(() => document.body.classList.contains('locked')));
 
-      // Curtain opens (the tap also starts the song) and the hall comes in
+      // Curtain: line → beam → cream/amber flash → hall (the tap also starts the song)
       await page.mouse.click(width / 2, height * 0.7);
-      await page.waitForTimeout(3200);
+      await page.waitForTimeout(2400);
+      const flash = await page.evaluate(() => Number(getComputedStyle(document.querySelector('.flash')!).opacity));
+      check(`${width}: full-screen flash after the tap`, flash > 0.9, `opacity ${flash}`);
+      await page.screenshot({path: `qa/${width}-0b-flash.png`});
+      await page.waitForTimeout(2600);
       check(`${width}: curtain opens and unlocks scrolling`, (await page.$('.curtain')) === null && !(await page.evaluate(() => document.body.classList.contains('locked'))));
       await page.screenshot({path: `qa/${width}-1-hall.png`});
 
-      // Auto-drift glides to the scratch card and scratches it by itself
-      await page.waitForTimeout(9000);
+      // Hall, names and the scratch card on one screen
+      const card = await page.$eval('.scratch', (e) => e.getBoundingClientRect().bottom);
+      check(`${width}: scratch card sits on the hall, on screen`, card <= height, `bottom ${Math.round(card)}`);
+      // The card scratches itself, then the page drifts down on its own
+      await page.waitForTimeout(10000);
       const drift = await page.evaluate(() => ({y: scrollY, done: document.querySelector('.scratch')!.classList.contains('done')}));
       check(`${width}: page drifts down on its own`, drift.y > 0, `scrollY ${drift.y}`);
       check(`${width}: scratch card reveals the dates on its own`, drift.done);
-      check(`${width}: revealed dates text`, (await page.textContent('.scratch-reveal'))?.trim() === C.scratchReveal);
+      check(`${width}: revealed dates text`, (await page.textContent('.sr-date'))?.trim() === C.scratchReveal);
 
       // The first scroll by the guest stops the drift for good
       await page.mouse.wheel(0, 120);
@@ -112,7 +119,7 @@ const run = async () => {
           if (el.closest('.choices button[aria-pressed="true"]')) return hex('#c0182f');
           const sec = el.closest('.sec')?.id;
           return hex(
-            {date: '#7a1220', events: '#fbefe8', venues: '#fbefe8', countdown: '#1c0d06', rsvp: '#7a1020', closing: '#b3172b', invitation: '#7a3410'}[sec ?? ''] ??
+            {events: '#fbefe8', venues: '#fbefe8', countdown: '#1c0d06', rsvp: '#7a1020', closing: '#b3172b', invitation: '#7a3410'}[sec ?? ''] ??
               '#3a040c',
           );
         };
@@ -134,24 +141,20 @@ const run = async () => {
       check(`${width}: text contrast (WCAG AA)`, contrast.length === 0, contrast.slice(0, 6).join('; '));
 
       if (width === 390) {
-        // RSVP: asks for a name and a choice, then opens WhatsApp with the message
-        await page.evaluate(() => {
-          (window as unknown as {__opened: string[]}).__opened = [];
-          window.open = ((u: string) => {
-            (window as unknown as {__opened: string[]}).__opened.push(u);
-            return null;
-          }) as typeof window.open;
+        // RSVP: Accept is pre-selected; asks for a name, then opens WhatsApp (same tab) with the message
+        let wa = '';
+        await page.route('https://wa.me/**', (route) => {
+          wa = route.request().url();
+          return route.fulfill({status: 204}); // 204: the browser stays on the page
         });
+        check('RSVP: Joyfully Accept is pre-selected', (await page.getAttribute('[data-choice="yes"]', 'aria-pressed')) === 'true');
         await page.click('#rsvp .btn-gold');
         check('RSVP asks for a name first', (await page.textContent('.rsvp-err')) === C.ui.rsvpNeedName);
         await page.fill('#rsvp-name', 'Test Guest');
         await page.click('#rsvp .btn-gold');
-        check('RSVP asks for Accept / Decline', (await page.textContent('.rsvp-err')) === C.ui.rsvpNeedChoice);
-        await page.click('[data-choice="yes"]');
-        await page.click('#rsvp .btn-gold');
-        const opened = await page.evaluate(() => (window as unknown as {__opened: string[]}).__opened);
+        await page.waitForTimeout(800);
         const want = `https://wa.me/${C.rsvpWhatsApp}?text=${encodeURIComponent(C.ui.rsvpMsgYes.replace('{name}', 'Test Guest'))}`;
-        check('RSVP opens WhatsApp to the family number with the message', opened[0] === want, opened[0]);
+        check('RSVP opens WhatsApp to the family number with the message', decodeURIComponent(wa) === decodeURIComponent(want), wa);
 
         // Maps: exact pins, and the buttons open the Google Maps place pages
         const frames = await page.$$eval('iframe.map', (els) => els.map((e) => e.getAttribute('src')));
@@ -173,7 +176,7 @@ const run = async () => {
     await rm.addInitScript('window.__name = (f) => f;');
     await rm.goto(URL_BASE, {waitUntil: 'networkidle'});
     await rm.click('.curtain');
-    await rm.waitForTimeout(300);
+    await rm.waitForTimeout(400);
     check('reduced motion: instant entry, hall text visible', (await rm.$('.curtain')) === null && (await rm.$eval('.save', (e) => getComputedStyle(e).opacity)) === '1');
     await rm.close();
   } finally {

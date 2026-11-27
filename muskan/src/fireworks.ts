@@ -1,7 +1,7 @@
 import {pixelRatio} from './dpr';
 import {glowSprite} from './glow';
 
-type P = {x: number; y: number; vx: number; vy: number; life: number; max: number; sprite: HTMLCanvasElement; size: number};
+type P = {x: number; y: number; vx: number; vy: number; life: number; max: number; sprite: HTMLCanvasElement; size: number; color: string};
 
 const COLORS = ['#FFD36E', '#FFB347', '#FFF1C2', '#F6C25B', '#FF9A5A'];
 
@@ -27,13 +27,15 @@ export const startFireworks = (canvas: HTMLCanvasElement, reducedMotion: boolean
 
   const ps: P[] = [];
   const burst = (x: number, y: number) => {
-    const sprite = sprites[Math.floor(Math.random() * sprites.length)];
-    const n = 46;
-    const speed = 1.4 + Math.random() * 1.2;
+    const ci = Math.floor(Math.random() * sprites.length);
+    const sprite = sprites[ci];
+    const color = COLORS[ci];
+    const n = 64;
+    const speed = 2.6 + Math.random() * 1.6;
     for (let i = 0; i < n; i++) {
       const a = (i / n) * Math.PI * 2 + Math.random() * 0.1;
       const v = speed * (0.75 + Math.random() * 0.35);
-      ps.push({x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0, max: 60 + Math.random() * 30, sprite, size: 7 + Math.random() * 5});
+      ps.push({x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0, max: 46 + Math.random() * 26, sprite, size: 5 + Math.random() * 3, color});
     }
   };
 
@@ -86,12 +88,20 @@ export const startFireworks = (canvas: HTMLCanvasElement, reducedMotion: boolean
         ps.splice(i, 1);
         continue;
       }
+      // sparkler streak: a fading line behind each spark, with a bright head
+      const tail = 7;
+      const g = ctx.createLinearGradient(p.x - p.vx * tail, p.y - p.vy * tail, p.x, p.y);
+      g.addColorStop(0, 'rgba(255,200,90,0)');
+      g.addColorStop(1, p.color);
       ctx.globalAlpha = k;
-      const s = p.size * (0.5 + k * 0.5);
+      ctx.strokeStyle = g;
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(p.x - p.vx * tail, p.y - p.vy * tail);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      const s = p.size * (0.6 + k * 0.4);
       ctx.drawImage(p.sprite, p.x - s / 2, p.y - s / 2, s, s);
-      // short trail
-      ctx.globalAlpha = k * 0.35;
-      ctx.drawImage(p.sprite, p.x - p.vx * 3 - s / 4, p.y - p.vy * 3 - s / 4, s / 2, s / 2);
     }
     ctx.globalAlpha = 1;
     requestAnimationFrame(frame);

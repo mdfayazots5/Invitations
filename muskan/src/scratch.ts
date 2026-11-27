@@ -15,7 +15,7 @@ export const createScratch = (onReveal?: () => void): {el: HTMLElement; auto: ()
   el.tabIndex = 0;
   el.setAttribute('role', 'button');
   el.setAttribute('aria-label', C.ui.scratchAria);
-  el.innerHTML = `<span class="scratch-reveal script gold-text" aria-live="polite">${C.scratchReveal}</span><canvas aria-hidden="true"></canvas>`;
+  el.innerHTML = `<span class="scratch-reveal" aria-live="polite"><span class="sr-date">${C.scratchReveal}</span><span class="sr-sub">${C.scratchSub}</span></span><canvas aria-hidden="true"></canvas>`;
   const canvas = el.querySelector('canvas')!;
   const ctx = canvas.getContext('2d', {willReadFrequently: true})!;
   let done = false;
@@ -63,7 +63,7 @@ export const createScratch = (onReveal?: () => void): {el: HTMLElement; auto: ()
     done = true;
     el.classList.add('done');
     el.style.touchAction = 'auto'; // once revealed, a swipe starting on the date scrolls the page
-    el.setAttribute('aria-label', C.scratchReveal);
+    el.setAttribute('aria-label', `${C.scratchReveal}, ${C.scratchSub}`);
     onReveal?.();
   };
 

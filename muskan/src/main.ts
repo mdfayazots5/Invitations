@@ -1,5 +1,5 @@
 import './styles.css';
-import {archCap, artDefs, crest, jaaliBand, ornament, palaceHall, roseWall} from './art';
+import {archCap, artDefs, crest, jaaliBand, lantern, ornament, palaceHall, roseWall} from './art';
 import {startCountdown} from './countdown';
 import {mountCurtain} from './curtain';
 import {createDrift} from './drift';
@@ -18,8 +18,10 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 const R = 'data-reveal';
 const u = C.ui;
 
-/** After the curtain opens: time to take in the hall before the page starts to drift. */
-const HERO_HOLD = 4200;
+/** After the curtain opens: time to take in the hall before the card scratches itself. */
+const SCRATCH_DELAY = 3200;
+/** After the dates show: time to read them before the page starts to drift. */
+const DATES_HOLD = 2600;
 
 const band = () => `<div class="band" aria-hidden="true"></div>`;
 const pad2 = (n: number) => String(n).padStart(2, '0');
@@ -34,26 +36,22 @@ const heroHtml = () => `<section id="hero" class="sec hero" aria-label="${esc(u.
     <p class="urdu hero-urdu" data-hero style="--h:2" lang="ur" dir="rtl">${C.namesUrdu}</p>
     <p class="caps hero-label" data-hero style="--h:3">${esc(C.heroLabel)}</p>
   </div>
-</section>`;
-
-const dateHtml = () => `<section id="date" class="sec date" data-hold="2600">
-  ${band()}
-  <div class="date-inner">
-    <p class="caps kicker" ${R}>✦ ${esc(C.heroLabel)} ✦</p>
-    <div data-scratch-slot ${R}></div>
-    <p class="italic date-sub" ${R}>${esc(C.scratchSub)}</p>
-  </div>
-  ${band()}
+  <div class="hero-card" data-hero style="--h:4"><div data-scratch-slot></div></div>
 </section>`;
 
 const inviteHtml = () => `<section id="invitation" class="sec invite" data-hold="11000">
+  ${band()}
   <div class="wall wall-l" data-wall="21"></div>
   <div class="wall wall-r" data-wall="43"></div>
   <div class="invite-lights" aria-hidden="true">
     <svg viewBox="0 0 400 120" preserveAspectRatio="xMidYMin meet"><use href="#chandelier" x="20" y="0" width="90" height="90"/>
     <use href="#chandelier" x="290" y="0" width="90" height="90"/></svg>
   </div>
+  <div class="lantern-l" aria-hidden="true">${lantern()}</div>
+  <div class="lantern-r" aria-hidden="true">${lantern()}</div>
   <div class="arch">
+    <div class="vine vine-l" data-wall="57" aria-hidden="true"></div>
+    <div class="vine vine-r" data-wall="71" aria-hidden="true"></div>
     ${archCap()}
     <div class="arch-body">
       <p class="bismillah-ar" ${R} lang="ar" dir="rtl">${C.bismillahAr}</p>
@@ -107,7 +105,7 @@ const countdownHtml = () => `<section id="countdown" class="sec count" data-hold
     <p class="caps kicker" ${R}>✦ ${u.countdownKicker} ✦</p>
     <h2 class="script glow-title" ${R}>Counting<br />Down</h2>
     <div class="boxes" ${R} role="timer" aria-live="off">
-      ${u.units.map((unit) => `<div class="box"><div class="box-face"><span class="digit"></span></div><span class="caps">${unit}</span></div>`).join('')}
+      ${u.units.map((unit) => `<div class="box"><div class="box-face"><span class="digit"></span><span class="caps unit">${unit}</span></div></div>`).join('')}
     </div>
     <p class="italic count-until" ${R} data-next></p>
     <p class="script glow-title" data-done hidden>${u.alhamdulillah}</p>
@@ -124,7 +122,7 @@ const rsvpHtml = () => `<section id="rsvp" class="sec rsvp" data-hold="4000">
       <input id="rsvp-name" name="name" type="text" autocomplete="name" placeholder="${esc(u.rsvpNamePh)}" maxlength="60" />
       <p class="caps">${u.rsvpJoin}</p>
       <div class="choices">
-        <button type="button" data-choice="yes" aria-pressed="false">${u.rsvpYes}</button>
+        <button type="button" data-choice="yes" aria-pressed="true">${u.rsvpYes}</button>
         <button type="button" data-choice="no" aria-pressed="false">${u.rsvpNo}</button>
       </div>
       <p class="rsvp-err" role="alert"></p>
@@ -159,16 +157,19 @@ const closingHtml = () => `<footer id="closing" class="sec closing" data-hold="7
   ${band()}
   <div class="closing-inner">
     <p class="star" ${R}>✦</p>
-    <p class="dua-ar" ${R} lang="ar" dir="rtl">${C.dua.ar}</p>
-    <p class="italic dua-en" ${R}>${esc(C.dua.en)} <span class="muted">(${esc(C.dua.ref)})</span></p>
     <p class="script presence" ${R}>${esc(C.presence)}</p>
+    <p class="star small-star" ${R}>✦</p>
     <div ${R}>${ornament('#e2b765')}</div>
-    <p class="caps small-caps" ${R}>${esc(C.compliments)}</p>
-    <p class="script from" ${R}>${esc(C.nearDear)}</p>
-    <p class="urdu" ${R} lang="ur" dir="rtl">${C.fromUrdu}</p>
     <p class="caps names-caps" ${R}>${esc(C.firstShort)} &amp; ${esc(C.secondShort)}</p>
     <p class="script footer-names" ${R}>${esc(u.footerNames)}</p>
     <p class="caps tiny" ${R}>${esc(u.footerLine)} · ${esc(C.inshaAllahClose)}</p>
+    <div class="closing-more">
+      <p class="dua-ar" ${R} lang="ar" dir="rtl">${C.dua.ar}</p>
+      <p class="italic dua-en" ${R}>${esc(C.dua.en)} <span class="muted">(${esc(C.dua.ref)})</span></p>
+      <p class="caps small-caps" ${R}>${esc(C.compliments)}</p>
+      <p class="script from" ${R}>${esc(C.nearDear)}</p>
+      <p class="urdu" ${R} lang="ur" dir="rtl">${C.fromUrdu}</p>
+    </div>
     <button type="button" class="replay caps" ${R} data-replay>↺ View again</button>
   </div>
 </footer>`;
@@ -199,7 +200,7 @@ const boot = () => {
     return;
   }
   const app = document.getElementById('app')!;
-  app.innerHTML = heroHtml() + dateHtml() + inviteHtml() + eventsHtml() + countdownHtml() + rsvpHtml() + venuesHtml() + closingHtml();
+  app.innerHTML = heroHtml() + inviteHtml() + eventsHtml() + countdownHtml() + rsvpHtml() + venuesHtml() + closingHtml();
 
   app.querySelectorAll<HTMLElement>('[data-wall]').forEach((w) => (w.style.backgroundImage = roseWall(Number(w.dataset.wall))));
   const sections = Array.from(app.querySelectorAll<HTMLElement>('.sec'));
@@ -210,11 +211,6 @@ const boot = () => {
   const onReveal = new Promise<void>((r) => (revealed = r));
   const scratch = createScratch(() => revealed());
   app.querySelector('[data-scratch-slot]')!.replaceWith(scratch.el);
-  scratch.el.setAttribute(R, '');
-  (app.querySelector('#date') as HTMLElement & {arrive?: () => Promise<void>}).arrive = async () => {
-    window.setTimeout(scratch.auto, 700);
-    await onReveal;
-  };
   // Used by scripts/record.ts, which drives the page itself (?noscroll).
   (window as unknown as {__invite: object}).__invite = {scratch: scratch.auto};
 
@@ -230,7 +226,11 @@ const boot = () => {
   mountCurtain(document.getElementById('curtain-root')!, () => music.start(), reducedMotion).then(() => {
     drift.arm();
     if (reducedMotion || params.has('noscroll')) return;
-    window.setTimeout(() => void drift.start(), HERO_HOLD);
+    // The card on the stairs scratches itself (unless the guest got there first), then the page drifts.
+    window.setTimeout(() => {
+      if (!drift.stopped) scratch.auto();
+    }, SCRATCH_DELAY);
+    void onReveal.then(() => window.setTimeout(() => void drift.start(), DATES_HOLD));
   });
 };
 
