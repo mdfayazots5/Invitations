@@ -6,6 +6,7 @@ case "$BRANCH" in
   FayazMD)      folder=fayazmd ;;
   Muskan)       folder=muskan ;;
   MuskanKhanam) folder=muskankhanam ;;
+  Muskanone)    folder=muskanone ;;
   *) echo "No folder mapped to branch '$BRANCH'"; exit 1 ;;
 esac
 

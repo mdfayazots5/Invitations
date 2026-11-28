@@ -6,6 +6,7 @@
 #   FayazMD       fayazmd/        mdfayazinvitation
 #   Muskan        muskan/         muskaninvitation
 #   MuskanKhanam  muskankhanam/   (not created yet)
+#   Muskanone     muskanone/      (not created yet)
 #
 # Leave "Base directory" empty in each site's Netlify settings so this file is read.
 
@@ -33,6 +34,10 @@
 [context.MuskanKhanam]
   command = "cd muskankhanam && npm ci && npm run build"
   publish = "muskankhanam/dist"
+
+[context.Muskanone]
+  command = "cd muskanone && npm ci && npm run build"
+  publish = "muskanone/dist"
 
 # Phone tester uploads (shared/autotest → /api/autotest). Same function on every site; each site has its own store.
 [functions]
