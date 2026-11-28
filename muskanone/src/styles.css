@@ -644,7 +644,8 @@ body.entered [data-hl] {
    centred low enough that the lanterns above stay in view. */
 .plain {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
 }
 .plain .txt {
   width: 100%;
@@ -1006,10 +1007,131 @@ body.video .tap-hint {
   height: 100%;
   display: block;
 }
-#app {
-  position: relative;
-  z-index: 1;
+/* ───────── pages (as on the muskan site): #app is a fixed full-screen scroller, one section = one screen ─────────
+   A fixed box is always exactly the visible screen (the phone's browser bar never collapses), so every resting view
+   is one whole page, and the 3D station behind it is that page's scene. */
+html,
+body {
+  overflow: hidden;
+  height: 100%;
 }
+#app {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  max-width: 480px;
+  margin: 0 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none; /* the page dots show the position */
+}
+#app::-webkit-scrollbar {
+  display: none;
+}
+body.locked #app {
+  overflow: hidden;
+}
+.sec.page {
+  height: 100%;
+  min-height: 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: always; /* a hard fling still stops on the very next page */
+}
+/* the pager scales a page down a little on small phones instead of clipping it */
+.page-inner {
+  transform: scale(var(--fit, 1));
+  transform-origin: 50% 0;
+}
+
+/* page dots on the right edge */
+.dots {
+  position: fixed;
+  right: max(4px, env(safe-area-inset-right, 0px));
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  transition: opacity 0.6s ease;
+}
+body.locked .dots {
+  opacity: 0;
+  pointer-events: none;
+}
+.dot {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.dot::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid var(--gold);
+  background: rgba(251, 244, 234, 0.7);
+  transition:
+    transform 0.3s ease,
+    background 0.3s ease;
+}
+.dot.on::before {
+  background: var(--teal);
+  border-color: var(--teal);
+  transform: scale(1.5);
+}
+/* one-time "tap or swipe" hint */
+.swipe-hint {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  transform: translate(-50%, 8px);
+  z-index: 30;
+  margin: 0;
+  padding: 7px 14px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(168, 116, 58, 0.55);
+  background: rgba(251, 244, 234, 0.92);
+  color: var(--gold-ink);
+  font-size: 11px;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+}
+.swipe-hint.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+/* venue map preview: swipes over it still turn the page, a tap opens Google Maps */
+.map-card {
+  display: block;
+  margin: 10px 0 2px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(168, 116, 58, 0.45);
+}
+.map-card .map {
+  display: block;
+  width: 100%;
+  height: 96px;
+  border: 0;
+  pointer-events: none;
+}
+body.video .dots,
+body.video .swipe-hint,
+body.video .map-card {
+  display: none !important;
+}
+
 /* the 2D scenery is only the fallback: hidden while the 3D world runs */
 body.webgl .sec > .bg,
 body.webgl .sec > .lanterns,
@@ -1054,4 +1176,22 @@ body.webgl.q-high::after {
 /* ?og with WebGL: the courtyard alone, no UI */
 body.og-3d .og-card {
   display: none;
+}
+
+/* small phones: the venues page (two cards with maps) must fit one screen */
+@media (max-width: 380px), (max-height: 700px) {
+  #venues .venue {
+    margin-top: 8px;
+    padding: 10px 14px 12px;
+  }
+  #venues .map-card .map {
+    height: 64px;
+  }
+  #venues .venue-name {
+    font-size: 19px;
+  }
+  #venues .maps {
+    margin-top: 6px;
+    padding: 6px 14px;
+  }
 }

@@ -146,6 +146,9 @@ export const C = {
   },
 };
 
+/** Google Maps preview of the exact pin (shown on the venues page; a tap opens the full map). */
+export const mapEmbedUrl = (e: InviteEvent) => `https://maps.google.com/maps?q=${e.mapLat},${e.mapLng}&z=16&output=embed`;
+
 /**
  * Phone tester (shared/autotest). true: the 🧪 Test button shows, but only on links with ?test
  * (https://muskanone.netlify.app/?test); guests on the normal link never see it. false: the tester is not loaded at all.

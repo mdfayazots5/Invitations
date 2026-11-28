@@ -87,12 +87,12 @@ const host = (src: string) => `<!doctype html><html><head><style>
 /** Waits `ms` of *video* time (the page runs at SLOW speed while capturing). */
 const wait = (page: Page, ms: number) => page.waitForTimeout(ms / SLOW);
 
-/** Eased glide of the page (this site scrolls the window) (easeInOutCubic) to a section top. */
+/** Eased glide of the page scroller #app (easeInOutCubic) to a page top. */
 const glideTo = (site: Frame, selector: string, ms = GLIDE) =>
   site.evaluate(
     ([sel, dur]) =>
       new Promise<void>((resolve) => {
-        const app = document.scrollingElement as HTMLElement;
+        const app = document.getElementById('app')!;
         const target = Math.min(app.scrollHeight - app.clientHeight, document.querySelector<HTMLElement>(sel as string)!.offsetTop);
         const start = app.scrollTop;
         const t0 = performance.now();

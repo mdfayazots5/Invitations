@@ -1,6 +1,6 @@
 // QA: npm run build && npm run check
 // Phone sizes (360×640, 390×844, 430×932): no sideways scroll, no console errors, the flow
-// curtain → hero → auto-scratch → auto-drift, every section in order, names on one line, Arabic/Urdu right-to-left
+// curtain → hero → auto-scratch → pages turn on their own (stop on touch), dots, every page one screen, every section in order, names on one line, Arabic/Urdu right-to-left
 // in their fonts, text contrast (WCAG AA), the WhatsApp RSVP, the map links, and reduced motion. Screenshots go to qa/.
 import {existsSync, mkdirSync, readdirSync, readFileSync} from 'node:fs';
 import {chromium} from 'playwright';
@@ -48,33 +48,66 @@ const run = async () => {
 
       const card = await page.$eval('.scratch', (e) => e.getBoundingClientRect().bottom);
       check(`${width}: scratch card on the first screen`, card <= height, `bottom ${Math.round(card)}`);
-      // The card scratches itself, then the page drifts down on its own
-      await page.waitForTimeout(8000);
-      const drift = await page.evaluate(() => ({y: scrollY, done: document.querySelector('.scratch')!.classList.contains('done')}));
-      check(`${width}: scratch card reveals the dates on its own`, drift.done);
+      // The card scratches itself, then the pages turn on their own (page by page, inside the #app scroller)
+      const appTop = () => page.evaluate(() => document.getElementById('app')!.scrollTop);
+      await page.waitForTimeout(9000);
+      const done = await page.$eval('.scratch', (e) => e.classList.contains('done'));
+      check(`${width}: scratch card reveals the dates on its own`, done);
       check(`${width}: revealed dates text`, (await page.textContent('.sr-date'))?.trim() === C.scratchReveal);
-      check(`${width}: page drifts down on its own`, drift.y > 0, `scrollY ${drift.y}`);
-
-      // The first scroll by the guest stops the drift for good
-      await page.mouse.wheel(0, 120);
-      await page.waitForTimeout(400);
-      const y0 = await page.evaluate(() => scrollY);
-      await page.waitForTimeout(5000);
-      check(`${width}: guest scrolling stops the auto-drift`, (await page.evaluate(() => scrollY)) === y0);
-
-      // Scroll through the whole page like a guest, so every reveal runs
-      await page.evaluate(async () => {
-        for (let y = 0; y < document.documentElement.scrollHeight; y += innerHeight * 0.5) {
-          scrollTo(0, y);
-          await new Promise((r) => setTimeout(r, 150));
-        }
-      });
+      const auto = await appTop();
+      check(`${width}: pages turn on their own`, auto > 0, `scrollTop ${auto}`);
+      // a resting view is one whole page
       await page.waitForTimeout(1500);
+      const rest = await page.evaluate(() => {
+        const app = document.getElementById('app')!;
+        return app.scrollTop / app.clientHeight;
+      });
+      check(`${width}: auto-advance rests on a whole page`, Math.abs(rest - Math.round(rest)) < 0.02, rest.toFixed(3));
+
+      // The guest's first wheel gesture turns one page and stops the auto-advance for good
+      const before = Math.round(rest);
+      await page.mouse.wheel(0, 120);
+      await page.waitForTimeout(1600);
+      const after = await page.evaluate(() => {
+        const app = document.getElementById('app')!;
+        return app.scrollTop / app.clientHeight;
+      });
+      check(`${width}: one wheel gesture turns exactly one page`, Math.round(after) === before + 1, `${before} → ${after.toFixed(2)}`);
+      const y0 = await appTop();
+      await page.waitForTimeout(7000);
+      check(`${width}: guest takes over: auto-advance stops`, (await appTop()) === y0);
+
+      // Dots: one per page; tapping one jumps there
+      const dots = await page.$$('.dot');
+      check(`${width}: one page dot per page`, dots.length === SECTIONS.length, `${dots.length}`);
+      await dots[2].click();
+      await page.waitForTimeout(1600);
+      check(`${width}: tapping a dot jumps to its page`, Math.round((await appTop()) / height) === 2);
+
+      // Every page fills exactly one screen and its content fits inside it
+      const pages = await page.$$eval('#app > .sec', (els) => {
+        const app = document.getElementById('app')!;
+        return els.map((e) => {
+          const inner = e.querySelector('.page-inner')!.getBoundingClientRect();
+          const box = e.getBoundingClientRect();
+          return {id: e.id, fills: Math.abs(box.height - app.clientHeight) < 2, fits: inner.bottom <= box.bottom + 2 && inner.top >= box.top - 2};
+        });
+      });
+      check(`${width}: every page fills one screen`, pages.every((p) => p.fills), pages.filter((p) => !p.fills).map((p) => p.id).join());
+      check(`${width}: every page's content fits on its screen`, pages.every((p) => p.fits), pages.filter((p) => !p.fits).map((p) => p.id).join());
+
+      // Visit every page, so every reveal runs, and screenshot it
       for (const id of SECTIONS) {
-        await page.evaluate((id) => document.getElementById(id)!.scrollIntoView(), id);
-        await page.waitForTimeout(900);
+        await page.evaluate((id) => {
+          const app = document.getElementById('app')!;
+          app.style.scrollSnapType = 'none';
+          app.scrollTop = document.getElementById(id)!.offsetTop;
+          app.style.scrollSnapType = '';
+        }, id);
+        await page.waitForTimeout(1100);
         await page.screenshot({path: `qa/${width}-s-${id}.png`});
       }
+      await page.waitForTimeout(2600); // the last page's lines finish blurring in
       check(`${width}: all sections in order`, (await page.$$eval('#app > .sec', (els) => els.map((e) => e.id))).join() === SECTIONS.join());
       const hidden = await page.$$eval('[data-reveal], [data-hl]', (els) => els.filter((e) => getComputedStyle(e).opacity !== '1').length);
       check(`${width}: every revealed item is shown`, hidden === 0, `${hidden} still hidden`);
@@ -158,7 +191,7 @@ const run = async () => {
 
         await page.click('[data-replay]');
         await page.waitForTimeout(3500);
-        check('View again returns to the top', (await page.evaluate(() => scrollY)) === 0);
+        check('View again returns to the first page', (await page.evaluate(() => document.getElementById('app')!.scrollTop)) === 0);
       }
       check(`${width}: no console errors`, errors.length === 0, errors.join(' | '));
       await page.close();

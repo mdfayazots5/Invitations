@@ -3,10 +3,10 @@ import {artDefs, charms, garland, lanterns, lotusDivider, monogramRing, scene, t
 import {startAmbient} from './ambient';
 import {startCountdown} from './countdown';
 import {mountCurtain} from './curtain';
-import {createDrift} from './drift';
-import {C, TEST_MODE, type InviteEvent} from './invite.config';
+import {C, TEST_MODE, mapEmbedUrl, type InviteEvent} from './invite.config';
 import type {World} from './three/world';
 import {createMusic} from './music';
+import {createPager} from './pages';
 import {startReveal} from './reveal';
 import {wireRsvp} from './rsvp';
 import {createScratch} from './scratch';
@@ -41,7 +41,7 @@ const ambient = (kind: 'petals' | 'sparkles' | 'leaves') => `<canvas class="ambi
 let h = 0;
 const hl = (html: string) => html.replace(/^<(\w+)/, `<$1 data-hl style="--h:${h++}"`);
 
-const heroHtml = () => `<section id="hero" class="sec hero" data-hold="7000" aria-label="${esc(u.title)}">
+const heroHtml = () => `<section id="hero" class="sec page hero" data-hold="7000" aria-label="${esc(u.title)}">
   ${bg('hero')}
   ${garland()}
   ${lanterns([
@@ -49,7 +49,7 @@ const heroHtml = () => `<section id="hero" class="sec hero" data-hold="7000" ari
     [84, 46, 0.85],
   ])}
   ${ambient('leaves')}
-  <div class="txt">
+  <div class="txt page-inner">
     ${hl(`<p class="bismillah-ar" lang="ar" dir="rtl">${C.bismillahAr}</p>`)}
     ${hl(`<p class="caps label">${esc(C.heroLabel)}</p>`)}
     ${hl(`<p class="script save">${esc(C.saveTheDate)}</p>`)}
@@ -60,10 +60,10 @@ const heroHtml = () => `<section id="hero" class="sec hero" data-hold="7000" ari
   </div>
 </section>`;
 
-const invitationHtml = () => `<section id="invitation" class="sec" data-hold="9000">
+const invitationHtml = () => `<section id="invitation" class="sec page" data-hold="9000">
   ${bg('names')}
   ${charms()}
-  <div class="txt veil">
+  <div class="txt page-inner veil">
     <p class="caps small gold" ${R}>${esc(C.blessingsLabel)}</p>
     <p class="blessings" ${R}>${esc(C.blessings)}</p>
     <div ${R}>${lotusDivider()}</div>
@@ -76,10 +76,10 @@ const invitationHtml = () => `<section id="invitation" class="sec" data-hold="90
   </div>
 </section>`;
 
-const urduHtml = () => `<section id="urdu" class="sec" data-hold="9000">
+const urduHtml = () => `<section id="urdu" class="sec page" data-hold="9000">
   ${bg('names')}
   ${charms()}
-  <div class="txt veil strong">
+  <div class="txt page-inner veil strong">
     <p class="urdu small-urdu" ${R} lang="ur" dir="rtl">${C.urdu.blessings}</p>
     <div ${R}>${lotusDivider()}</div>
     <p class="urdu u-name" ${R} lang="ur" dir="rtl">${C.urdu.first}</p>
@@ -92,11 +92,11 @@ const urduHtml = () => `<section id="urdu" class="sec" data-hold="9000">
   </div>
 </section>`;
 
-const eventHtml = (e: InviteEvent, kind: 'petals' | 'sparkles') => `<section id="${e.key}" class="sec event" data-hold="7000">
+const eventHtml = (e: InviteEvent, kind: 'petals' | 'sparkles') => `<section id="${e.key}" class="sec page event" data-hold="7000">
   ${bg(e.key)}
   ${e.key === 'valima' ? '<div class="candles" aria-hidden="true"><i></i><i></i><i></i><i></i></div>' : ''}
   ${ambient(kind)}
-  <div class="txt veil">
+  <div class="txt page-inner veil">
     <p class="ev-title" ${R}>${esc(e.title)}</p>
     <p class="urdu ev-urdu" ${R} lang="ur" dir="rtl">${e.urdu}</p>
     <div ${R}>${lotusDivider()}</div>
@@ -109,7 +109,7 @@ const eventHtml = (e: InviteEvent, kind: 'petals' | 'sparkles') => `<section id=
   </div>
 </section>`;
 
-const countdownHtml = () => `<section id="countdown" class="sec plain" data-hold="6000">
+const countdownHtml = () => `<section id="countdown" class="sec page plain" data-hold="6000">
   ${sky()}
   ${lanterns([
     [8, 30, 0.9],
@@ -117,7 +117,7 @@ const countdownHtml = () => `<section id="countdown" class="sec plain" data-hold
     [62, 60, 0.8],
     [84, 20, 0.95],
   ])}
-  <div class="txt veil strong">
+  <div class="txt page-inner veil strong">
     <p class="caps small gold" ${R}>✦ ${u.countdownKicker} ✦</p>
     ${u.countdownTitle
       .split('|')
@@ -131,9 +131,9 @@ const countdownHtml = () => `<section id="countdown" class="sec plain" data-hold
   </div>
 </section>`;
 
-const rsvpHtml = () => `<section id="rsvp" class="sec plain" data-hold="5000">
+const rsvpHtml = () => `<section id="rsvp" class="sec page plain" data-hold="5000">
   ${sky()}
-  <div class="txt veil strong">
+  <div class="txt page-inner veil strong">
     <p class="caps small gold" ${R}>✦ ${u.rsvpKicker} ✦</p>
     <h2 class="script title" ${R}>${esc(u.rsvpTitle)}</h2>
     <div ${R}>${lotusDivider()}</div>
@@ -155,19 +155,22 @@ const venueCard = (e: InviteEvent) => `<article class="venue" ${R}>
   <p class="venue-name">${esc(e.venue)}</p>
   <p class="italic">${esc(e.address)}</p>
   <p class="venue-when">${esc(`${e.day}, ${e.date} · ${e.time}`)}</p>
+  <a class="map-card" href="${esc(e.mapPlaceUrl)}" target="_blank" rel="noopener" aria-label="Open ${esc(e.venue)} in Google Maps">
+    <iframe class="map" tabindex="-1" title="Map of ${esc(e.venue)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="${mapEmbedUrl(e)}"></iframe>
+  </a>
   <a class="maps caps" href="${esc(e.mapPlaceUrl)}" target="_blank" rel="noopener">📍 ${u.openMaps}</a>
 </article>`;
 
-const venuesHtml = () => `<section id="venues" class="sec plain" data-hold="6000">
+const venuesHtml = () => `<section id="venues" class="sec page plain" data-hold="6000">
   ${sky()}
-  <div class="txt veil strong">
+  <div class="txt page-inner veil strong">
     <p class="caps small gold" ${R}>✦ ${u.venuesKicker} ✦</p>
     <h2 class="script title" ${R}>${esc(u.venuesTitle)}</h2>
     ${C.events.map(venueCard).join('')}
   </div>
 </section>`;
 
-const closingHtml = () => `<footer id="closing" class="sec" data-hold="7000">
+const closingHtml = () => `<footer id="closing" class="sec page" data-hold="7000">
   ${bg('closing')}
   ${lanterns([
     [4, 10, 0.8],
@@ -177,7 +180,7 @@ const closingHtml = () => `<footer id="closing" class="sec" data-hold="7000">
     [76, 34, 0.8],
     [90, 70, 0.7],
   ])}
-  <div class="txt veil">
+  <div class="txt page-inner veil">
     <p class="script regards" ${R}>${esc(C.warmRegards)}</p>
     <div ${R}>${lotusDivider()}</div>
     <p class="caps small gold" ${R}>${esc(C.compliments)}</p>
@@ -243,19 +246,11 @@ const startWorld = async (): Promise<World | null> => {
   }
 };
 
-/** Station progress from the scroll position: station 1 = the hero section, plus the fraction to the next section. */
-const scrollProgress = (sections: HTMLElement[]) => {
-  const y = scrollY;
-  const max = document.documentElement.scrollHeight - innerHeight;
-  for (let i = sections.length - 1; i >= 0; i--) {
-    const top = Math.min(sections[i].offsetTop, max);
-    if (y >= top - 1) {
-      const next = i + 1 < sections.length ? Math.min(sections[i + 1].offsetTop, max) : top;
-      return 1 + i + (next > top ? Math.min(1, (y - top) / (next - top)) : 0);
-    }
-  }
-  return 1;
-};
+/**
+ * Station progress from the page scroller: every page is exactly one screen, so page k (0 = hero) is station k + 1,
+ * and between pages the camera is between their stations. The page on screen always shows its own scene.
+ */
+const pageProgress = (app: HTMLElement) => 1 + app.scrollTop / Math.max(1, app.clientHeight);
 
 const boot = () => {
   document.body.insertAdjacentHTML('afterbegin', artDefs());
@@ -285,7 +280,8 @@ const boot = () => {
     closingHtml();
 
   const sections = Array.from(app.querySelectorAll<HTMLElement>('.sec'));
-  const drift = createDrift(sections);
+  // Page by page, as on the muskan site: snap, dots, swipe / tap / wheel = one page, auto-advance until the guest takes over.
+  const pager = createPager(app);
 
   // Ken Burns: each background pushes in 3 % while its section is on screen.
   const io = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle('live', e.isIntersecting)), {threshold: 0.35});
@@ -305,15 +301,15 @@ const boot = () => {
     startAmbient(c, c.dataset.ambient as 'petals' | 'sparkles' | 'leaves', reducedMotion),
   );
   wireRsvp(app.querySelector('#rsvp')!);
-  app.querySelector('[data-replay]')!.addEventListener('click', () => scrollTo({top: 0, behavior: reducedMotion ? 'auto' : 'smooth'}));
+  app.querySelector('[data-replay]')!.addEventListener('click', () => pager.replay());
 
   // The 3D world loads after the first paint; the intro HTML (2D drapes) shows at once.
   let world: World | null = null;
   let entered = false;
   const follow = () => {
-    if (world && entered) world.setTarget(scrollProgress(sections));
+    if (world && entered) world.setTarget(pageProgress(app));
   };
-  addEventListener('scroll', follow, {passive: true});
+  app.addEventListener('scroll', follow, {passive: true});
   requestAnimationFrame(() =>
     window.setTimeout(
       () =>
@@ -322,7 +318,7 @@ const boot = () => {
           if (w && entered) {
             // tapped before the world was ready: start straight at the current section
             w.openDrapes();
-            w.jump(scrollProgress(sections));
+            w.jump(pageProgress(app));
           }
         }),
       50,
@@ -330,8 +326,7 @@ const boot = () => {
   );
 
   const music = createMusic();
-  history.scrollRestoration = 'manual';
-  scrollTo(0, 0);
+  app.scrollTop = 0;
   const onOpen = () => {
     music.start();
     entered = true;
@@ -342,12 +337,11 @@ const boot = () => {
     }
   };
   mountCurtain(document.getElementById('curtain-root')!, onOpen, reducedMotion).then(() => {
-    drift.arm();
-    if (reducedMotion || params.has('noscroll')) return;
-    window.setTimeout(() => {
-      if (!drift.stopped) scratch.auto();
-    }, SCRATCH_DELAY);
-    void onReveal.then(() => window.setTimeout(() => void drift.start(), DATES_HOLD));
+    // ?noscroll: used by scripts/record.ts, which turns the pages itself.
+    if (params.has('noscroll')) return;
+    // The card scratches itself (unless the guest got there first), then the pages turn on their own.
+    window.setTimeout(scratch.auto, reducedMotion ? 0 : SCRATCH_DELAY);
+    if (!reducedMotion) void onReveal.then(() => window.setTimeout(pager.startAuto, DATES_HOLD));
   });
 };
 

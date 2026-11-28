@@ -14,7 +14,7 @@ export const startReveal = (root: HTMLElement, reducedMotion: boolean) => {
       for (const e of entries) {
         if (!e.isIntersecting) continue;
         const el = e.target as HTMLElement;
-        el.style.setProperty('--d', String(Math.min(k++, 12)));
+        el.style.setProperty('--d', String(Math.min(k++, 6))); // cap: the last line is in by ~2.5 s
         el.classList.add('in');
         io.unobserve(el);
       }

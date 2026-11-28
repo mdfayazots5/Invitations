@@ -151,8 +151,8 @@ export const createWorld = (canvas: HTMLCanvasElement, opts: {reducedMotion: boo
   // ── station 1: hero courtyard (palms, hanging lanterns, flower beds; the palace is on the horizon layer) ──
   const heroFlowers: Mesh[] = [];
   for (const [x, z, h, lean] of [
-    [-5.5, -21, 7, -0.8],
-    [5.8, -23, 7.6, 0.9],
+    [-6.4, -26, 7, -0.8],
+    [6.6, -28, 7.6, 0.9],
     [-8.5, -30, 8.4, -1.1],
     [8.8, -32, 8, 1],
     [-6.5, -40, 7.4, -0.6],

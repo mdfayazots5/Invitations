@@ -12,10 +12,11 @@ The look is a soft "storybook" in real-time 3D: powder-blue to peach sky, ivory 
 2. **Save the Date.** Bismillah, NIKAH & VALIMA, both names, and a gold scratch card that reveals "14 · 15 December 2026". It scratches itself after 3 s.
 3. **Invitation** (English) and 4. **Urdu invitation**, under hanging crescents and stars.
 5. **Nikah** with falling petals, and 6. **Valima** with candle glow and gold sparkles.
-7. **Countdown** under swaying lanterns, 8. **RSVP** to WhatsApp (+91 95158 24929), 9. **Venues** with "Open in Maps".
+7. **Countdown** under swaying lanterns, 8. **RSVP** to WhatsApp (+91 95158 24929), 9. **Venues** with a map preview of each pin and "Open in Maps".
 10. **Closing**: "Warm Regards", With Best Compliments From Near & Dear, and "View again".
 
-The page moves on its own after the dates are revealed, holding each section (7–9 s). The guest's first touch stops it.
+The site moves **page by page**, as on the muskan site: each section fills exactly one screen and snaps, inside a fixed full-screen scroller. After the dates are revealed the pages turn on their own, holding each one (5–9 s). As soon as the guest touches, swipes or scrolls, that stops for good and they turn the pages themselves. A swipe, a tap on empty space or one mouse-wheel gesture turns one page; the dots on the right show (and jump to) the page; "View again" plays the show again. The 3D camera follows the pages, so every page shows its own scene.
+The song (the same one as the family's other invites) fades in on the tap; the round button at the top-left pauses it.
 
 ## The 3D world (no image files)
 Every background is real-time 3D (Three.js), built in code as one continuous world: [PROMPT-3D-FLOW.md](PROMPT-3D-FLOW.md).
@@ -39,7 +40,7 @@ Song: `public/music.mp3` (Suno prompt in the brief, §4.6). Without it, the musi
 | Petals, sparkles, leaves | [src/ambient.ts](src/ambient.ts) |
 | Colours, fonts, motion | [src/styles.css](src/styles.css) |
 | Curtain opening | [src/curtain.ts](src/curtain.ts) |
-| Auto-move (glide 1.0 s; hold per section = `data-hold` in main.ts) | [src/drift.ts](src/drift.ts) |
+| Pages: snapping, auto-advance, dots, swipe/tap/wheel (hold per page = `data-hold` in main.ts) | [src/pages.ts](src/pages.ts) |
 
 ⚠ All Urdu and Arabic was transcribed from the card photo: have a fluent reader check it on the site before sharing.
 The Nikah Hijri date (4 Rajab 1448 AH) isn't printed on the card; it was taken from the family's other invites.
