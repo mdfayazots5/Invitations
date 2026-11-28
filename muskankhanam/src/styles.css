@@ -1,0 +1,1170 @@
+:root {
+  --maroon: #5a0b14;
+  --wine: #3a040c;
+  --crimson: #8e0e1c;
+  --ivory: #f8eedf;
+  --gold: #e2b765;
+  --gold-deep: #a46f2a;
+  --blush: #fbefe8;
+  --rose-ink: #a83a5c;
+  --ink: #4a2a22;
+  --gold-grad: linear-gradient(100deg, #9c6f28 0%, #f6dc95 28%, #d29d47 50%, #fff0bd 70%, #a8792f 100%);
+  --script: 'Pinyon Script', cursive;
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --caps: 'Cinzel', 'Cormorant Garamond', serif;
+  --ease: cubic-bezier(0.65, 0, 0.25, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  background: var(--wine);
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  color: var(--ivory);
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.5;
+  text-align: center;
+  overflow-x: hidden;
+  background: var(--wine);
+  -webkit-font-smoothing: antialiased;
+}
+body.locked {
+  overflow: hidden;
+  height: 100svh;
+}
+p,
+h2,
+ol {
+  margin: 0;
+}
+h2 {
+  font-weight: 400;
+}
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+/* ───────── type ───────── */
+.script {
+  font-family: var(--script);
+  font-weight: 400;
+  line-height: 1.2;
+}
+.caps {
+  font-family: var(--caps);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+.italic {
+  font-style: italic;
+}
+.tiny {
+  font-size: 10.5px;
+  letter-spacing: 0.26em;
+}
+.gold-text {
+  background: var(--gold-grad);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.urdu {
+  font-family: 'Noto Nastaliq Urdu', serif;
+  font-size: clamp(17px, 5vw, 21px);
+  line-height: 2.1;
+}
+.ornament {
+  display: block;
+  width: 190px;
+  height: 14px;
+  margin: 14px auto;
+}
+.kicker {
+  font-size: 11px;
+  letter-spacing: 0.32em;
+}
+
+/* reveal on scroll */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.9s ease,
+    transform 0.9s var(--ease);
+  transition-delay: calc(var(--d, 0) * 110ms);
+}
+[data-reveal].in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ───────── sections + bands ───────── */
+#app {
+  position: relative;
+}
+.sec {
+  position: relative;
+  overflow: hidden;
+}
+.band {
+  position: relative;
+  z-index: 3;
+  height: 36px;
+  background: var(--jaali) center / 43px 36px repeat-x;
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.45),
+    0 -2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* ───────── curtain ───────── */
+.curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow: hidden;
+  cursor: pointer;
+  outline: none;
+  background: #2a0207;
+}
+.curtain-art {
+  position: absolute;
+  inset: 0;
+  background: #3a0306 url('/art/curtain.webp') center 35% / cover no-repeat;
+}
+.beams {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.55;
+}
+.beams i {
+  position: absolute;
+  top: -10%;
+  bottom: 0;
+  width: 70px;
+  background: linear-gradient(180deg, rgba(255, 170, 60, 0) 0%, rgba(255, 160, 50, 0.45) 40%, rgba(255, 140, 40, 0.15) 100%);
+  filter: blur(6px);
+  animation: beam 5s ease-in-out infinite;
+}
+.beams i:nth-child(1) {
+  left: 18%;
+  transform: rotate(6deg);
+}
+.beams i:nth-child(2) {
+  left: calc(50% - 45px);
+  width: 90px;
+  animation-delay: -1.6s;
+}
+.beams i:nth-child(3) {
+  right: 16%;
+  transform: rotate(-6deg);
+  animation-delay: -3s;
+}
+@keyframes beam {
+  50% {
+    opacity: 0.55;
+  }
+}
+.curtain-centre {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  top: 40%;
+  width: min(66vw, 280px);
+  transform: translate(-50%, -50%);
+  transition: opacity 0.5s, transform 0.8s var(--ease);
+}
+.crest {
+  display: block;
+  width: 100%;
+  overflow: visible;
+  animation: breathe 3.6s ease-in-out infinite;
+  filter: drop-shadow(0 0 18px rgba(255, 170, 60, 0.55));
+}
+.crest-l {
+  font-family: var(--script);
+  font-size: 54px;
+  fill: #6b1a06;
+}
+.crest-amp {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 18px;
+  fill: #6b1a06;
+}
+@keyframes breathe {
+  50% {
+    transform: scale(1.04);
+  }
+}
+.tap-hint {
+  margin-top: 16px;
+  font-size: 11px;
+  color: #ffe2b0;
+  text-shadow: 0 1px 4px rgba(40, 0, 0, 0.9);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+.split {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  margin-left: -2px;
+  background: linear-gradient(180deg, #ffd27a, #ff9a1e 50%, #ffd27a);
+  box-shadow:
+    0 0 18px 6px rgba(255, 160, 40, 0.8),
+    0 0 60px 20px rgba(255, 130, 20, 0.45);
+  transform: scaleY(0);
+  transition:
+    transform 0.5s var(--ease),
+    width 0.7s var(--ease),
+    margin 0.7s var(--ease);
+}
+.flash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: #fff3dc;
+}
+.curtain.opening .split {
+  transform: scaleY(1);
+}
+.curtain.opening .curtain-centre {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.9);
+}
+.curtain.beam .split {
+  width: 16vw;
+  margin-left: -8vw;
+}
+.curtain.open .flash {
+  animation: flash 2.6s ease forwards;
+}
+.curtain.open {
+  pointer-events: none;
+}
+.curtain.open > :not(.flash) {
+  visibility: hidden;
+  transition: visibility 0s 0.35s;
+}
+.curtain.open {
+  background: transparent;
+  transition: background 0s 0.35s;
+}
+/* cream burst → deep amber → fade to the hall (the video's 3 s / 4 s / 5 s) */
+@keyframes flash {
+  0% {
+    opacity: 0;
+    background: #fffaf0;
+  }
+  12% {
+    opacity: 1;
+    background: #fff6e6;
+  }
+  40% {
+    opacity: 1;
+    background: #f9d79a;
+  }
+  70% {
+    opacity: 1;
+    background: #f0a02e;
+  }
+  100% {
+    opacity: 0;
+    background: #e8911f;
+  }
+}
+
+/* ───────── hero: palace hall (public/art/hall.webp), Save the Date ───────── */
+.hero {
+  height: 100svh;
+  min-height: 560px;
+  background: #2a0c05;
+}
+.hero-art {
+  position: absolute;
+  inset: 0;
+  background: url('/art/hall.webp') center 30% / cover no-repeat;
+  transform: scale(1.35);
+  transform-origin: 50% 40%;
+}
+.hero-art::after {
+  /* warm vignette, like the video's dark edges */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 85% 60% at 50% 45%, rgba(0, 0, 0, 0) 50%, rgba(20, 4, 0, 0.55) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0) 70%, rgba(30, 6, 0, 0.45) 100%);
+}
+body.entered .hero-art {
+  transform: scale(1);
+  transition: transform 4.2s cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+.hero-sparkle {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 22%, #fff3c8, transparent),
+    radial-gradient(1.2px 1.2px at 30% 40%, #fff3c8, transparent),
+    radial-gradient(1.8px 1.8px at 68% 30%, #fff3c8, transparent),
+    radial-gradient(1.2px 1.2px at 82% 46%, #fff3c8, transparent),
+    radial-gradient(1.5px 1.5px at 46% 18%, #fff3c8, transparent),
+    radial-gradient(1.2px 1.2px at 58% 52%, #fff3c8, transparent),
+    radial-gradient(1.6px 1.6px at 22% 58%, #fff3c8, transparent),
+    radial-gradient(1.3px 1.3px at 90% 20%, #fff3c8, transparent);
+  animation: twinkle 3s ease-in-out infinite;
+}
+@keyframes twinkle {
+  50% {
+    opacity: 0.25;
+  }
+}
+/* "Save the Date" sits on the glowing arch, the names on the top steps, the card lower on the stairs. */
+.hero-text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 31%;
+  padding: 0 12px;
+}
+.hero-text::before {
+  /* warm haze of light behind the lettering, as in the video */
+  content: '';
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  top: -18%;
+  bottom: -22%;
+  background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(255, 220, 160, 0.78) 0%, rgba(255, 200, 130, 0.45) 45%, rgba(255, 190, 110, 0) 75%);
+  filter: blur(6px);
+  z-index: -1;
+}
+.hero-text {
+  z-index: 1;
+}
+.save {
+  position: relative;
+  font-family: 'Monsieur La Doulaise', var(--script);
+  font-weight: 400;
+  color: #5a0f08;
+  font-size: clamp(74px, 24vw, 108px);
+  line-height: 0.78;
+  text-shadow:
+    0 0 18px rgba(255, 214, 140, 0.85),
+    0 0 4px rgba(255, 226, 170, 0.8);
+}
+.save span {
+  display: block;
+}
+.save-1 {
+  margin-right: 0.9em;
+}
+.save-2 {
+  margin-left: 0.5em;
+}
+.hero-names {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 59%;
+  font-size: clamp(19px, 5.8vw, 25px);
+  letter-spacing: 0.42em;
+  font-weight: 600;
+  color: #ffd97a;
+  text-shadow:
+    0 1px 1px #3a0e00,
+    0 0 8px rgba(40, 10, 0, 0.9),
+    0 0 18px rgba(40, 10, 0, 0.6);
+}
+.hero-names .amp {
+  display: block;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.8em;
+  letter-spacing: 0;
+  margin: 0;
+}
+.hero-card {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: calc(5% + env(safe-area-inset-bottom));
+}
+[data-hero] {
+  opacity: 0;
+  transform: translateY(14px) scale(0.98);
+}
+body.entered [data-hero] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 1.2s ease,
+    transform 1.4s var(--ease);
+  transition-delay: calc(0.3s + var(--h) * 0.3s);
+}
+
+/* ───────── scratch card (on the hall's stairs) ───────── */
+.scratch {
+  position: relative;
+  width: min(340px, 100%);
+  height: clamp(104px, 15svh, 130px);
+  margin: 0 auto;
+  border-radius: 10px;
+  outline: none;
+  touch-action: none;
+  background: linear-gradient(160deg, #4f0505, #2c0000);
+  border: 1px solid #e2b765;
+  box-shadow:
+    0 0 0 5px rgba(226, 183, 101, 0.15),
+    0 14px 30px rgba(0, 0, 0, 0.45);
+}
+.scratch:focus-visible {
+  box-shadow: 0 0 0 3px var(--ivory);
+}
+.scratch-reveal {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0.92);
+  transition: transform 0.6s var(--ease);
+}
+.sr-date {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(30px, 9.4vw, 38px);
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  color: #f6d28e;
+}
+.sr-sub {
+  font-style: italic;
+  font-size: 15px;
+  color: #f3dcc0;
+}
+.scratch.done .scratch-reveal {
+  transform: scale(1);
+}
+.scratch canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  cursor: grab;
+  transition: opacity 0.6s ease;
+}
+.scratch.done canvas {
+  opacity: 0;
+  pointer-events: none;
+}
+.spark {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff1c4;
+  box-shadow: 0 0 8px #e9cf8a;
+  pointer-events: none;
+  animation: spark 0.7s ease-out forwards;
+}
+@keyframes spark {
+  to {
+    transform: translate(var(--sx), var(--sy)) scale(0.2);
+    opacity: 0;
+  }
+}
+/* ───────── invitation arch (public/art/arch.webp) ─────────
+   The image is zoomed (139% wide) so its glowing panel fills ~70% of the screen; the text box sits
+   exactly on the panel (measured from the image: x 23.5–74%, y 33–80%). */
+.invite {
+  background: #1a0603;
+}
+.arch-scene {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  aspect-ratio: 1106 / 2720;
+  background: url('/art/arch.webp') 45.5% 0 / 139% auto no-repeat;
+}
+.arch-text {
+  position: absolute;
+  left: 19%;
+  right: 19%;
+  top: 31.5%;
+  bottom: 20%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: var(--ink);
+}
+.arch-text::before {
+  /* inner glow, as in the video: lifts the panel's shaded corners so the dark ink reads everywhere */
+  content: '';
+  position: absolute;
+  inset: -6% -10%;
+  background: radial-gradient(ellipse 60% 56% at 50% 50%, rgba(255, 226, 170, 0.62) 0%, rgba(255, 226, 170, 0.52) 75%, rgba(255, 226, 170, 0) 100%);
+  filter: blur(4px);
+}
+.arch-flow {
+  position: relative;
+}
+.arch-flow > * + * {
+  margin-top: 2px;
+}
+.bismillah-ar {
+  font-family: 'Amiri', serif;
+  font-weight: 700;
+  font-size: clamp(22px, 7vw, 27px);
+  line-height: 1.9;
+  color: #6b1a10;
+}
+.arch-label {
+  margin-top: 4px;
+  color: #7a4a18;
+}
+.arch-urdu {
+  color: #6b1a10;
+  margin-top: -2px;
+}
+.arch-text .small {
+  font-size: 14px;
+  color: #6a4630;
+}
+.verse-inner,
+.verse .light-inner {
+  padding-bottom: 46px;
+}
+.verse-ar {
+  font-family: 'Amiri', serif;
+  font-weight: 700;
+  font-size: clamp(21px, 6.2vw, 25px);
+  line-height: 2.05;
+  color: #6b1424;
+  margin-top: 10px;
+}
+.verse-en {
+  font-size: 17px;
+  line-height: 1.5;
+  color: #5a3a32;
+  max-width: 340px;
+  margin: 0 auto;
+}
+.ayah-ar {
+  font-family: 'Amiri', serif;
+  font-weight: 700;
+  font-size: clamp(18px, 5.4vw, 21px);
+  line-height: 2;
+  color: #6b1a10;
+}
+.ayah-en {
+  margin-top: 4px;
+  font-size: 14.5px;
+  line-height: 1.45;
+  color: #5a3a28;
+}
+.arch-text .tiny {
+  margin-top: 8px;
+  color: #7a4a18;
+}
+.lead {
+  font-size: 10.5px;
+  letter-spacing: 0.24em;
+  line-height: 1.8;
+  color: #7a4a26;
+  margin: 8px auto 0;
+  max-width: 270px;
+}
+.host {
+  margin-top: 6px;
+  font-family: var(--caps);
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: #5a1414;
+}
+.arch-text .name {
+  margin-top: 12px;
+  font-size: clamp(30px, 9vw, 40px);
+  white-space: nowrap;
+  color: #6b0f22;
+}
+.arch-text .and {
+  font-size: 28px;
+  color: #7a4a18;
+  line-height: 1;
+}
+.parents {
+  font-size: 15px;
+  font-style: italic;
+  color: #6a4630;
+}
+.invite-urdu {
+  margin-top: 12px;
+  color: #6b1a10;
+}
+
+/* ───────── light (blush) sections ───────── */
+.light {
+  color: var(--ink);
+  background:
+    var(--paper),
+    radial-gradient(ellipse at 20% 10%, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0) 50%),
+    radial-gradient(ellipse at 80% 90%, rgba(244, 196, 196, 0.45), rgba(244, 196, 196, 0) 55%),
+    var(--blush);
+}
+.light-inner {
+  padding: 40px 22px 56px;
+}
+.light .kicker {
+  color: #85532e;
+}
+.light .title {
+  font-size: clamp(50px, 15vw, 62px);
+  color: var(--rose-ink);
+  margin-top: 4px;
+}
+.timeline {
+  list-style: none;
+  padding: 0 0 0 30px;
+  margin: 10px auto 0;
+  max-width: 380px;
+  text-align: left;
+  position: relative;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  bottom: 14px;
+  width: 1px;
+  background: linear-gradient(180deg, #d8a64f, rgba(216, 166, 79, 0.2));
+}
+.ev {
+  position: relative;
+  padding: 10px 0 26px;
+}
+.ev-dot {
+  position: absolute;
+  left: -29px;
+  top: 14px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffd66b 0 35%, #d8a64f 36% 55%, rgba(216, 166, 79, 0.25) 56%);
+  box-shadow: 0 0 10px rgba(255, 196, 80, 0.7);
+}
+.ev-no {
+  font-size: 10px;
+  color: #85532e;
+}
+.ev-title {
+  font-size: 44px;
+  color: var(--rose-ink);
+  line-height: 1.15;
+}
+.ev-urdu {
+  font-size: 15px;
+  color: #85532e;
+  margin-left: 6px;
+}
+.ev-when {
+  font-size: 17px;
+  font-weight: 600;
+  color: #5a2a22;
+}
+.ev-hijri {
+  font-size: 14px;
+  color: #6e4e3e;
+}
+.ev-venue {
+  margin-top: 4px;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  color: #8a5a3a;
+}
+.ev-blurb {
+  margin-top: 4px;
+  font-size: 16px;
+  color: #6a4a40;
+}
+
+/* ───────── countdown ───────── */
+.count {
+  background: radial-gradient(ellipse at 50% 35%, #1c0d06 0%, #080403 70%);
+}
+.fireworks {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.count-inner {
+  position: relative;
+  padding: 46px 18px 54px;
+}
+.count .kicker {
+  color: #f3d58e;
+  margin-bottom: 10px;
+}
+.glow-title {
+  font-family: 'Monsieur La Doulaise', var(--script);
+  font-size: clamp(62px, 19vw, 80px);
+  line-height: 1.05;
+  color: #ffd98a;
+  text-shadow:
+    0 0 6px rgba(255, 196, 90, 0.9),
+    0 0 22px rgba(255, 150, 40, 0.7),
+    0 0 44px rgba(255, 120, 20, 0.4);
+  margin-top: 8px;
+}
+.boxes {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 26px auto 18px;
+}
+.box {
+  width: 72px;
+}
+.box-face {
+  position: relative;
+  height: 84px;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1.5px solid #e2b765;
+  background: linear-gradient(160deg, #7a1220, #3a050c);
+  box-shadow:
+    inset 0 0 0 3px rgba(0, 0, 0, 0.25),
+    inset 0 0 0 4px rgba(226, 183, 101, 0.4),
+    0 0 16px rgba(255, 170, 60, 0.35);
+}
+.digit {
+  position: absolute;
+  inset: 0 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 600;
+  color: #ffe3a0;
+}
+.digit.out {
+  animation: flip-out 0.45s ease forwards;
+}
+.digit.in {
+  animation: flip-in 0.45s ease forwards;
+}
+@keyframes flip-out {
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+@keyframes flip-in {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+.box .unit {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  font-size: 8.5px;
+  letter-spacing: 0.16em;
+  color: #f3d58e;
+}
+.count-until {
+  color: #fff3d6;
+  font-size: 17px;
+}
+
+/* ───────── RSVP ───────── */
+.rsvp {
+  background: radial-gradient(ellipse at 50% 20%, #7a1020 0%, #4a0710 55%, #22030a 100%);
+}
+.rsvp-inner {
+  padding: 40px 20px 54px;
+}
+.rsvp .glow-title {
+  font-size: clamp(36px, 10.6vw, 52px);
+  white-space: nowrap;
+}
+.rsvp-card {
+  max-width: 360px;
+  margin: 6px auto 0;
+  padding: 24px 20px 22px;
+  text-align: left;
+  border: 1.5px solid rgba(226, 183, 101, 0.75);
+  border-radius: 14px;
+  background: linear-gradient(170deg, rgba(110, 15, 29, 0.6), rgba(40, 3, 10, 0.75));
+  box-shadow: 0 0 22px rgba(255, 150, 40, 0.18);
+}
+.rsvp-card label.caps,
+.rsvp-card p.caps {
+  display: block;
+  font-size: 10.5px;
+  color: #f3d58e;
+  margin: 0 0 8px;
+}
+.rsvp-card input {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  font-size: 17px;
+  border-radius: 6px;
+  border: 1px solid rgba(226, 183, 101, 0.55);
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff3d6;
+  outline: none;
+}
+.rsvp-card input::placeholder {
+  color: rgba(255, 236, 200, 0.55);
+  font-style: italic;
+}
+.rsvp-card input:focus {
+  border-color: #ffd98a;
+}
+.choices {
+  display: flex;
+  gap: 10px;
+}
+.choices button {
+  flex: 1;
+  padding: 12px 8px;
+  font-size: 16px;
+  font-style: italic;
+  border-radius: 6px;
+  border: 1px solid rgba(226, 183, 101, 0.55);
+  background: rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: background 0.25s, border-color 0.25s;
+}
+.choices button[aria-pressed='true'] {
+  background: linear-gradient(160deg, #c0182f, #7a0a1c);
+  border-color: #ffd98a;
+}
+.rsvp-err {
+  min-height: 24px;
+  margin: 6px 0 4px;
+  font-size: 15px;
+  color: #ffc2b0;
+  text-align: center;
+}
+.btn-gold {
+  display: block;
+  width: 100%;
+  padding: 16px 10px;
+  border: 0;
+  border-radius: 8px;
+  font-size: 12.5px;
+  color: #3a1a04;
+  background: linear-gradient(100deg, #f59e1b, #ffe08a 42%, #ffb52e 70%, #ffd36b);
+  box-shadow:
+    0 0 0 1px rgba(255, 230, 160, 0.6),
+    0 8px 26px rgba(255, 160, 40, 0.5);
+  cursor: pointer;
+}
+
+/* ───────── venues ───────── */
+.venue {
+  max-width: 380px;
+  margin: 22px auto 0;
+  padding: 12px 12px 22px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 10px 28px rgba(150, 80, 80, 0.15);
+}
+.map-wrap {
+  height: 210px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #efe3dc;
+  margin-bottom: 14px;
+}
+.map {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+.venue .ev-no {
+  color: #85532e;
+}
+.venue-name {
+  font-size: clamp(34px, 10vw, 42px);
+  color: var(--rose-ink);
+}
+.venue .italic {
+  font-size: 16px;
+  color: #6a4a40;
+}
+.btn-outline {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 11px 20px;
+  border-radius: 999px;
+  border: 1px solid #c98b8f;
+  font-size: 11px;
+  color: #8a3a4a;
+  text-decoration: none;
+}
+
+/* ───────── closing ───────── */
+.closing {
+  background: radial-gradient(ellipse at 50% 30%, #b3172b 0%, #8e0e1c 45%, #5a0710 100%);
+}
+.closing-inner {
+  padding: 36px 26px 64px;
+}
+.closing .star {
+  color: #ffd98a;
+  font-size: 22px;
+}
+.closing .small-star {
+  font-size: 15px;
+  margin-top: 8px;
+}
+.closing-more {
+  margin-top: 30px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 217, 138, 0.3);
+}
+.dua-ar {
+  font-family: 'Amiri', serif;
+  font-weight: 700;
+  font-size: clamp(21px, 6.4vw, 25px);
+  line-height: 2;
+  color: #ffe3a0;
+}
+.dua-en {
+  font-size: 16px;
+  color: #fbe3cf;
+  max-width: 330px;
+  margin: 2px auto 0;
+}
+.dua-en .muted {
+  opacity: 0.75;
+  font-size: 13px;
+}
+.presence {
+  margin: 10px auto 0;
+  max-width: 340px;
+  font-size: clamp(38px, 11.4vw, 48px);
+  line-height: 1.28;
+  color: #ffd98a;
+  text-shadow: 0 0 12px rgba(255, 170, 60, 0.35);
+}
+.closing .small-caps {
+  font-size: 10.5px;
+  color: #f3d58e;
+}
+.closing .from {
+  font-size: 40px;
+  color: #ffe3a0;
+}
+.closing .urdu {
+  color: #fbe3cf;
+}
+.names-caps {
+  margin-top: 14px;
+  font-size: 14px;
+  color: #fff3d6;
+}
+.footer-names {
+  font-size: clamp(42px, 13vw, 54px);
+  color: #ffd98a;
+}
+.closing .tiny {
+  color: #f3d58e;
+}
+.replay {
+  margin-top: 26px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 217, 138, 0.7);
+  background: transparent;
+  color: #ffe3a0;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* ───────── music button ───────── */
+.music {
+  position: fixed;
+  right: 12px;
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  z-index: 40;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #e2b765;
+  background: rgba(40, 4, 10, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.music[hidden] {
+  display: none;
+}
+.music svg {
+  width: 19px;
+}
+.music .bar {
+  transform-origin: 50% 100%;
+  animation: eq 0.9s ease-in-out infinite;
+}
+.music .bar:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.music .bar:nth-child(3) {
+  animation-delay: 0.4s;
+}
+.music .bar:nth-child(4) {
+  animation-delay: 0.1s;
+}
+.music.paused .bar {
+  animation: none;
+  transform: scaleY(0.35);
+}
+.music .mute {
+  display: none;
+}
+.music.paused .mute {
+  display: inline;
+}
+@keyframes eq {
+  50% {
+    transform: scaleY(0.35);
+  }
+}
+
+/* ───────── video mode (?video): only what works without tapping ───────── */
+body.video .music,
+body.video #countdown,
+body.video #rsvp,
+body.video #venues,
+body.video .replay,
+body.video .tap-hint {
+  display: none !important;
+}
+
+/* ───────── og-image mode ───────── */
+body.og {
+  overflow: hidden;
+}
+.og-card {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: radial-gradient(ellipse at 50% 50%, #8e0e1c 0%, #4a0710 75%);
+}
+.og-card .band {
+  height: 44px;
+  background-size: 54px 44px;
+}
+.og-inner {
+  /* WhatsApp may show a centred square crop of the 1200×630 image: keep everything inside ~560 px wide. */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.og-crest {
+  width: 190px;
+  margin-bottom: -6px;
+}
+.og-crest .crest {
+  animation: none;
+}
+.og-text {
+  text-align: center;
+}
+.og-save {
+  font-size: 74px;
+  color: #ffd98a;
+  line-height: 1.05;
+  text-shadow: 0 0 20px rgba(255, 170, 60, 0.45);
+}
+.og-names {
+  font-size: 26px;
+  color: #fff3d6;
+  margin-top: 4px;
+}
+.og-when {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #f3d58e;
+}
+
+/* ───────── reduced motion ───────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .hero-art {
+    transform: none;
+  }
+  [data-hero] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ───────── arch text inks (last, so they win over the shared text colours) ───────── */
+/* darker inks than elsewhere: the panel is a mid amber, not pale parchment */
+.arch-text .small,
+.arch-text .parents {
+  color: #3e1a08;
+  font-weight: 500;
+}
+.arch-text .lead,
+.arch-text .arch-label,
+.arch-text .and {
+  color: #4a2008;
+  font-weight: 600;
+}
+.arch-text .host {
+  color: #3e0c08;
+  font-weight: 600;
+}
+.arch-text .name,
+.arch-text .bismillah-ar,
+.arch-text .urdu {
+  color: #4a0a06;
+}

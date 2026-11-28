@@ -53,6 +53,6 @@ Add `?noscroll` to the URL to turn off the auto-advance (the recorder uses it).
 - The page timeline (page → hold time) is at the top of [scripts/record.ts](scripts/record.ts). Keep the video under 60 s so it also fits WhatsApp Status.
 
 ## Deploy (branch `Fayaz`)
-Netlify reads the root `netlify.toml`: base `fayaz`, build `npm run build`, publish `dist`.
+Netlify reads the root `netlify.toml`: its `[context.Fayaz]` block builds this folder (`npm ci && npm run build`, publish `fayaz/dist`).
 `og:image` and `og:url` use the full `https://fayazinvitation.netlify.app/` address. WhatsApp caches previews, so an old card can show for a while after a redeploy.
 The MP4 lives in `recordings/`. It is not deployed; share it directly on WhatsApp.

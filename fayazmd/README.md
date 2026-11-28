@@ -54,7 +54,7 @@ npm run record     # record recordings/fayaz-muskan-invite.mp4: true HD 1080×19
 ## Deploy (branch `FayazMD`)
 | Host | Settings |
 |------|----------|
-| Netlify | Branch `FayazMD`. The root `netlify.toml` sets base `fayazmd`, build `npm run build`, publish `dist`. |
+| Netlify | Branch `FayazMD`. The root `netlify.toml` (`[context.FayazMD]`) builds this folder: `npm ci && npm run build`, publish `fayazmd/dist`. |
 | Cloudflare Pages | Branch `FayazMD` · root directory `fayazmd` · build `npm run build` · output `dist` |
 | Render (Static Site) | Branch `FayazMD` · root directory `fayazmd` · build `npm install && npm run build` · publish `dist` |
 

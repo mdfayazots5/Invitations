@@ -1,41 +1,45 @@
 # Invitations
 
-One repo, one **branch per person**. Each branch holds only that person's folder, so deploying a branch never publishes anyone else's invitation.
+One repo. **Every branch holds every folder**, and all branches are kept identical, so they never conflict.
+Each Netlify site deploys one branch, and the branch decides which folder gets built (see `netlify.toml`).
 
-| Branch   | Folder     | What it is                                  |
-|----------|------------|---------------------------------------------|
-| `main`   | none       | This README only. A clean base for new branches. |
-| `Fayaz`  | `fayaz/`   | Nikah invite: Mohammed Fayaz & Muskan Khanam (family, Remotion video + page) |
-| `FayazMD` | `fayazmd/` | Valima-only Royal Doors invite for Fayaz's friends & relatives (Vite website + recorded MP4) |
-| `Muskan` | `muskan/`  | (next)                                      |
-| `Rakesh` | `rakesh/`  | (next)                                      |
+| Branch         | Folder          | Netlify site                          | What it is |
+|----------------|-----------------|---------------------------------------|------------|
+| `Fayaz`        | `fayaz/`        | https://fayazinvitation.netlify.app/   | Family invite, Nikah & Valima: Mohammed Fayaz & Muskan Khanam (emerald & gold, 3D sky) |
+| `FayazMD`      | `fayazmd/`      | https://mdfayazinvitation.netlify.app/ | Valima invite for Fayaz's friends & colleagues |
+| `Muskan`       | `muskan/`       | https://muskaninvitation.netlify.app/  | Bride's family invite, Nikah & Valima (rose & gold, 3D sky) |
+| `MuskanKhanam` | `muskankhanam/` | not created yet (code expects `muskankhanam.netlify.app`) | Bride's family invite, redesign: red curtain & palace hall |
+| `main`         | all             | none                                  | Where you work. Pushed to every branch above. |
 
-Inside each person's folder:
-- `src/` is the Remotion video source, and `src/invite.ts` holds that person's names, dates and venues.
-- `site/` is the **deployed** landing page: `index.html`, the rendered `.mp4`, `poster.jpg` and `invite.ics`.
+Each folder is its own Vite site:
+- `src/invite.config.ts` holds that person's names, dates, venues and every line of page text.
+- `scripts/` holds QA (`check`), the link-preview image (`og`) and the MP4 recorder (`record`).
+- `recordings/` holds the MP4 to share on WhatsApp. It is not deployed.
 
-## Start an invitation for a new person
+## Everyday workflow
 ```bash
 git checkout main
-git checkout -b Muskan
-git checkout Fayaz -- fayaz        # copy Fayaz's as a template
-git mv fayaz muskan
-# edit muskan/src/invite.ts, the scenes, and muskan/site/index.html
-# change base = "fayaz" to "muskan" in netlify.toml (copy it from Fayaz the same way)
-cd muskan && npm install && npm run render && npm run poster
-git add -A && git commit -m "Muskan invitation" && git push -u origin Muskan
+# edit files inside ONE person's folder, e.g. muskankhanam/
+cd muskankhanam && npm install && npm run build && npm run check && cd ..
+git add -A && git commit -m "MuskanKhanam: ..."
+bash scripts/push-all.sh     # pushes main to main, Fayaz, FayazMD, Muskan, MuskanKhanam
 ```
-Never merge one person's branch into another, or into `main`.
+Every branch gets the same commit. Only the site whose folder changed rebuilds: `scripts/netlify-ignore.sh` skips the others.
 
-## Deploy (choose the person's branch)
-No build step runs on the host. It serves the committed `site/` folder.
+## How Netlify picks the folder
+`netlify.toml` has one `[context.<Branch>]` block per branch, for example:
+```toml
+[context.Muskan]
+  command = "cd muskan && npm ci && npm run build"
+  publish = "muskan/dist"
+```
+In each site's Netlify settings, set **Branch to deploy** to the person's branch and leave **Base directory empty**.
 
-| Host | Settings |
-|------|----------|
-| **Netlify** | Import repo, set **Branch to deploy** to `Fayaz`. `netlify.toml` already sets base `fayaz` and publish `site`. |
-| **Cloudflare Pages** | Production branch `Fayaz` · Framework *None* · Build command *(empty)* · Root directory `fayaz` · Output directory `site` |
-| **Render** (Static Site) | Branch `Fayaz` · Build command *(empty)* · Publish directory `fayaz/site` |
+## Add a new person
+1. On `main`, copy a folder as a template: `cp -r fayaz rakesh` (skip `node_modules/`), then edit `rakesh/src/invite.config.ts`.
+2. Add a `[context.Rakesh]` block to `netlify.toml` and a `Rakesh) folder=rakesh ;;` line to `scripts/netlify-ignore.sh`.
+3. Add `main:Rakesh` to `scripts/push-all.sh`, commit, and run it.
+4. Create a Netlify site from this repo with branch `Rakesh`.
 
-Every push to that branch redeploys that person's page only.
-
-**`FayazMD` is different:** it is a Vite site, so the host runs a build. Netlify reads the branch's `netlify.toml` (base `fayazmd`, build `npm run build`, publish `dist`). On Cloudflare Pages use root `fayazmd`, build `npm run build`, output `dist`. On Render use root `fayazmd`, build `npm install && npm run build`, publish `dist`. See `fayazmd/README.md`.
+## Old one-folder branches
+Before this layout, each branch held only its own folder. Those versions are kept as the tags `archive/Fayaz`, `archive/FayazMD`, `archive/Muskan` and `archive/MuskanKhanam`.

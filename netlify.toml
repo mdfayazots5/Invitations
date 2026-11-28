@@ -1,8 +1,35 @@
-# Netlify: this branch deploys only the fayaz/ family invitation (Vite site).
+# One netlify.toml for every branch. Every branch holds every folder;
+# the branch a Netlify site deploys decides which folder it builds.
+#
+#   Branch        Folder          Netlify site
+#   Fayaz         fayaz/          fayazinvitation
+#   FayazMD       fayazmd/        mdfayazinvitation
+#   Muskan        muskan/         muskaninvitation
+#   MuskanKhanam  muskankhanam/   (not created yet)
+#
+# Leave "Base directory" empty in each site's Netlify settings so this file is read.
+
 [build]
-  base = "fayaz"
-  command = "npm run build"
+  command = "echo 'No invitation is mapped to this branch in netlify.toml' && exit 1"
   publish = "dist"
+  # Skip the build when this branch's folder (and this file) did not change.
+  ignore = "bash scripts/netlify-ignore.sh"
 
 [build.environment]
   NODE_VERSION = "22"
+
+[context.Fayaz]
+  command = "cd fayaz && npm ci && npm run build"
+  publish = "fayaz/dist"
+
+[context.FayazMD]
+  command = "cd fayazmd && npm ci && npm run build"
+  publish = "fayazmd/dist"
+
+[context.Muskan]
+  command = "cd muskan && npm ci && npm run build"
+  publish = "muskan/dist"
+
+[context.MuskanKhanam]
+  command = "cd muskankhanam && npm ci && npm run build"
+  publish = "muskankhanam/dist"
