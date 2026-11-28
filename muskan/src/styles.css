@@ -1,0 +1,1140 @@
+:root {
+  --bg: #2a0d16;
+  --lift: #4a1828;
+  --ivory: #f3ebdd;
+  --muted: #e6d2d4;
+  --gold: #c9a24a;
+  --gold-30: rgba(201, 162, 74, 0.3);
+  --gold-grad: linear-gradient(100deg, #8c6a2b 0%, #e9cf8a 28%, #c79a45 50%, #f6e3a6 70%, #9c7431 100%);
+  --err: #e8a0a0;
+  --script: 'Pinyon Script', cursive;
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --caps: 'Cinzel', 'Cormorant Garamond', serif;
+  --ease-door: cubic-bezier(0.7, 0, 0.2, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ivory);
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.5;
+  text-align: center;
+  overflow-x: hidden;
+  background:
+    radial-gradient(ellipse 90% 45% at 50% 0%, var(--lift) 0%, rgba(74, 24, 40, 0) 70%),
+    radial-gradient(ellipse 120% 80% at 50% 50%, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.6) 100%),
+    var(--bg);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.locked {
+  overflow: hidden;
+  height: 100svh;
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ───────── shared type ───────── */
+.gold-text {
+  background: var(--gold-grad);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.script {
+  font-family: var(--script);
+  font-weight: 400;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+.caps {
+  font-family: var(--caps);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+.caps.gold {
+  color: var(--gold);
+}
+.italic {
+  font-style: italic;
+}
+.muted {
+  color: var(--muted);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 18px auto;
+  color: var(--gold);
+  font-size: 12px;
+}
+.divider::before,
+.divider::after {
+  content: '';
+  width: 70px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(201, 162, 74, 0), var(--gold));
+}
+.divider::after {
+  background: linear-gradient(90deg, var(--gold), rgba(201, 162, 74, 0));
+}
+
+/* ───────── layout ───────── */
+#dust {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+/* #app is the page scroller: fixed to exactly the visible screen, so the browser bar never
+   collapses and the next page can never peek in. Pages snap inside it. */
+#app {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  max-width: 480px;
+  margin: 0 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none; /* no scrollbar on the right: the page dots show the position */
+  opacity: 0;
+  transform: scale(0.96);
+}
+body.entered #app {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 0.9s ease,
+    transform 0.9s ease;
+}
+section {
+  position: relative;
+  padding: 56px 24px;
+}
+
+/* ───────── reveal on scroll ───────── */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+  transition-delay: calc(var(--d, 0) * 45ms);
+}
+[data-reveal].in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ───────── A: doors ───────── */
+.doors {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background: radial-gradient(ellipse 70% 55% at 50% 45%, #521a2c 0%, var(--bg) 72%);
+  border: 0;
+  padding: 0;
+  width: 100%;
+  cursor: pointer;
+  transform-origin: 50% 46%;
+}
+.doors:focus-visible {
+  outline: none;
+}
+.doors:focus-visible .doors-stage {
+  outline: 2px solid var(--gold);
+  outline-offset: 10px;
+  border-radius: 200px 200px 8px 8px;
+}
+.doors.walk {
+  transform: scale(3.2);
+  opacity: 0;
+  transition:
+    transform 0.9s cubic-bezier(0.5, 0, 0.75, 0),
+    opacity 0.9s ease-in;
+}
+.doors-stage {
+  position: relative;
+  height: min(78svh, calc(88vw * 1.6));
+  aspect-ratio: 400 / 640;
+  perspective: 1400px;
+}
+.doors-halo {
+  position: absolute;
+  inset: -12%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 45%, rgba(233, 207, 138, 0.28) 0%, rgba(233, 207, 138, 0) 62%);
+  animation: breathe 4s ease-in-out infinite;
+}
+.doors-light {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 6%;
+  bottom: 6%;
+  border-radius: 200px 200px 0 0;
+  background: radial-gradient(ellipse 50% 60% at 50% 55%, #fff6da 0%, #f6e3a6 30%, rgba(201, 162, 74, 0.6) 60%, rgba(201, 162, 74, 0) 100%);
+  opacity: 0;
+  transform: scaleX(0.05);
+  transition:
+    opacity 1.2s var(--ease-door),
+    transform 1.2s var(--ease-door);
+}
+.doors.open .doors-light {
+  opacity: 1;
+  transform: scaleX(1);
+}
+.doors-frame,
+.leaf {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.leaf {
+  transition: transform 1.2s var(--ease-door);
+  will-change: transform;
+}
+.leaf-left {
+  transform-origin: 10% 50%;
+}
+.leaf-right {
+  transform-origin: 90% 50%;
+}
+.doors.open .leaf-left {
+  transform: rotateY(-105deg);
+}
+.doors.open .leaf-right {
+  transform: rotateY(105deg);
+}
+.bulb {
+  fill: #5a4a2c;
+  transition: fill 0.3s ease;
+}
+.doors.open .bulb {
+  fill: #ffe7a3;
+  filter: drop-shadow(0 0 4px #ffe7a3);
+  transition-delay: calc(var(--b) * 60ms);
+}
+.tap-hint {
+  color: var(--gold);
+  animation: pulse 2s ease-in-out infinite;
+}
+.doors.open .tap-hint {
+  opacity: 0;
+  animation: none;
+  transition: opacity 0.3s;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ───────── B: hero ───────── */
+.hero {
+  min-height: 100svh;
+  padding: 0;
+  display: flex;
+  background-repeat: repeat;
+  background-size: 96px 96px;
+}
+.hero-arch {
+  position: relative;
+  flex: 1;
+  margin: 74px 12px;
+  background: var(--bg);
+  border-radius: 50% 50% 50% 50% / 210px 210px 120px 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 20px 110px;
+  box-shadow: 0 0 0 1px rgba(201, 162, 74, 0.35), 0 0 40px 10px rgba(0, 0, 0, 0.9);
+}
+.hero [data-hero] {
+  opacity: 0;
+  transform: translateY(18px);
+}
+body.entered .hero [data-hero] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s ease;
+  transition-delay: calc(0.6s + var(--h) * 120ms);
+}
+.bismillah {
+  font-size: 16px;
+  max-width: 300px;
+  line-height: 1.45;
+}
+.hero-name {
+  font-size: clamp(50px, min(18vw, 9.5svh), 96px);
+  line-height: 1.15;
+  animation: shimmer 5s linear infinite;
+}
+.hero-amp {
+  font-size: 30px;
+  line-height: 1;
+}
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  60%,
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+/* scratch bar */
+.scratch {
+  position: relative;
+  width: 300px;
+  max-width: 100%;
+  height: 58px;
+  margin: 22px auto 10px;
+  border-radius: 6px;
+  outline: none;
+  touch-action: none;
+}
+.scratch:focus-visible {
+  box-shadow: 0 0 0 2px var(--ivory);
+}
+.scratch-reveal {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 25px;
+  transform: scale(0.9);
+  opacity: 0.85;
+  transition: transform 0.5s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.scratch.done .scratch-reveal {
+  transform: scale(1);
+  opacity: 1;
+}
+.scratch canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  cursor: grab;
+  transition: opacity 0.6s ease;
+}
+.scratch.done canvas {
+  opacity: 0;
+  pointer-events: none;
+}
+.spark {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff1c4;
+  box-shadow: 0 0 8px #e9cf8a;
+  pointer-events: none;
+  animation: spark 0.7s ease-out forwards;
+}
+@keyframes spark {
+  to {
+    transform: translate(var(--sx), var(--sy)) scale(0.2);
+    opacity: 0;
+  }
+}
+.scroll-cue {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--gold);
+  font-size: 10px;
+}
+.scroll-cue svg {
+  display: block;
+  margin: 4px auto 0;
+  animation: bob 1.6s ease-in-out infinite;
+}
+@keyframes bob {
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+/* string lights */
+.lights {
+  display: block;
+  width: 100%;
+  height: 70px;
+  overflow: visible;
+}
+.lights .glow {
+  animation: twinkle 2.4s ease-in-out infinite;
+  animation-delay: var(--t);
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* ───────── C: invitation ───────── */
+.host {
+  font-family: var(--caps);
+  font-weight: 500;
+  font-size: 18px;
+  letter-spacing: 0.14em;
+  line-height: 1.6;
+  max-width: 300px;
+  margin: 0 auto;
+}
+.name-lg {
+  font-size: clamp(36px, 11vw, 56px);
+}
+.quote {
+  font-size: 18px;
+  margin-top: 26px;
+  line-height: 1.6;
+}
+
+/* ───────── D: countdown ───────── */
+.countdown {
+  overflow: hidden;
+}
+.fireworks {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* fade sparks out before the section's clipped edges */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 8%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 8%, #000 78%, transparent 100%);
+}
+.title-lg {
+  font-size: clamp(38px, 12.5vw, 52px);
+}
+.boxes {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 26px;
+}
+.box {
+  width: 66px;
+}
+.box-face {
+  position: relative;
+  height: 66px;
+  border: 1px solid var(--gold);
+  box-shadow: inset 0 0 0 4px var(--bg), inset 0 0 0 5px rgba(201, 162, 74, 0.45);
+  overflow: hidden;
+  background: rgba(11, 11, 13, 0.7);
+}
+.digit {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  font-weight: 500;
+}
+.digit.out {
+  animation: flip-out 0.45s ease forwards;
+}
+.digit.in {
+  animation: flip-in 0.45s ease forwards;
+}
+@keyframes flip-out {
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+@keyframes flip-in {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+.box .caps {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  margin-top: 8px;
+}
+
+/* ───────── gold button ───────── */
+.btn-gold {
+  position: relative;
+  overflow: hidden;
+  display: block;
+  width: 100%;
+  height: 54px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--gold-grad);
+  color: #1a140a;
+  font-family: var(--caps);
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  cursor: pointer;
+  text-decoration: none;
+  line-height: 54px;
+}
+.btn-gold::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0));
+  transform: skewX(-20deg);
+}
+.btn-gold:active::after,
+.btn-gold.shine::after {
+  animation: press-shine 0.6s ease;
+}
+@keyframes press-shine {
+  to {
+    left: 130%;
+  }
+}
+.btn-gold:focus-visible {
+  outline: 2px solid var(--ivory);
+  outline-offset: 3px;
+}
+
+/* ───────── E: venue ───────── */
+.venue-when {
+  font-family: var(--caps);
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  line-height: 1.7;
+  color: var(--gold);
+  margin-top: 10px;
+}
+.venue-name {
+  font-size: clamp(30px, 9.4vw, 46px);
+}
+.map {
+  display: block;
+  width: 100%;
+  height: clamp(160px, 30svh, 300px);
+  margin: 14px 0 14px;
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  filter: grayscale(0.25) contrast(0.95);
+}
+
+/* ───────── F: footer ───────── */
+footer {
+  position: relative;
+  padding: 30px 24px 100px;
+}
+.footer-names {
+  font-size: 44px;
+}
+
+/* ───────── music button ───────── */
+.music {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 40;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid var(--gold);
+  background: rgba(20, 18, 14, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 0 0 4px rgba(201, 162, 74, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.music[hidden] {
+  display: none;
+}
+.music .bar {
+  transform-origin: 50% 100%;
+  animation: eq 0.9s ease-in-out infinite;
+}
+.music .bar:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.music .bar:nth-child(3) {
+  animation-delay: 0.4s;
+}
+.music .bar:nth-child(4) {
+  animation-delay: 0.1s;
+}
+.music.paused .bar {
+  animation: none;
+  transform: scaleY(0.35);
+}
+.music .mute {
+  display: none;
+}
+.music.paused .mute {
+  display: inline;
+}
+@keyframes eq {
+  50% {
+    transform: scaleY(0.35);
+  }
+}
+
+/* ───────── og-image mode ───────── */
+body.og {
+  overflow: hidden;
+}
+.og-card {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-size: 96px 96px;
+}
+/* WhatsApp shows a centred square crop of the 1200×630 image: keep everything inside ~560 px wide. */
+.og-inner {
+  width: 540px;
+  height: 590px;
+  background: var(--bg);
+  border-radius: 50% 50% 50% 50% / 190px 190px 90px 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 40px;
+  box-shadow: 0 0 0 1px rgba(201, 162, 74, 0.5);
+}
+.og-bismillah {
+  font-size: 17px;
+  max-width: 340px;
+  line-height: 1.4;
+}
+.og-names {
+  font-size: 104px;
+  line-height: 1.05;
+}
+.og-amp {
+  font-size: 34px;
+  line-height: 1;
+}
+.og-when {
+  font-size: 20px;
+  letter-spacing: 0.24em;
+  margin-top: 18px;
+}
+
+/* ───────── reduced motion ───────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+  [data-reveal],
+  .hero [data-hero] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* keep countdown text above the fireworks canvas */
+.countdown > :not(.fireworks) {
+  position: relative;
+  z-index: 1;
+}
+
+/* ═════════ Muskan's invite: rose & gold, readable over the 3D sky ═════════ */
+:root {
+  --panel: rgba(58, 17, 30, 0.84);
+  --panel-solid: #3a111e;
+  --ivory: #f6efdf;
+  --gold-soft: #e2c27a;
+}
+
+/* 3D scene sits behind everything; a vignette keeps the centre column calm for reading. */
+#scene,
+#dust {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+#scene {
+  opacity: 0;
+  transition: opacity 1.6s ease;
+}
+#scene.on {
+  opacity: 1;
+}
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 75% 60% at 50% 50%, rgba(42, 13, 22, 0) 40%, rgba(42, 13, 22, 0.55) 100%);
+}
+
+/* Gold gradient text: a soft dark halo keeps it crisp over any frame of the scene. */
+.gold-text {
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
+}
+
+/* Every block of text lives on a solid-enough panel, so the moving sky never mixes into words. */
+.panel {
+  background: var(--panel);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  backdrop-filter: blur(12px) saturate(1.2);
+  border: 1px solid rgba(201, 162, 74, 0.45);
+  border-radius: 22px;
+  box-shadow:
+    inset 0 0 0 5px rgba(58, 17, 30, 0.9),
+    inset 0 0 0 6px rgba(201, 162, 74, 0.22),
+    0 18px 40px rgba(0, 0, 0, 0.45);
+  padding: 34px 20px 32px;
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .panel {
+    background: var(--panel-solid);
+  }
+}
+/* Wider gaps between panels: "sky windows" where the 3D scene shows clearly. */
+section {
+  padding: 52px 16px;
+}
+
+/* Hero: translucent emerald arch with a double gold frame, sky visible around it. */
+.hero {
+  background: none !important;
+}
+.hero-arch {
+  margin: clamp(16px, 5svh, 40px) 14px clamp(20px, 6svh, 56px);
+  background: rgba(50, 15, 26, 0.86);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow:
+    0 0 0 1px rgba(201, 162, 74, 0.7),
+    0 0 0 7px rgba(50, 15, 26, 0.6),
+    0 0 0 8px rgba(201, 162, 74, 0.35),
+    0 0 60px 10px rgba(0, 0, 0, 0.5);
+  padding: clamp(48px, 11svh, 96px) 20px clamp(46px, 10svh, 92px);
+}
+.bismillah-ar {
+  font-family: 'Amiri', serif;
+  font-weight: 700;
+  font-size: clamp(26px, 7.6vw, 34px);
+  line-height: 1.8;
+}
+.urdu {
+  font-family: 'Noto Nastaliq Urdu', serif;
+  font-size: clamp(18px, 5.2vw, 22px);
+  line-height: 2.2;
+  color: var(--ivory);
+}
+.urdu.gold {
+  color: var(--gold-soft);
+}
+
+/* Invitation */
+.small-caps {
+  font-family: var(--caps);
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold-soft);
+}
+.host-name {
+  font-family: var(--caps);
+  font-size: 18px;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+.place {
+  color: var(--gold-soft);
+  font-style: italic;
+}
+
+/* Event cards */
+.events {
+  display: grid;
+  gap: 22px;
+}
+.event {
+  position: relative;
+}
+.event-title {
+  font-size: clamp(52px, 16vw, 68px);
+  line-height: 1.1;
+}
+.event-day {
+  font-family: var(--caps);
+  font-size: 13px;
+  letter-spacing: 0.4em;
+  color: var(--gold-soft);
+  margin-top: 6px;
+}
+.event-date {
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.event-hijri {
+  font-style: italic;
+  color: var(--muted);
+  font-size: 17px;
+}
+.event-time {
+  font-family: var(--caps);
+  font-size: 17px;
+  letter-spacing: 0.14em;
+  color: var(--gold-soft);
+  margin-top: 12px;
+}
+.event-venue {
+  font-size: 22px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+.event-address {
+  font-style: italic;
+  color: var(--muted);
+}
+.event-star {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  width: 34px;
+  height: 34px;
+  transform: translateX(-50%);
+  opacity: 0.85;
+}
+
+/* Countdown on a panel too */
+.countdown .panel {
+  position: relative;
+  z-index: 1;
+}
+.box-face {
+  background: rgba(42, 13, 22, 0.85);
+}
+
+/* Venues */
+.venue-block + .venue-block {
+  margin-top: 22px;
+}
+.btn-gold {
+  margin-top: 4px;
+}
+
+/* Closing */
+.footer-panel {
+  margin: 0 16px;
+}
+footer {
+  padding: 34px 0 110px;
+}
+.from {
+  font-size: 40px;
+}
+
+.music {
+  background: rgba(58, 17, 30, 0.92);
+}
+/* Section label floating between panels: give it its own backing so the sky never shows through. */
+.label-pill {
+  display: table;
+  margin: 16px auto 18px;
+  padding: 9px 20px 8px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid rgba(201, 162, 74, 0.45);
+}
+
+/* ───────── pages: one section = one full screen ───────── */
+#app::-webkit-scrollbar {
+  display: none;
+}
+html,
+body {
+  overflow: hidden;
+  height: 100%;
+}
+body.locked #app {
+  overflow: hidden;
+}
+section.page,
+footer.page {
+  height: 100%;
+  padding: 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: always; /* a hard fling still stops on the very next page */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+.page-inner {
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  /* the pager scales a tall page down a little on small phones instead of clipping it */
+  transform: scale(var(--fit, 1));
+  transform-origin: 50% 50%;
+}
+.hero.page {
+  min-height: 0;
+}
+.panel {
+  padding: 28px 18px 26px;
+}
+
+/* Music toggle lives top-right: with full-screen pages, the bottom edge holds buttons and closing lines. */
+.music {
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  bottom: auto;
+  right: 12px;
+  width: 46px;
+  height: 46px;
+}
+
+/* Tappable map preview: swipes on it turn pages; a tap opens Google Maps. */
+.map-card {
+  display: block;
+  border-radius: 10px;
+}
+.map-card .map {
+  pointer-events: none;
+}
+
+/* Page dots on the right edge (replace the scrollbar) */
+.dots {
+  position: fixed;
+  right: max(4px, env(safe-area-inset-right, 0px));
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  transition: opacity 0.6s ease;
+}
+body.locked .dots {
+  opacity: 0;
+  pointer-events: none;
+}
+.dot {
+  width: 20px;
+  height: 20px; /* comfortable touch target around a tiny dot */
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.dot::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  border: 1px solid rgba(226, 194, 122, 0.85);
+  transition:
+    transform 0.3s ease,
+    background 0.3s ease;
+}
+.dot.on::before {
+  background: var(--gold-soft);
+  transform: scale(1.6);
+}
+
+/* One-time "tap or swipe" hint */
+.swipe-hint {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  transform: translate(-50%, 8px);
+  z-index: 30;
+  margin: 0;
+  padding: 7px 14px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 162, 74, 0.5);
+  background: var(--panel-solid);
+  color: var(--gold-soft);
+  font-size: 10px;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+}
+.swipe-hint.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* View again (last page) */
+.replay {
+  margin: 18px auto 0;
+  padding: 10px 20px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--gold);
+  background: transparent;
+  color: var(--gold-soft);
+  font-size: 11px;
+  cursor: pointer;
+}
+.replay:focus-visible {
+  outline: 2px solid var(--ivory);
+  outline-offset: 3px;
+}
+
+/* ───────── Arabic (Amiri): Bismillah, Quran verse, dua ───────── */
+[lang='ar'] {
+  font-family: 'Amiri', 'Traditional Arabic', serif;
+  font-weight: 700;
+  white-space: normal;
+}
+.ayah-ar {
+  font-size: clamp(22px, min(6.6vw, 4svh), 30px);
+  line-height: 2.15;
+  max-width: 380px;
+  margin: 0 auto;
+}
+.ayah-en {
+  font-size: 18px;
+  line-height: 1.6;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.dua-ar {
+  font-size: clamp(22px, min(6.2vw, 4svh), 28px);
+  line-height: 2;
+}
+.dua-en {
+  font-size: 17px;
+  line-height: 1.5;
+  max-width: 320px;
+  margin: 4px auto 0;
+}
+.dua-ref {
+  font-size: 13px;
+  margin-top: 2px;
+}
+/* Even line lengths (no single word left alone on the last line) */
+.ayah-ar,
+.ayah-en,
+.dua-ar,
+.dua-en,
+.quote {
+  text-wrap: balance;
+}
+
+/* Long venue names ("Venkat Narsimha Garden") must fit inside the panel on a 360 px phone. */
+.venue-name {
+  font-size: clamp(26px, 7.8vw, 44px);
+}
+/* Keep a clear strip at the top of every page for the music button (it never sits on a panel). */
+.page-inner {
+  padding-top: calc(58px + env(safe-area-inset-top, 0px));
+}
+
+/* ───────── ?video (the recorded MP4): nothing that only works by tapping ───────── */
+body.video .music,
+body.video .dots,
+body.video .swipe-hint,
+body.video .map-card,
+body.video .page .btn-gold,
+body.video .replay {
+  display: none !important;
+}
+
+/* In the video, the countdown would freeze at the moment of recording, and the venue pages repeat the Nikah/Valima cards. */
+body.video #countdown,
+body.video #venue-nikah,
+body.video #venue-valima {
+  display: none !important;
+}
