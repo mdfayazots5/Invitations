@@ -1,10 +1,11 @@
 import './styles.css';
-import {artDefs, charms, garland, lanterns, lotusDivider, monogramRing, scene} from './art';
+import {artDefs, charms, garland, lanterns, lotusDivider, monogramRing, scene, type SceneName} from './art';
 import {startAmbient} from './ambient';
 import {startCountdown} from './countdown';
 import {mountCurtain} from './curtain';
 import {createDrift} from './drift';
-import {C, TEST_MODE, type ArtName, type InviteEvent} from './invite.config';
+import {C, TEST_MODE, type InviteEvent} from './invite.config';
+import type {World} from './three/world';
 import {createMusic} from './music';
 import {startReveal} from './reveal';
 import {wireRsvp} from './rsvp';
@@ -29,12 +30,8 @@ const SCRATCH_DELAY = 3000;
 /** After the dates show: time to read them before the page starts to move. */
 const DATES_HOLD = 2600;
 
-/** Painted background if public/art/<name>.webp exists (see vite.config.ts), else the code-drawn stand-in. */
-const painted = (name: ArtName) => __ART__.includes(name);
-const bg = (name: Exclude<ArtName, 'curtain'>) =>
-  painted(name)
-    ? `<div class="bg painted" style="background-image:url('/art/${name}.webp')" aria-hidden="true"></div>`
-    : `<div class="bg" aria-hidden="true">${scene(name)}</div>`;
+/** Code-drawn 2D scene: the fallback when WebGL isn't available (the 3D world in src/three/ draws over it). */
+const bg = (name: SceneName) => `<div class="bg" aria-hidden="true">${scene(name)}</div>`;
 const sky = () => `<div class="bg sky" aria-hidden="true"></div>`;
 const ambient = (kind: 'petals' | 'sparkles' | 'leaves') => `<canvas class="ambient" data-ambient="${kind}" aria-hidden="true"></canvas>`;
 
@@ -46,7 +43,7 @@ const hl = (html: string) => html.replace(/^<(\w+)/, `<$1 data-hl style="--h:${h
 
 const heroHtml = () => `<section id="hero" class="sec hero" data-hold="7000" aria-label="${esc(u.title)}">
   ${bg('hero')}
-  ${painted('hero') ? '' : garland()}
+  ${garland()}
   ${lanterns([
     [5, 20, 0.95],
     [84, 46, 0.85],
@@ -120,7 +117,7 @@ const countdownHtml = () => `<section id="countdown" class="sec plain" data-hold
     [62, 60, 0.8],
     [84, 20, 0.95],
   ])}
-  <div class="txt">
+  <div class="txt veil strong">
     <p class="caps small gold" ${R}>✦ ${u.countdownKicker} ✦</p>
     ${u.countdownTitle
       .split('|')
@@ -136,7 +133,7 @@ const countdownHtml = () => `<section id="countdown" class="sec plain" data-hold
 
 const rsvpHtml = () => `<section id="rsvp" class="sec plain" data-hold="5000">
   ${sky()}
-  <div class="txt">
+  <div class="txt veil strong">
     <p class="caps small gold" ${R}>✦ ${u.rsvpKicker} ✦</p>
     <h2 class="script title" ${R}>${esc(u.rsvpTitle)}</h2>
     <div ${R}>${lotusDivider()}</div>
@@ -163,7 +160,7 @@ const venueCard = (e: InviteEvent) => `<article class="venue" ${R}>
 
 const venuesHtml = () => `<section id="venues" class="sec plain" data-hold="6000">
   ${sky()}
-  <div class="txt">
+  <div class="txt veil strong">
     <p class="caps small gold" ${R}>✦ ${u.venuesKicker} ✦</p>
     <h2 class="script title" ${R}>${esc(u.venuesTitle)}</h2>
     ${C.events.map(venueCard).join('')}
@@ -215,10 +212,64 @@ const ogCard = () => {
 
 // ───────────────────────────── boot ─────────────────────────────
 
+// ───────────────────────────── 3D world ─────────────────────────────
+
+/**
+ * Starts the 3D world (lazy-loaded after first paint). Resolves to null when WebGL isn't available
+ * (or with ?nowebgl): the page then keeps its 2D scenes and CSS drapes.
+ */
+const startWorld = async (): Promise<World | null> => {
+  if (params.has('nowebgl')) return null;
+  const canvas = document.createElement('canvas');
+  canvas.id = 'world';
+  canvas.setAttribute('aria-hidden', 'true');
+  document.body.prepend(canvas);
+  try {
+    const {createWorld} = await import('./three/world');
+    const world = createWorld(canvas, {
+      reducedMotion,
+      onLost: () => {
+        document.body.classList.remove('webgl');
+        canvas.remove();
+      },
+    });
+    if (!world) throw new Error('no WebGL');
+    document.body.classList.add('webgl');
+    (window as unknown as {__world: World}).__world = world;
+    return world;
+  } catch {
+    canvas.remove();
+    return null;
+  }
+};
+
+/** Station progress from the scroll position: station 1 = the hero section, plus the fraction to the next section. */
+const scrollProgress = (sections: HTMLElement[]) => {
+  const y = scrollY;
+  const max = document.documentElement.scrollHeight - innerHeight;
+  for (let i = sections.length - 1; i >= 0; i--) {
+    const top = Math.min(sections[i].offsetTop, max);
+    if (y >= top - 1) {
+      const next = i + 1 < sections.length ? Math.min(sections[i + 1].offsetTop, max) : top;
+      return 1 + i + (next > top ? Math.min(1, (y - top) / (next - top)) : 0);
+    }
+  }
+  return 1;
+};
+
 const boot = () => {
   document.body.insertAdjacentHTML('afterbegin', artDefs());
   if (params.has('og')) {
     ogCard();
+    void startWorld().then((w) => {
+      if (!w) return;
+      // WebGL: the 3D courtyard (station 1) alone, no UI. Without WebGL the 2D card stays.
+      document.body.classList.add('og-3d');
+      w.openDrapes();
+      w.jump(1);
+      // a few frames later the courtyard is drawn: scripts/og-image.ts waits for this flag
+      window.setTimeout(() => ((window as unknown as {__ogReady: boolean}).__ogReady = true), 600);
+    });
     return;
   }
   const app = document.getElementById('app')!;
@@ -256,10 +307,41 @@ const boot = () => {
   wireRsvp(app.querySelector('#rsvp')!);
   app.querySelector('[data-replay]')!.addEventListener('click', () => scrollTo({top: 0, behavior: reducedMotion ? 'auto' : 'smooth'}));
 
+  // The 3D world loads after the first paint; the intro HTML (2D drapes) shows at once.
+  let world: World | null = null;
+  let entered = false;
+  const follow = () => {
+    if (world && entered) world.setTarget(scrollProgress(sections));
+  };
+  addEventListener('scroll', follow, {passive: true});
+  requestAnimationFrame(() =>
+    window.setTimeout(
+      () =>
+        void startWorld().then((w) => {
+          world = w;
+          if (w && entered) {
+            // tapped before the world was ready: start straight at the current section
+            w.openDrapes();
+            w.jump(scrollProgress(sections));
+          }
+        }),
+      50,
+    ),
+  );
+
   const music = createMusic();
   history.scrollRestoration = 'manual';
   scrollTo(0, 0);
-  mountCurtain(document.getElementById('curtain-root')!, () => music.start(), reducedMotion, painted('curtain')).then(() => {
+  const onOpen = () => {
+    music.start();
+    entered = true;
+    if (world) {
+      world.openDrapes();
+      // the camera starts its push once the drapes are mostly open (they take 1.4 s)
+      window.setTimeout(follow, 1000);
+    }
+  };
+  mountCurtain(document.getElementById('curtain-root')!, onOpen, reducedMotion).then(() => {
     drift.arm();
     if (reducedMotion || params.has('noscroll')) return;
     window.setTimeout(() => {

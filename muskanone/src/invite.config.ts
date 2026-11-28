@@ -27,14 +27,6 @@ export type InviteEvent = {
 /** Change when the Netlify site for branch Muskanone is created under another name. */
 export const SITE_URL = 'https://muskanone.netlify.app/';
 
-/**
- * Painted backgrounds in public/art/ (1080×1920 WebP, prompts in DESIGN-BRIEF.md §5).
- * Each one is optional: vite.config.ts checks which files exist, and a missing one is replaced by a
- * code-drawn pastel scene. Drop the file in, rebuild, done.
- */
-export const ART = ['curtain', 'hero', 'names', 'nikah', 'valima', 'closing'] as const;
-export type ArtName = (typeof ART)[number];
-
 export const C = {
   bismillahAr: 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ', // ⚠ check
   bismillahEn: 'In the name of Allah, the Most Beneficent, the Most Merciful',

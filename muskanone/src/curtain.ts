@@ -6,16 +6,16 @@ import {C} from './invite.config';
  * two brass lanterns, and in the centre the Bismillah, the gold F & M ring and a pulsing "Tap to open".
  * Tap → the lanterns swing, both drapes slide apart (1.4 s, cubic-bezier(.65,0,.35,1)) onto the sky,
  * a soft white bloom (0.4 s) as they clear; 1.8 s in all. Resolves when the overlay is gone.
- * With public/art/curtain.webp present, each drape shows its half of the painting.
+ * With the 3D world running, the drapes, garland and lanterns are 3D (src/three/) and these 2D ones are hidden.
  * `onOpen` fires inside the tap (so the music is allowed to start).
  */
-export const mountCurtain = (root: HTMLElement, onOpen: () => void, reducedMotion: boolean, painted: boolean): Promise<void> =>
+export const mountCurtain = (root: HTMLElement, onOpen: () => void, reducedMotion: boolean): Promise<void> =>
   new Promise((resolve) => {
     const [a, b] = C.monogram;
-    root.innerHTML = `<div class="curtain${painted ? ' painted' : ''}" role="button" tabindex="0" aria-label="${C.ui.curtainLabel}">
+    root.innerHTML = `<div class="curtain" role="button" tabindex="0" aria-label="${C.ui.curtainLabel}">
       <div class="drape left" aria-hidden="true"></div>
       <div class="drape right" aria-hidden="true"></div>
-      ${painted ? '' : garland()}
+      ${garland()}
       ${lanterns([
         [9, 40, 1],
         [79, 70, 0.9],

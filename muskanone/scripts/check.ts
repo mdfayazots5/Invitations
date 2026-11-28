@@ -2,7 +2,7 @@
 // Phone sizes (360×640, 390×844, 430×932): no sideways scroll, no console errors, the flow
 // curtain → hero → auto-scratch → auto-drift, every section in order, names on one line, Arabic/Urdu right-to-left
 // in their fonts, text contrast (WCAG AA), the WhatsApp RSVP, the map links, and reduced motion. Screenshots go to qa/.
-import {mkdirSync} from 'node:fs';
+import {existsSync, mkdirSync, readdirSync, readFileSync} from 'node:fs';
 import {chromium} from 'playwright';
 import {C} from '../src/invite.config.ts';
 import {startPreview, stopPreview, URL_BASE} from './serve.ts';
@@ -164,6 +164,37 @@ const run = async () => {
       await page.close();
     }
 
+    // 3D world: it runs, draws within budget, and the 2D scenery is hidden under it
+    const w3 = await browser.newPage({viewport: {width: 390, height: 844}});
+    await w3.addInitScript('window.__name = (f) => f;');
+    await w3.goto(`${URL_BASE}/?noscroll`, {waitUntil: 'networkidle'});
+    await w3.waitForFunction(() => document.body.classList.contains('webgl'), null, {timeout: 15000}).catch(() => undefined);
+    check('3D world runs (WebGL)', await w3.evaluate(() => document.body.classList.contains('webgl')));
+    await w3.click('.curtain');
+    await w3.waitForTimeout(3500);
+    const info = await w3.evaluate(() => (window as unknown as {__world?: {info: () => {calls: number; triangles: number}}}).__world?.info());
+    check('3D: under 80 draw calls and 150k triangles', !!info && info.calls < 80 && info.triangles < 150000, JSON.stringify(info));
+    check('3D: 2D scenery hidden under the world', await w3.$eval('#hero > .bg', (e) => getComputedStyle(e).display === 'none'));
+    await w3.screenshot({path: 'qa/3d-hero.png'});
+    await w3.close();
+
+    // No WebGL (?nowebgl): the 2D scenes and CSS drapes carry the page, and it all still works
+    const fb = await browser.newPage({viewport: {width: 390, height: 844}});
+    await fb.addInitScript('window.__name = (f) => f;');
+    const fbErrors: string[] = [];
+    fb.on('pageerror', (e) => fbErrors.push(e.message));
+    await fb.goto(`${URL_BASE}/?nowebgl`, {waitUntil: 'networkidle'});
+    await fb.waitForTimeout(800);
+    check('fallback: no 3D canvas, 2D drapes shown', !(await fb.$('#world')) && (await fb.$eval('.drape.left', (e) => getComputedStyle(e).opacity)) === '1');
+    await fb.click('.curtain');
+    await fb.waitForTimeout(2400);
+    check('fallback: 2D scenes visible', await fb.$eval('#hero > .bg', (e) => getComputedStyle(e).display !== 'none'));
+    await fb.waitForTimeout(5000);
+    check('fallback: scratch card still reveals', await fb.$eval('.scratch', (e) => e.classList.contains('done')));
+    check('fallback: no errors', fbErrors.length === 0, fbErrors.join(' | '));
+    await fb.screenshot({path: 'qa/fallback-hero.png'});
+    await fb.close();
+
     // Reduced motion: the curtain opens at once and everything is visible
     const rm = await browser.newPage({viewport: {width: 390, height: 844}, reducedMotion: 'reduce'});
     await rm.addInitScript('window.__name = (f) => f;');
@@ -176,6 +207,14 @@ const run = async () => {
     await browser.close();
     stopPreview(server);
   }
+
+  // No image art: every visual is code. Nothing in public/art/, and the build references no .webp or /art/ path.
+  const built = readdirSync('dist/assets')
+    .filter((f) => /\.(js|css)$/.test(f))
+    .map((f) => readFileSync(`dist/assets/${f}`, 'utf8'))
+    .join('\n') + readFileSync('dist/index.html', 'utf8');
+  check('no image art: nothing in public/art/', !existsSync('public/art') || readdirSync('public/art').length === 0);
+  check('no image art: build references no .webp or /art/', !/\.webp|\/art\//.test(built));
 
   for (const r of results) console.log(`${r.ok ? 'PASS' : 'FAIL'}  ${r.name}${r.info ? `  — ${r.info}` : ''}`);
   const failed = results.filter((r) => !r.ok).length;

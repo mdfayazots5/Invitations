@@ -2,7 +2,7 @@
 
 A mobile-first invite **website** from the groom's family (Mrs. Late Abdul Rahmath Sahab) for the Nikah & Valima of Mohammed Fayaz with Muskan Khanam.
 Built from [DESIGN-BRIEF.md](DESIGN-BRIEF.md), which Claude chat wrote from a reference video and the printed card using [NEW-INVITE-KIT.md](../NEW-INVITE-KIT.md).
-The look is a soft illustrated "storybook": powder-blue to peach sky, cream drapes, brass lanterns, teal names, gold-brown details, crimson event titles.
+The look is a soft "storybook" in real-time 3D: powder-blue to peach sky, ivory drapes, brass lanterns, teal names, gold-brown details, crimson event titles.
 
 - **Nikah**: Monday, 14 December 2026, 10:00 AM, Ruby Garden, Sripur Road, Nagarkurnool (lunch follows)
 - **Valima**: Tuesday, 15 December 2026, 8:00 PM, Venkat Narsimha Garden, Shad Nagar Road, Amangal (dinner)
@@ -17,11 +17,15 @@ The look is a soft illustrated "storybook": powder-blue to peach sky, cream drap
 
 The page moves on its own after the dates are revealed, holding each section (7–9 s). The guest's first touch stops it.
 
-## Painted art (optional, drop-in)
-Until the images exist, every background is drawn in code (`src/art.ts`). To use the generated paintings:
-1. Generate them with the prompts in [DESIGN-BRIEF.md](DESIGN-BRIEF.md) §5.
-2. Save them as `public/art/curtain.webp`, `hero.webp`, `names.webp`, `nikah.webp`, `valima.webp`, `closing.webp` (1080×1920). Or hand PNG/JPG files to Claude Code to convert.
-3. Rebuild. `vite.config.ts` sees which files exist and uses them; missing ones keep the code-drawn scene.
+## The 3D world (no image files)
+Every background is real-time 3D (Three.js), built in code as one continuous world: [PROMPT-3D-FLOW.md](PROMPT-3D-FLOW.md).
+One camera travels a path through 10 "stations", one per section: the ivory drapes, a courtyard with palms and lanterns before a distant palace, a colonnade of Mughal arches with lotus sprays, a floral arch by a lake with mountains, a candle-lit petal path to the mandap, the dusk sky with floating lanterns, and a white mosque at golden sunset.
+The sky shifts from afternoon blue to sunset to dusk and back to golden sunset as the page moves.
+
+- Loaded after the first paint (its own ~145 KB gzipped file), so the intro shows at once.
+- Quality tiers `low` / `mid` / `high` picked from a 1 s frame-time probe after the tap; `?q=low|mid|high` forces one.
+- Fallback: without WebGL (or with `?nowebgl`) the 2D code-drawn scenes and CSS drapes carry the page.
+- `SHOW_COUPLE` in `src/three/world.ts` adds a back-view silhouette of the couple (off by default).
 
 Song: `public/music.mp3` (Suno prompt in the brief, §4.6). Without it, the music button stays hidden.
 
@@ -30,7 +34,8 @@ Song: `public/music.mp3` (Suno prompt in the brief, §4.6). Without it, the musi
 |---|---|
 | Every line of text, names, dates, venues, map pins, WhatsApp number, site address | [src/invite.config.ts](src/invite.config.ts) |
 | Section layout | [src/main.ts](src/main.ts) |
-| Lanterns, charms, garland, divider, monogram ring, stand-in scenes | [src/art.ts](src/art.ts) |
+| 3D world: stations & sky palettes, sky, lanterns, flowers, architecture, particles, quality tiers | [src/three/](src/three/) |
+| 2D fallback scenes, lanterns, garland, divider, monogram ring | [src/art.ts](src/art.ts) |
 | Petals, sparkles, leaves | [src/ambient.ts](src/ambient.ts) |
 | Colours, fonts, motion | [src/styles.css](src/styles.css) |
 | Curtain opening | [src/curtain.ts](src/curtain.ts) |
@@ -45,7 +50,7 @@ npm install
 npm run dev        # local preview
 npm run build      # production build in dist/
 npm run check      # QA on 3 phone sizes (screenshots in qa/)
-npm run og         # link-preview image public/og-image.png (then build again)
+npm run og         # link-preview image public/og-image.png, rendered from the 3D courtyard (then build again)
 npm run record     # MP4 for WhatsApp Status (needs ffmpeg and music.mp3)
 ```
 

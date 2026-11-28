@@ -290,16 +290,6 @@ input {
 .drape.right {
   right: 0;
 }
-.curtain.painted .drape {
-  background: url('/art/curtain.webp') no-repeat;
-  background-size: 200% 100%;
-}
-.curtain.painted .drape.left {
-  background-position: 0 0;
-}
-.curtain.painted .drape.right {
-  background-position: 100% 0;
-}
 .curtain.opening .drape.left {
   transform: translateX(-102%);
 }
@@ -650,15 +640,27 @@ body.entered [data-hl] {
 }
 
 /* ───────── plain sky sections ───────── */
-.plain .txt {
+/* The countdown, RSVP and venues sit on open sky (dusk in 3D): their content is on a cream glass panel,
+   centred low enough that the lanterns above stay in view. */
+.plain {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 100svh;
-  padding-top: calc(150px + env(safe-area-inset-top));
+  align-items: center;
+}
+.plain .txt {
+  width: 100%;
+  padding: 26px 20px 24px;
+  margin-top: 70px;
+  margin-bottom: 24px;
+}
+.plain .txt.veil.strong::before {
+  inset: 0 6px;
+  height: auto;
+  background: rgba(255, 250, 244, 0.86);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 #venues .txt {
-  padding-top: calc(56px + env(safe-area-inset-top));
+  margin-top: 24px;
 }
 
 /* countdown */
@@ -993,4 +995,63 @@ body.video .tap-hint {
 /* small gold headings on the bare sky: navy reads better there than gold */
 .plain .txt > .small.gold {
   color: var(--navy);
+}
+
+/* ───────── 3D world (src/three/): one fixed canvas under transparent sections ───────── */
+#world {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+#app {
+  position: relative;
+  z-index: 1;
+}
+/* the 2D scenery is only the fallback: hidden while the 3D world runs */
+body.webgl .sec > .bg,
+body.webgl .sec > .lanterns,
+body.webgl .sec > .charms,
+body.webgl .sec > .garland,
+body.webgl .sec > .ambient,
+body.webgl .sec > .candles {
+  display: none;
+}
+/* intro: the 3D drapes, garland and lanterns take over from the CSS ones (which show until the world loads) */
+.curtain .drape,
+.curtain > .garland,
+.curtain > .lanterns {
+  transition: opacity 0.6s ease;
+}
+body.webgl .curtain {
+  background: transparent;
+}
+body.webgl .curtain .drape,
+body.webgl .curtain > .garland,
+body.webgl .curtain > .lanterns {
+  opacity: 0;
+}
+body.webgl .curtain.opening .drape {
+  transition: none;
+}
+/* hero text sits straight on the sky: a soft cream glow keeps it crisp */
+body.webgl .hero .txt p {
+  text-shadow:
+    0 0 14px rgba(255, 250, 244, 0.95),
+    0 0 4px rgba(255, 250, 244, 0.8);
+}
+/* high tier: a cheap vignette over the scene (CSS, no extra GPU pass) */
+body.webgl.q-high::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0) 62%, rgba(40, 30, 50, 0.22) 100%);
+}
+/* ?og with WebGL: the courtyard alone, no UI */
+body.og-3d .og-card {
+  display: none;
 }

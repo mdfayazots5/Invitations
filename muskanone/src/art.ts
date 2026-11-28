@@ -1,9 +1,10 @@
 /**
  * Everything drawn in code (SVG): brass lanterns, crescents & stars on strings, the white-flower garland,
- * the gold lotus divider, the monogram ring, and a pastel "stand-in" scene for each painted background
- * (public/art/*.webp) that hasn't been generated yet. Watercolour feel: soft gradients, no hard outlines.
+ * the gold lotus divider, the monogram ring, and a 2D pastel scene per section: the fallback when WebGL is
+ * unavailable (the 3D world in src/three/ replaces them). Watercolour feel: soft gradients, no hard outlines.
  */
-import type {ArtName} from './invite.config';
+/** The 2D fallback scenes (one per kind of section background). */
+export type SceneName = 'hero' | 'names' | 'nikah' | 'valima' | 'closing';
 
 const GOLD = `<linearGradient id="g-gold" x1="0" y1="0" x2="1" y2="1">
   <stop offset="0" stop-color="#8C5A23"/><stop offset=".45" stop-color="#E2B765"/><stop offset="1" stop-color="#A8743A"/></linearGradient>`;
@@ -97,7 +98,7 @@ export const monogramRing = (a: string, b: string) => `<div class="mono">
   <span class="mono-text">${a}<span class="mono-amp">&amp;</span>${b}</span>
 </div>`;
 
-// ───────────────────────── stand-in scenes (until the painted art exists) ─────────────────────────
+// ───────────────────────── 2D fallback scenes (no WebGL) ─────────────────────────
 
 const SKY = (id: string) => `<linearGradient id="sky-${id}" x1="0" y1="0" x2="0" y2="1">
   <stop offset="0" stop-color="#88B8E8"/><stop offset=".38" stop-color="#B2D7EC"/><stop offset=".72" stop-color="#FFD8CD"/><stop offset="1" stop-color="#F8DBD4"/></linearGradient>
@@ -135,7 +136,7 @@ const flowers = (cx: number, cy: number, n: number, spread: number, colors = ['#
   return s;
 };
 
-const SCENES: Record<Exclude<ArtName, 'curtain'>, (id: string) => string> = {
+const SCENES: Record<SceneName, (id: string) => string> = {
   /** Distant white domed palace, palms each side, a cream terrace. */
   hero: (id) => `${clouds(id)}
     <g opacity=".85" filter="url(#paint-${id})">
@@ -213,8 +214,8 @@ const SCENES: Record<Exclude<ArtName, 'curtain'>, (id: string) => string> = {
     <rect x="440" y="1560" width="200" height="360" fill="#BFD9E6" opacity=".6"/>`,
 };
 
-/** Full-screen stand-in for a painted background: pastel sky + a simple scene in the lower half. */
-export const scene = (name: Exclude<ArtName, 'curtain'>) => {
+/** Full-screen 2D fallback background: pastel sky + a simple scene in the lower half. */
+export const scene = (name: SceneName) => {
   const id = name;
   return `<svg class="scene" viewBox="0 0 1080 1920" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
     <defs>${SKY(id)}</defs>
