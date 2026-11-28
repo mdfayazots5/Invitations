@@ -1,6 +1,7 @@
 import {
   BufferGeometry,
   CanvasTexture,
+  PlaneGeometry,
   type Material,
   Matrix4,
   Mesh,
@@ -11,25 +12,38 @@ import {
   Vector3,
 } from 'three';
 import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import {barkTexture, frondTexture, grassTexture, marbleTexture, stoneTexture} from './textures';
 
 /** Shared materials: one per surface type, so the whole world is a handful of draw calls per station. */
 export const MAT = {
-  marble: new MeshStandardMaterial({color: '#F4EFE8', roughness: 0.6, metalness: 0}),
-  cream: new MeshStandardMaterial({color: '#FBF1E4', roughness: 0.75}),
-  blush: new MeshStandardMaterial({color: '#F3DCD2', roughness: 0.8}),
+  // marble-like surfaces carry the code-painted marble (faint veins); the colour tints it
+  marble: new MeshStandardMaterial({color: '#FFFFFF', map: marbleTexture, roughness: 0.55, metalness: 0}),
+  cream: new MeshStandardMaterial({color: '#FFF8EC', map: marbleTexture, roughness: 0.7}),
+  blush: new MeshStandardMaterial({color: '#F6DDD3', map: marbleTexture, roughness: 0.75}),
   goldTrim: new MeshStandardMaterial({color: '#D9AE5C', roughness: 0.35, metalness: 0.8}),
   brass: new MeshStandardMaterial({color: '#D9AE5C', roughness: 0.35, metalness: 0.55, emissive: '#C98A2E', emissiveIntensity: 0.9}),
   leaf: new MeshStandardMaterial({color: '#7FA37A', roughness: 0.8, flatShading: true, side: 2}),
+  // palm fronds: leaflets painted on a card, cut out with alpha
+  frond: new MeshStandardMaterial({color: '#FFFFFF', map: frondTexture, alphaTest: 0.45, side: 2, roughness: 0.8}),
+  bark: new MeshStandardMaterial({color: '#FFFFFF', map: barkTexture, roughness: 0.95}),
   pine: new MeshStandardMaterial({color: '#5E8C74', roughness: 0.85, flatShading: true}),
   trunk: new MeshStandardMaterial({color: '#A88A6A', roughness: 0.9}),
-  terrace: new MeshStandardMaterial({color: '#EAD7C3', roughness: 0.95}),
-  grass: new MeshStandardMaterial({color: '#C9DDBF', roughness: 1}),
-  path: new MeshStandardMaterial({color: '#F3E1D2', roughness: 0.95}),
+  terrace: new MeshStandardMaterial({color: '#F3E6D6', map: marbleTexture, roughness: 0.9}),
+  grass: new MeshStandardMaterial({color: '#FFFFFF', map: grassTexture, roughness: 1}),
+  path: new MeshStandardMaterial({color: '#F7E6D8', map: stoneTexture, roughness: 0.95}),
   aqua: new MeshStandardMaterial({color: '#9ED8D6', roughness: 0.7, side: 2}),
   inset: new MeshStandardMaterial({color: '#D9CBBB', roughness: 0.9}),
   warm: new MeshStandardMaterial({color: '#FFE8B8', emissive: '#FFD08A', emissiveIntensity: 1.4, roughness: 0.6}),
   mountain: new MeshStandardMaterial({color: '#9FB3CB', roughness: 1, flatShading: true}),
-  stone: new MeshStandardMaterial({color: '#F7EEE2', roughness: 0.9, emissive: '#F3E2CC', emissiveIntensity: 0.3}),
+  stone: new MeshStandardMaterial({color: '#FFFFFF', map: stoneTexture, roughness: 0.9}),
+};
+
+/** A flat ground plane whose UVs are in world units / `unit`, so a repeating texture keeps its real size on any plate. */
+export const groundPlane = (w: number, d: number, unit = 4) => {
+  const g = new PlaneGeometry(w, d).rotateX(-Math.PI / 2);
+  const uv = g.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, (uv.getX(i) * w) / unit, (uv.getY(i) * d) / unit);
+  return g;
 };
 
 /**
@@ -46,7 +60,7 @@ export class Batch {
     );
     const g = (geo.index ? geo.toNonIndexed() : geo.clone()).applyMatrix4(m);
     // merged parts must share attributes: keep position + normal (+ uv when present on all)
-    for (const k of Object.keys(g.attributes)) if (k !== 'position' && k !== 'normal' && k !== 'uv') g.deleteAttribute(k);
+    for (const k of Object.keys(g.attributes)) if (k !== 'position' && k !== 'normal' && k !== 'uv' && k !== 'color') g.deleteAttribute(k);
     if (!g.attributes.normal) g.computeVertexNormals();
     let list = this.parts.get(mat);
     if (!list) this.parts.set(mat, (list = []));
@@ -66,6 +80,8 @@ export class Batch {
     for (const [mat, geos] of this.parts) {
       const hasUv = geos.every((g) => g.attributes.uv);
       if (!hasUv) geos.forEach((g) => g.deleteAttribute('uv'));
+      const hasColor = geos.every((g) => g.attributes.color);
+      if (!hasColor) geos.forEach((g) => g.deleteAttribute('color'));
       const merged = mergeGeometries(geos, false);
       if (merged) out.push(new Mesh(merged, mat));
       geos.forEach((g) => g.dispose());

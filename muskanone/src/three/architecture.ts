@@ -1,5 +1,6 @@
 import {
   BoxGeometry,
+  BufferAttribute,
   CatmullRomCurve3,
   Color,
   ConeGeometry,
@@ -92,21 +93,26 @@ export const hall = (b: Batch, x: number, z: number, w: number, h: number, d: nu
 
 // ───────────────────────── nature ─────────────────────────
 
-/** Palm: a gently curved trunk (tube) and a crown of bent frond strips. */
+/** Palm: a curved, ringed trunk (bark texture) and a crown of drooping fronds with painted leaflets. */
 export const palm = (b: Batch, x: number, z: number, h: number, lean: number) => {
-  const trunk = new CatmullRomCurve3([new Vector3(0, 0, 0), new Vector3(lean * 0.4, h * 0.5, 0), new Vector3(lean, h, 0)]);
-  b.add(new TubeGeometry(trunk, 8, 0.22, 6), MAT.trunk, [x, 0, z]);
-  for (let i = 0; i < 8; i++) {
-    const a = (i / 8) * Math.PI * 2;
-    const frond = new PlaneGeometry(0.7, 3.4, 1, 6);
+  const trunk = new CatmullRomCurve3([new Vector3(0, 0, 0), new Vector3(lean * 0.35, h * 0.5, 0), new Vector3(lean, h, 0)]);
+  const tube = new TubeGeometry(trunk, 12, 0.2, 8);
+  // bark rings repeat along the trunk
+  const uv = tube.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setY(i, uv.getY(i) * h * 0.9);
+  b.add(tube, MAT.bark, [x, 0, z]);
+  b.add(new CylinderGeometry(0.34, 0.24, 0.5, 8), MAT.bark, [x + lean, h - 0.1, z]); // crown base
+  for (let i = 0; i < 11; i++) {
+    const a = (i / 11) * Math.PI * 2 + (i % 2) * 0.2;
+    const len = 3.2 + (i % 3) * 0.35;
+    const frond = new PlaneGeometry(1.15, len, 1, 8);
     const pos = frond.attributes.position;
     for (let k = 0; k < pos.count; k++) {
-      const yy = pos.getY(k) + 1.7; // 0 at base → 3.4 at tip
-      pos.setZ(k, -0.16 * yy * yy); // droop
-      pos.setX(k, pos.getX(k) * (1 - yy / 4)); // taper
+      const yy = pos.getY(k) + len / 2; // 0 at base → len at tip
+      pos.setZ(k, -0.2 * yy * yy + Math.abs(pos.getX(k)) * 0.35); // droop + a V-shaped fold along the rib
     }
-    frond.translate(0, 1.7, 0).rotateX(-1.0).rotateY(a);
-    b.add(frond, MAT.leaf, [x + lean, h, z]);
+    frond.translate(0, len / 2, 0).rotateX(-0.75 - (i % 3) * 0.18).rotateY(a);
+    b.add(frond, MAT.frond, [x + lean, h + 0.1, z]);
   }
 };
 
@@ -128,6 +134,14 @@ export const mountains = (b: Batch, z: number, width: number, height: number, se
     }
   }
   g.computeVertexNormals();
+  // vertex colours: misty and light at the foot, a little deeper towards the ridge (aerial perspective)
+  const cols = new Float32Array(pos.count * 3);
+  for (let i = 0; i < pos.count; i++) {
+    const k = (pos.getY(i) + height / 2) / height;
+    const v = 1.18 - 0.32 * k;
+    cols.set([v, v, v * 1.02], i * 3);
+  }
+  g.setAttribute('color', new BufferAttribute(cols, 3));
   b.add(g, MAT.mountain, [0, height / 2 - 0.5, z]);
 };
 
@@ -144,12 +158,23 @@ export const createLake = (w: number, d: number) => {
     fragmentShader: /* glsl */ `
       uniform vec3 uTop, uHorizon; uniform float uTime;
       varying vec2 vUv; varying vec3 vWorld;
+      float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
       void main() {
-        // far water mirrors the horizon, near water a little of the upper sky
-        vec3 col = mix(uTop * 0.92 + 0.06, uHorizon, smoothstep(0.0, 1.0, vUv.y));
-        float r = sin(vWorld.z * 3.1 + uTime * 0.6 + sin(vWorld.x * 0.4) * 2.0);
-        float lines = smoothstep(0.97, 1.0, r) * (0.25 + 0.5 * vUv.y);
-        col = mix(col, vec3(1.0), lines * 0.5);
+        vec3 toEye = normalize(cameraPosition - vWorld);
+        // fresnel: grazing angles reflect the bright horizon, looking down shows deeper, bluer water
+        float fres = pow(1.0 - max(toEye.y, 0.0), 3.0);
+        vec3 deep = mix(uTop, vec3(0.32, 0.5, 0.58), 0.45) * 0.85;
+        vec3 col = mix(deep, uHorizon * 1.02, clamp(fres * 1.15, 0.0, 1.0));
+        // soft ripples moving across
+        float w1 = sin(vWorld.z * 2.2 + uTime * 0.8 + sin(vWorld.x * 0.35) * 2.5);
+        float w2 = sin(vWorld.x * 1.3 - vWorld.z * 0.7 + uTime * 0.5);
+        col *= 0.96 + 0.04 * (w1 * 0.6 + w2 * 0.4);
+        col = mix(col, vec3(1.0), smoothstep(0.985, 1.0, w1) * 0.35 * fres);
+        // sun glitter: sparse twinkling points in the far band
+        vec2 cell = floor(vWorld.xz * vec2(3.0, 1.5));
+        float g = hash(cell);
+        float tw = step(0.985, g) * (0.5 + 0.5 * sin(uTime * 4.0 + g * 60.0));
+        col += vec3(1.0, 0.92, 0.78) * tw * smoothstep(0.2, 0.9, vUv.y) * 0.6;
         gl_FragColor = vec4(col, 1.0);
         #include <colorspace_fragment>
       }`,

@@ -1,5 +1,6 @@
 import {
   ACESFilmicToneMapping,
+  PCFSoftShadowMap,
   AdditiveBlending,
   BoxGeometry,
   BufferAttribute,
@@ -32,7 +33,8 @@ import {
 import {isForcedDpr, pixelRatio} from '../dpr';
 import {createDrape, createLake, dome, hall, mandap, minaret, mountains, mughalArch, palm, pine} from './architecture';
 import {flowerBed, flowersAlong} from './flowers';
-import {Batch, glowTexture, lotusMaterial, MAT, shadowMaterial} from './kit';
+import {Batch, glowTexture, groundPlane, lotusMaterial, MAT, shadowMaterial} from './kit';
+import {bushes, createClouds, grassField, hedge, wind} from './vegetation';
 import {createLanterns, type Hang} from './lanterns';
 import {createParticles} from './particles';
 import {forcedTier, TIER, type Tier, tierFromProbe} from './quality';
@@ -80,6 +82,9 @@ export const createWorld = (canvas: HTMLCanvasElement, opts: {reducedMotion: boo
   if (!renderer.getContext()) return null;
   renderer.toneMapping = ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.0;
+  // soft sun shadows ground everything (mid/high tiers; low keeps only the painted contact shadows)
+  renderer.shadowMap.enabled = forcedTier !== 'low';
+  renderer.shadowMap.type = PCFSoftShadowMap;
   renderer.outputColorSpace = SRGBColorSpace;
   canvas.addEventListener('webglcontextlost', (e) => {
     e.preventDefault();
@@ -97,6 +102,14 @@ export const createWorld = (canvas: HTMLCanvasElement, opts: {reducedMotion: boo
 
   const hemi = new HemisphereLight('#ffffff', '#ffffff', 1.5);
   const sun = new DirectionalLight('#ffffff', 1.5);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(1024, 1024);
+  sun.shadow.camera.left = sun.shadow.camera.bottom = -26;
+  sun.shadow.camera.right = sun.shadow.camera.top = 26;
+  sun.shadow.camera.near = 1;
+  sun.shadow.camera.far = 140;
+  sun.shadow.bias = -0.0004;
+  sun.shadow.normalBias = 0.03;
   scene.add(hemi, sun, sun.target);
 
   const sky = createSky();
@@ -121,16 +134,19 @@ export const createWorld = (canvas: HTMLCanvasElement, opts: {reducedMotion: boo
   const hangs: Hang[] = [];
 
   // ── ground plates (terrace → garden → lake shore → grass) ──
-  statics.add(new PlaneGeometry(90, 90).rotateX(-Math.PI / 2), MAT.terrace, [0, 0, -38]);
-  statics.add(new PlaneGeometry(160, 32).rotateX(-Math.PI / 2), MAT.grass, [0, 0, -99]);
-  statics.add(new PlaneGeometry(200, 220).rotateX(-Math.PI / 2), MAT.grass, [0, 0, -284]);
+  statics.add(groundPlane(90, 90, 3), MAT.terrace, [0, 0, -38]);
+  statics.add(groundPlane(160, 32, 5), MAT.grass, [0, 0, -99]);
+  statics.add(groundPlane(200, 220, 5), MAT.grass, [0, 0, -284]);
   // a stone path with gold edges through the courtyard, grass beds and flowers either side
-  statics.add(new PlaneGeometry(3.6, 84).rotateX(-Math.PI / 2), MAT.stone, [0, 0.02, -40]);
+  statics.add(groundPlane(3.6, 84, 1.8), MAT.stone, [0, 0.02, -40]);
   for (const side of [-1, 1]) {
-    statics.add(new BoxGeometry(0.08, 0.05, 84), MAT.goldTrim, [side * 1.84, 0.03, -40]);
-    statics.add(new PlaneGeometry(5, 56).rotateX(-Math.PI / 2), MAT.grass, [side * 4.6, 0.015, -30]);
+    statics.add(new BoxGeometry(0.1, 0.06, 84), MAT.terrace, [side * 1.85, 0.03, -40]); // pale stone kerb
+    statics.add(groundPlane(5, 56, 5), MAT.grass, [side * 4.6, 0.015, -30]);
   }
   add(flowerBed(-2.6, 0.05, -36, 1.2, 0.3, 40, 50, 0.85), flowerBed(2.6, 0.05, -36, 1.2, 0.3, 40, 50, 0.85));
+  // grass blades in the courtyard beds, swaying in the wind
+  const grassMeshes = [grassField([[-4.6, -32, 5, 50], [4.6, -32, 5, 50]], 5500, 5)];
+  add(grassMeshes[0]);
 
   beginZone(-1, 1.3);
   // ── station 0: intro drapes (with a gold rod, a garland and two lanterns in front) ──
@@ -163,6 +179,11 @@ export const createWorld = (canvas: HTMLCanvasElement, opts: {reducedMotion: boo
     heroFlowers.push(flowerBed(x, 0.15, z + 0.8, 2.4, 0.6, 1.2, 14, 1.1));
   }
   add(...heroFlowers);
+  add(
+    bushes([[-6.0, 0.5, -25, 0.9], [6.2, 0.5, -27, 0.9], [-8.0, 0.5, -29, 1.0], [8.4, 0.5, -31, 1.0], [-6.1, 0.5, -39, 0.9], [6.4, 0.5, -41, 0.9]], 60, 21),
+    hedge(new Vector3(-7.4, 0, -16), new Vector3(-7.4, 0, -54), 1.6, 0.85, 22),
+    hedge(new Vector3(7.4, 0, -16), new Vector3(7.4, 0, -54), 1.6, 0.85, 23),
+  );
   for (const [x, z, top, chain] of [
     [-3.6, -19, 8.2, 1.6],
     [3.6, -21, 8.4, 2.0],
@@ -211,6 +232,7 @@ export const createWorld = (canvas: HTMLCanvasElement, opts: {reducedMotion: boo
     statics.add(i % 2 ? starGeo : moonGeo, MAT.goldTrim, [x, y - 0.22, -61 - (i % 3)]);
   });
   add(flowerBed(0, 0.1, archZ - 4, 16, 0.5, 3, 40, 1.1));
+  add(bushes([[-10.6, 0.6, archZ + 1, 1.2], [10.6, 0.6, archZ + 1, 1.2], [-3.2, 0.4, archZ + 1.8, 0.6], [3.2, 0.4, archZ + 1.8, 0.6]], 70, 31));
 
   beginZone(2.9, 5.4);
   // ── station 4: Nikah: a round arch of white flowers by a calm lake, pines on the far shore ──
@@ -238,6 +260,8 @@ export const createWorld = (canvas: HTMLCanvasElement, opts: {reducedMotion: boo
   add(lake.mesh);
   // flowering bushes along the near shore
   add(flowerBed(-6.5, 0.05, -104, 7, 0.7, 4, 40, 1.1), flowerBed(6.5, 0.05, -104, 7, 0.7, 4, 40, 1.1));
+  grassMeshes.push(grassField([[0, -106, 30, 16]], 5000, 6));
+  add(grassMeshes[grassMeshes.length - 1], bushes([[-9, 0.6, -108, 1.3], [9, 0.6, -110, 1.3], [-14, 0.6, -112, 1.5], [14, 0.6, -113, 1.5]], 70, 41));
   for (let i = 0; i < 14; i++) {
     const side = i % 2 ? 1 : -1;
     pine(statics, side * (7 + ((i * 5.3) % 22)), -178 - ((i * 3.7) % 8), 5 + ((i * 1.9) % 4));
@@ -246,7 +270,7 @@ export const createWorld = (canvas: HTMLCanvasElement, opts: {reducedMotion: boo
   beginZone(3.9, 6.8);
   // ── station 5: Valima: petal path with candles & lanterns to a lit floral mandap; white arches on each side ──
   const mandapZ = -228;
-  statics.add(new PlaneGeometry(3.2, 44).rotateX(-Math.PI / 2), MAT.path, [0, 0.02, -204]);
+  statics.add(groundPlane(3.2, 44, 1.6), MAT.path, [0, 0.02, -204]);
   add(flowerBed(0, 0.03, -204, 2.6, 0.02, 40, 70, 0.45, ['#F3A9B6', '#F8DBD4', '#FFFFFF', '#E8A0B0'].map((c) => new Color(c))));
   const candlePos: number[] = [];
   for (let z = -188; z > -222; z -= 3.4)
@@ -264,6 +288,12 @@ export const createWorld = (canvas: HTMLCanvasElement, opts: {reducedMotion: boo
       hangs.push({top: [side * 2.15, 2.6, z], chain: 0.2, scale: 0.28});
     }
   mandap(statics, 0, mandapZ);
+  grassMeshes.push(grassField([[-6.5, -205, 8, 40], [6.5, -205, 8, 40]], 4000, 7));
+  add(
+    grassMeshes[grassMeshes.length - 1],
+    hedge(new Vector3(-3.4, 0, -188), new Vector3(-3.4, 0, -222), 1.5, 0.6, 51),
+    hedge(new Vector3(3.4, 0, -188), new Vector3(3.4, 0, -222), 1.5, 0.6, 52),
+  );
   add(flowerBed(0, 5.2, mandapZ + 3.4, 7, 0.6, 0.6, 50, 1.1), flowerBed(0, 0.4, mandapZ + 3, 7.5, 0.4, 1, 30, 1));
   shadow(0, mandapZ, 9, 9);
   for (const side of [-1, 1]) {
@@ -292,7 +322,7 @@ export const createWorld = (canvas: HTMLCanvasElement, opts: {reducedMotion: boo
   beginZone(7.3, 99);
   // ── station 9: white marble mosque at golden sunset; lanterns hang in the foreground ──
   const mosqueZ = -352;
-  statics.add(new PlaneGeometry(80, 60).rotateX(-Math.PI / 2), MAT.terrace, [0, 0.01, mosqueZ + 22]);
+  statics.add(groundPlane(80, 60, 3), MAT.terrace, [0, 0.01, mosqueZ + 22]);
   add(flowerBed(-5, 0.05, mosqueZ + 26, 4, 0.4, 30, 50, 1), flowerBed(5, 0.05, mosqueZ + 26, 4, 0.4, 30, 50, 1));
   hall(statics, 0, mosqueZ, 22, 7, 9, 5);
   dome(statics, 0, 7, mosqueZ, 4.2);
@@ -306,7 +336,11 @@ export const createWorld = (canvas: HTMLCanvasElement, opts: {reducedMotion: boo
     [16, mosqueZ - 4],
   ])
     minaret(statics, x, z, 21, 0.75);
-  statics.add(new PlaneGeometry(4, 26).rotateX(-Math.PI / 2), MAT.aqua, [0, 0.03, mosqueZ + 22]); // reflecting pool
+  // reflecting pool: the same water shader as the lake
+  const pool = createLake(4, 26);
+  pool.mesh.position.set(0, 0.05, mosqueZ + 22);
+  add(pool.mesh, bushes([[-3.4, 0.5, mosqueZ + 14, 0.8], [3.4, 0.5, mosqueZ + 14, 0.8], [-3.4, 0.5, mosqueZ + 26, 0.8], [3.4, 0.5, mosqueZ + 26, 0.8]], 60, 61));
+  for (const side of [-1, 1]) statics.add(new BoxGeometry(0.4, 0.3, 26.4), MAT.marble, [side * 2.2, 0.15, mosqueZ + 22]); // pool kerbs
   shadow(0, mosqueZ + 4.8, 26, 4);
   for (const [x, top, z, chain] of [
     [-2.6, 13.5, -301, 2.2],
@@ -347,6 +381,16 @@ export const createWorld = (canvas: HTMLCanvasElement, opts: {reducedMotion: boo
   // merge each zone's static parts (one mesh per material per zone); later objects go to the always-on zone
   for (const z of zones) for (const m of z.batch.build()) z.group.add(m);
   zone = zones[0];
+  const casters = new Set<unknown>([MAT.bark, MAT.frond, MAT.blush, MAT.marble, MAT.cream, MAT.goldTrim, MAT.pine, MAT.aqua, MAT.leaf]);
+  const receivers = new Set<unknown>([MAT.grass, MAT.stone, MAT.terrace, MAT.path, MAT.marble, MAT.cream, MAT.blush]);
+  for (const z of zones)
+    z.group.traverse((o) => {
+      const m = (o as Mesh).material;
+      if (!m) return;
+      if (casters.has(m)) o.castShadow = true;
+      if (receivers.has(m)) o.receiveShadow = true;
+    });
+  const clouds = createClouds();
 
   const lanterns = createLanterns(hangs.slice(0, 40));
   add(...lanterns.objects);
@@ -354,6 +398,7 @@ export const createWorld = (canvas: HTMLCanvasElement, opts: {reducedMotion: boo
   // ── horizon layer: distant palace (hero) and mountains (Nikah) travel with the camera, hazed, no fog ──
   const horizon = new Group();
   add(horizon);
+  horizon.add(clouds.group);
   const hazed = (base: MeshStandardMaterial) => {
     const m = base.clone();
     m.fog = false;
@@ -377,7 +422,7 @@ export const createWorld = (canvas: HTMLCanvasElement, opts: {reducedMotion: boo
     horizon.add(m);
   });
   // mountains are flat haze (unlit), tinted towards the horizon colour every frame
-  const mountainMat = new MeshBasicMaterial({color: '#9FB3CB', fog: false, transparent: true});
+  const mountainMat = new MeshBasicMaterial({color: '#9FB3CB', fog: false, transparent: true, vertexColors: true});
   const range = new Batch();
   mountains(range, 0, 320, 24, 1.3);
   mountains(range, -14, 360, 18, 4.1);
@@ -440,6 +485,8 @@ export const createWorld = (canvas: HTMLCanvasElement, opts: {reducedMotion: boo
       camPos.x = look.x + dx * Math.cos(ang) - dz * Math.sin(ang);
       camPos.z = look.z + dx * Math.sin(ang) + dz * Math.cos(ang);
     }
+    // a faint breathing motion while a page is held
+    if (holdT > 0) camPos.y += Math.sin(t * 0.6) * 0.05 * Math.min(1, holdT / 2);
     camera.position.copy(camPos);
     camera.lookAt(look);
   };
@@ -468,8 +515,12 @@ export const createWorld = (canvas: HTMLCanvasElement, opts: {reducedMotion: boo
     hemi.intensity = pal.hemi;
     sun.color.copy(pal.light);
     sun.intensity = pal.lightI;
-    sun.position.set(0.5, 0.9 + pal.sunY, 0.7).multiplyScalar(50).add(camera.position);
-    sun.target.position.copy(camera.position);
+    // sun from the side and above: soft shadows fall across the ground, faces stay lit; the shadow box follows the view
+    sun.target.position.copy(look);
+    sun.position.set(0.75, 0.95 + pal.sunY, 0.45).multiplyScalar(60).add(look);
+    wind.value = t;
+    clouds.update(pal.horizon, 1 - pal.stars * 0.75, t);
+    pool.update(pal.top, pal.horizon, t);
     lake.update(pal.top, pal.horizon, t);
 
     // horizon layer
@@ -521,11 +572,26 @@ export const createWorld = (canvas: HTMLCanvasElement, opts: {reducedMotion: boo
           petals.points.geometry.setDrawRange(0, Math.round(60 * k));
           sparkles.points.geometry.setDrawRange(0, Math.round(80 * k));
           document.body.classList.toggle('q-high', tier === 'high');
+          applyTierExtras();
         }
       }
     }
     raf = requestAnimationFrame(frame);
   };
+  // low tier: shadows off (materials recompile once) and half the grass
+  const grassFull = grassMeshes.map((g) => g.count);
+  function applyTierExtras() {
+    const low = tier === 'low';
+    grassMeshes.forEach((g, i) => (g.count = Math.round(grassFull[i] * (low ? 0.5 : 1))));
+    if (renderer.shadowMap.enabled === !low) return;
+    renderer.shadowMap.enabled = !low;
+    sun.castShadow = !low;
+    scene.traverse((o) => {
+      const m = (o as Mesh).material as Material | Material[] | undefined;
+      if (m) (Array.isArray(m) ? m : [m]).forEach((x) => (x.needsUpdate = true));
+    });
+  }
+  applyTierExtras();
   if (forcedTier) {
     const k = TIER[forcedTier].particles;
     petals.points.geometry.setDrawRange(0, Math.round(60 * k));

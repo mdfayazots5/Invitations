@@ -1,4 +1,5 @@
-import {CircleGeometry, Color, type Curve, DoubleSide, InstancedMesh, MeshStandardMaterial, Object3D, type Vector3} from 'three';
+import {Color, type Curve, DoubleSide, InstancedMesh, MeshStandardMaterial, Object3D, PlaneGeometry, type Vector3} from 'three';
+import {petalTexture} from './textures';
 import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 /**
@@ -10,19 +11,28 @@ const petalGeo = (() => {
   const petals = [];
   for (let ring = 0; ring < 2; ring++)
     for (let i = 0; i < 5; i++) {
-      // a rounded petal: a 7-sided disc, a little taller than wide
-      const g = new CircleGeometry(0.12, 7).scale(1, 1.15, 1).translate(0, 0.13, 0);
+      // a real petal shape (painted texture, alpha cut-out), cupped around the heart
+      const g = new PlaneGeometry(0.24, 0.27, 2, 2).translate(0, 0.13, 0);
+      const pp = g.attributes.position;
+      for (let k = 0; k < pp.count; k++) pp.setZ(k, -Math.abs(pp.getX(k)) * 0.35); // curl the sides in
       g.rotateX(-0.55 - ring * 0.5); // cup
       g.rotateY((i / 5) * Math.PI * 2 + ring * 0.6);
       g.scale(1 - ring * 0.35, 1 - ring * 0.2, 1 - ring * 0.35);
-      g.deleteAttribute('uv');
       petals.push(g.toNonIndexed());
     }
   return mergeGeometries(petals)!;
 })();
 
 // a little self-light so white petals stay white in shade and at dusk
-const material = new MeshStandardMaterial({color: '#FFFFFF', roughness: 0.7, side: DoubleSide, emissive: '#FFFFFF', emissiveIntensity: 0.22});
+const material = new MeshStandardMaterial({
+  color: '#FFFFFF',
+  map: petalTexture,
+  alphaTest: 0.5,
+  roughness: 0.65,
+  side: DoubleSide,
+  emissive: '#FFFFFF',
+  emissiveIntensity: 0.12,
+});
 const COLORS = ['#FFFFFF', '#FFFFFF', '#F8DBD4', '#E8A0B0'].map((c) => new Color(c));
 
 /** Deterministic jitter, so every load (and the video) looks the same. */
