@@ -44,6 +44,12 @@
   command = "cd admin && npm ci && npm run build"
   publish = "admin/dist"
 
+# The admin username ("fayazmd") is also an invitation folder name, so Netlify's secret scan finds it all over
+# the repo and stops the build. The username isn't a secret: skip scanning for that one key only.
+# ADMIN_PASSWORD, SESSION_SECRET and GITHUB_TOKEN are still scanned.
+[context.Admin.environment]
+  SECRETS_SCAN_OMIT_KEYS = "ADMIN_USER"
+
 # Phone tester uploads (shared/autotest → /api/autotest). Same function on every site; each site has its own store.
 [functions]
   directory = "netlify/functions"
