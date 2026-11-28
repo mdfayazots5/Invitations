@@ -1,0 +1,8 @@
+# Netlify: this branch deploys only the fayaz/ family invitation (Vite site).
+[build]
+  base = "fayaz"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
