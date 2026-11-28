@@ -35,7 +35,21 @@ Every branch gets the same commit. Only the site whose folder changed rebuilds: 
 ```
 In each site's Netlify settings, set **Branch to deploy** to the person's branch and leave **Base directory empty**.
 
+## Testing on your phone (🧪 Test button)
+Every invite has a built-in tester (`shared/autotest/`). It is on when `TEST_MODE = true` in that folder's `src/invite.config.ts`, and even then it shows **only on a link with `?test`**, so guests never see it.
+
+1. On your phone, open e.g. `https://fayazinvitation.netlify.app/?test` and tap **🧪 Test** (bottom left).
+2. Don't touch the screen. It opens the doors, plays the whole invite, scrolls it again at a steady speed, and visits every section. It takes screenshots and records logs, errors, load times and smoothness (fps, dropped frames). This takes about 2 minutes.
+3. When it shows **✅ Done testing**, the results are already uploaded to that site. Tell Claude "done testing".
+4. Claude runs `node scripts/pull-autotest.mjs` (`--clear` also removes them from the site). Each run lands in `test-runs/<site>/<runId>/` (`report.json` + screenshots; not committed).
+
+If the upload fails, **Download report** on the Done card saves everything (with the screenshots inside) as one file.
+The upload endpoint is `netlify/functions/autotest.mts` (Netlify Blobs). Reading the results needs the key in `.autotest-key` (gitignored); the function only holds its SHA-256 hash, because this repo is public.
+
 ## Add a new person
+**From a reference video:** give [NEW-INVITE-KIT.md](NEW-INVITE-KIT.md) and the video to Claude in the chat app. It returns a design brief plus prompts for the images and song. Bring the brief, images and song to Claude Code and say "Build a new invite from this brief". It does the steps below for you.
+
+By hand:
 1. On `main`, copy a folder as a template: `cp -r fayaz rakesh` (skip `node_modules/`), then edit `rakesh/src/invite.config.ts`.
 2. Add a `[context.Rakesh]` block to `netlify.toml` and a `Rakesh) folder=rakesh ;;` line to `scripts/netlify-ignore.sh`.
 3. Add `main:Rakesh` to `scripts/push-all.sh`, commit, and run it.

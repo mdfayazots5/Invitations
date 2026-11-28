@@ -4,13 +4,19 @@ import {startCountdown} from './countdown';
 import {mountCurtain} from './curtain';
 import {createDrift} from './drift';
 import {startFireworks} from './fireworks';
-import {C, mapEmbedUrl, type InviteEvent} from './invite.config';
+import {C, TEST_MODE, mapEmbedUrl, type InviteEvent} from './invite.config';
 import {createMusic} from './music';
 import {startReveal} from './reveal';
 import {wireRsvp} from './rsvp';
 import {createScratch} from './scratch';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ?test: the phone tester (shared/autotest), only when TEST_MODE is on in invite.config.ts. Loaded as its own file.
+if (TEST_MODE && /[?&](test|autotest)\b/.test(location.search))
+  void import('../../shared/autotest').then((m) =>
+    m.mountTester({site: 'muskankhanam', commit: __COMMIT__, enter: () => document.querySelector<HTMLElement>('.curtain')?.click()}),
+  );
 const params = new URLSearchParams(location.search);
 // ?video: the recorded MP4. Hides what only works by tapping, and the live countdown (it would freeze).
 if (params.has('video')) document.body.classList.add('video');

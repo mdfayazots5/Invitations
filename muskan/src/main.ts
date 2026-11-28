@@ -2,7 +2,7 @@ import './styles.css';
 import {startCountdown} from './countdown';
 import {mountDoors} from './doors';
 import {startDust} from './dust';
-import {C, mapEmbedUrl, type InviteEvent} from './invite.config';
+import {C, TEST_MODE, mapEmbedUrl, type InviteEvent} from './invite.config';
 import {createMusic} from './music';
 import {divider, laceBackground, stringLights} from './ornaments';
 import {createPager} from './pages';
@@ -10,6 +10,12 @@ import {startReveal} from './reveal';
 import {createScratch} from './scratch';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ?test: the phone tester (shared/autotest), only when TEST_MODE is on in invite.config.ts. Loaded as its own file.
+if (TEST_MODE && /[?&](test|autotest)\b/.test(location.search))
+  void import('../../shared/autotest').then((m) =>
+    m.mountTester({site: 'muskan', commit: __COMMIT__, enter: () => document.querySelector<HTMLElement>('#doors-root .doors')?.click()}),
+  );
 const params = new URLSearchParams(location.search);
 // ?video: the recorded MP4. Hides what only works by tapping (maps, buttons, music toggle, page dots, hints).
 if (params.has('video')) document.body.classList.add('video');

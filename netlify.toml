@@ -33,3 +33,7 @@
 [context.MuskanKhanam]
   command = "cd muskankhanam && npm ci && npm run build"
   publish = "muskankhanam/dist"
+
+# Phone tester uploads (shared/autotest → /api/autotest). Same function on every site; each site has its own store.
+[functions]
+  directory = "netlify/functions"

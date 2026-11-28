@@ -43,7 +43,14 @@ import {
 export const startScene = (canvas: HTMLCanvasElement, reducedMotion: boolean): boolean => {
   let renderer: WebGLRenderer;
   try {
-    renderer = new WebGLRenderer({canvas, antialias: false, alpha: true, powerPreference: 'low-power'});
+    renderer = new WebGLRenderer({
+      canvas,
+      antialias: false,
+      alpha: true,
+      powerPreference: 'low-power',
+      // ?autotest: keep the frame so the phone tester's screenshots show the sky.
+      preserveDrawingBuffer: location.search.includes('autotest'),
+    });
   } catch {
     return false;
   }

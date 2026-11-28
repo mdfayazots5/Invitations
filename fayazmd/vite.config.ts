@@ -18,4 +18,7 @@ export default defineConfig({
   plugins: [inviteMeta()],
   build: {target: 'es2020', assetsInlineLimit: 0},
   preview: {port: 4173, strictPort: true},
+  // The phone tester lives in ../shared (one copy for every invite).
+  server: {fs: {allow: ['..']}},
+  define: {__COMMIT__: JSON.stringify(process.env.COMMIT_REF ?? 'local')},
 });

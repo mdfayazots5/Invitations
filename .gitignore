@@ -427,3 +427,7 @@ FodyWeavers.xsd
 
 # Remotion
 out/
+
+# Phone autotest results (scripts/pull-autotest.mjs) and its read key
+test-runs/
+.autotest-key

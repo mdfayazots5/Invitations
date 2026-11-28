@@ -15,7 +15,7 @@ if [ -z "$CACHED_COMMIT_REF" ] || [ "$CACHED_COMMIT_REF" = "$COMMIT_REF" ]; then
   exit 1
 fi
 
-if git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- "$folder/" netlify.toml; then
+if git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- "$folder/" netlify.toml shared/ netlify/ package.json package-lock.json; then
   echo "$folder/ unchanged since the last deploy: skipping"
   exit 0
 fi
