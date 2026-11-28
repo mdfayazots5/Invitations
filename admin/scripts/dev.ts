@@ -13,7 +13,8 @@ process.env.ADMIN_DEV_LOCAL_REPO ??= join(import.meta.dirname, '..', '..');
 process.env.ADMIN_USER ??= 'test';
 process.env.ADMIN_PASSWORD ??= 'test';
 process.env.SESSION_SECRET ??= 'local-dev-secret';
-process.env.GITHUB_TOKEN ??= execSync('gh auth token').toString().trim();
+// ADMIN_DEV_NO_TOKEN=1 tests the no-token mode (read-only GitHub, Deploy off)
+if (!process.env.ADMIN_DEV_NO_TOKEN) process.env.GITHUB_TOKEN ??= execSync('gh auth token').toString().trim();
 
 const {default: handler} = await import('../../netlify/functions/admin.mts');
 const DIST = join(import.meta.dirname, '..', 'dist');

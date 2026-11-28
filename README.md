@@ -65,7 +65,7 @@ For each invitation you can change:
 3. Site configuration → **Environment variables** → add:
    - `ADMIN_USER` = `fayazmd`
    - `ADMIN_PASSWORD` = your password
-   - `GITHUB_TOKEN` = the token from step 1
+   - `GITHUB_TOKEN` = the token from step 1 (optional to start: without it you can sign in, change and save everything, but **Deploy** stays off)
    - `SESSION_SECRET` = any long random text (signs the sign-in cookie)
 4. Deploys → **Trigger deploy**. Open the site and sign in.
 

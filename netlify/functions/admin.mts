@@ -1,6 +1,7 @@
 // Admin API for the Admin site (admin/), served at /api/admin/*.
-// Only works where ADMIN_USER, ADMIN_PASSWORD, GITHUB_TOKEN and SESSION_SECRET are set (the Admin Netlify site);
+// Only works where ADMIN_USER, ADMIN_PASSWORD and SESSION_SECRET are set (the Admin Netlify site);
 // every other site gets 404, so the invite sites never expose it.
+// GITHUB_TOKEN is optional: without it the admin reads the public repo and saves drafts, but Deploy is off.
 //
 //   POST   /api/admin/login            {user, password}   → session cookie (8 h); 5 wrong tries → locked 15 min
 //   POST   /api/admin/logout
@@ -93,12 +94,20 @@ const gh = async (path: string, init: RequestInit = {}) => {
   return r.json();
 };
 const repoOf = () => env('GITHUB_REPO') || 'mdfayazots5/Invitations';
+const hasToken = () => !!env('GITHUB_TOKEN');
 /** Local dev server only: read repo files from this checkout instead of GitHub. */
 const localRepo = () => process.env.ADMIN_DEV_LOCAL_REPO ?? '';
 const readFile = async (path: string, ref = 'main') => {
   if (localRepo()) {
     const {readFileSync} = await import('node:fs');
     const text = readFileSync(`${localRepo()}/${path}`, 'utf8');
+    return {text, size: text.length};
+  }
+  if (!hasToken()) {
+    // no token: the repo is public, read the raw file (no API rate limit)
+    const r = await fetch(`https://raw.githubusercontent.com/${repoOf()}/${ref}/${path}`, {headers: {'cache-control': 'no-cache'}});
+    if (!r.ok) throw new Error(`Could not read ${path} from GitHub (${r.status}).`);
+    const text = await r.text();
     return {text, size: text.length};
   }
   const f = await gh(`/repos/${repoOf()}/contents/${path}?ref=${ref}`);
@@ -112,6 +121,11 @@ const fileSize = async (path: string) => {
     } catch {
       return null;
     }
+  }
+  if (!hasToken()) {
+    const r = await fetch(`https://raw.githubusercontent.com/${repoOf()}/main/${path}`, {method: 'HEAD'}).catch(() => null);
+    const len = r?.ok ? Number(r.headers.get('content-length')) : NaN;
+    return Number.isFinite(len) ? len : null;
   }
   try {
     return ((await gh(`/repos/${repoOf()}/contents/${path}?ref=main`)) as {size: number}).size;
@@ -163,6 +177,8 @@ const deploy = async (inv: Invite, reg: Registry, store: KV, dryRun: boolean) =>
   files.push({path: `${inv.folder}/invite.settings.json`, content: text, encoding: 'utf-8', size: text.length});
   const branches = [...new Set([...reg.invites.map((i) => i.branch), ...reg.extraBranches])];
   if (dryRun) return {dryRun: true, files: files.map(({path, size}) => ({path, size})), branches};
+  if (!hasToken())
+    throw new Error("Deploy is off: add GITHUB_TOKEN in the Admin site's Netlify environment variables, then redeploy the Admin site. Your changes are saved.");
 
   const head = await gh(`/repos/${repo}/git/ref/heads/main`);
   const parent = head.object.sha as string;
@@ -196,7 +212,7 @@ const deploy = async (inv: Invite, reg: Registry, store: KV, dryRun: boolean) =>
 
 // ───────────────────────── router ─────────────────────────
 export default async (req: Request, ctx: Context) => {
-  if (!env('ADMIN_USER') || !env('ADMIN_PASSWORD') || !env('GITHUB_TOKEN') || !env('SESSION_SECRET')) return new Response('Not found', {status: 404});
+  if (!env('ADMIN_USER') || !env('ADMIN_PASSWORD') || !env('SESSION_SECRET')) return new Response('Not found', {status: 404});
   const url = new URL(req.url);
   const route = url.pathname.replace(/^\/api\/admin\/?/, '');
   const store = kv();
@@ -223,7 +239,7 @@ export default async (req: Request, ctx: Context) => {
   }
   if (route === 'logout') return json({ok: true}, 200, {'set-cookie': `adm=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${secure(req)}`});
   if (!(await signedIn(req))) return fail(401, 'Please sign in.');
-  if (route === 'me') return json({user: env('ADMIN_USER')});
+  if (route === 'me') return json({user: env('ADMIN_USER'), canDeploy: hasToken()});
 
   try {
     const reg = await registry();

@@ -33,6 +33,9 @@ type Invite = {
 };
 
 const root = document.getElementById('root')!;
+/** False when the Admin site has no GITHUB_TOKEN: everything works except Deploy. */
+let canDeploy = true;
+const NO_TOKEN = "Deploy is off until GITHUB_TOKEN is added in the Admin site's Netlify environment variables (then redeploy the Admin site). You can still change and save everything now.";
 const esc = (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const sec = (ms: number) => `${(ms / 1000).toFixed(1).replace(/\.0$/, '')} s`;
 const mb = (b: number | null | undefined) => (b == null ? '—' : b > 1e6 ? `${(b / 1048576).toFixed(1)} MB` : `${Math.round(b / 1024)} KB`);
@@ -100,6 +103,7 @@ function showLogin(message = '') {
     btn.disabled = true;
     try {
       await api('login', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({user: fd.get('user'), password: fd.get('password')})});
+      canDeploy = (await api<{canDeploy: boolean}>('me')).canDeploy;
       void showDashboard();
     } catch (err) {
       form.querySelector('.err')!.textContent = (err as Error).message;
@@ -136,6 +140,7 @@ async function showDashboard() {
   const live = r.invites.filter((i) => i.site).length;
   const drafts = r.invites.filter((i) => i.draft).length;
   root.querySelector('main')!.innerHTML = `
+    ${canDeploy ? '' : `<div class="banner warn" style="margin-bottom:16px">${esc(NO_TOKEN)}</div>`}
     <section class="summary">
       <div class="stat"><b>${r.count}</b><span>invitations</span></div>
       <div class="stat"><b>${live}</b><span>live on Netlify</span></div>
@@ -246,6 +251,8 @@ function showEditor(folder: string) {
         }
       </div>
 
+      ${canDeploy ? '' : `<div class="banner warn">${esc(NO_TOKEN)}</div>`}
+
       <section class="card">
         <div class="row"><h2>Auto-scroll</h2>
           <label class="switch"><input type="checkbox" id="f-auto" ${s.autoAdvance ? 'checked' : ''} /><span></span> Pages turn on their own</label></div>
@@ -304,7 +311,7 @@ function showEditor(folder: string) {
         <span id="unsaved" class="unsaved" ${dirty ? '' : 'hidden'}>● Unsaved changes</span>
         ${inv.draft ? '<button class="btn" id="b-discard">Discard saved changes</button>' : ''}
         <button class="btn" id="b-save">Save</button>
-        <button class="btn primary" id="b-deploy" ${inv.draft && !dirty ? '' : 'disabled'}>Deploy</button>
+        <button class="btn primary" id="b-deploy" ${canDeploy && inv.draft && !dirty ? '' : 'disabled'} ${canDeploy ? '' : 'title="Add GITHUB_TOKEN in Netlify to enable Deploy"'}>Deploy</button>
       </div>
     </main>`;
     wireHeader();
@@ -314,7 +321,7 @@ function showEditor(folder: string) {
   const markDirty = () => {
     dirty = JSON.stringify(edit) !== JSON.stringify(saved);
     root.querySelector('#unsaved')!.toggleAttribute('hidden', !dirty);
-    (root.querySelector('#b-deploy') as HTMLButtonElement).disabled = !inv.draft || dirty;
+    (root.querySelector('#b-deploy') as HTMLButtonElement).disabled = !canDeploy || !inv.draft || dirty;
     root.querySelector('#total')!.textContent = sec(showLength(edit));
   };
 
@@ -515,6 +522,9 @@ async function showEditorRefresh(folder: string) {
 }
 
 // ───────────────────────── start ─────────────────────────
-api('me')
-  .then(() => showDashboard())
+api<{canDeploy: boolean}>('me')
+  .then((me) => {
+    canDeploy = me.canDeploy;
+    void showDashboard();
+  })
   .catch(() => showLogin());
