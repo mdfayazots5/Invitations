@@ -1,6 +1,9 @@
 import {C} from './invite.config';
+import {SETTINGS} from './settings';
 
-const FADE_IN = 2.5; // s: first start, on the door tap
+const M = SETTINGS.music;
+
+const FADE_IN = M.fadeInSec; // s: first start, on the tap (Admin: fade-in)
 const FADE_RESUME = 0.6; // s: when the guest presses play again
 
 /**
@@ -28,10 +31,21 @@ const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platfor
 const canUseWebAudio = !isIOS || !!nav.audioSession;
 
 export const createMusic = () => {
+  // Admin: music off → no download, no button
+  if (!M.enabled) return {start: () => undefined};
   const audio = new Audio();
-  audio.loop = true;
+  // With a start offset, loop by hand so every repeat starts at the offset too.
+  audio.loop = M.loop && M.startAtSec <= 0;
   audio.preload = 'auto';
-  audio.src = C.music;
+  audio.src = `/${M.file}`;
+  if (M.startAtSec > 0) {
+    audio.addEventListener('loadedmetadata', () => (audio.currentTime = M.startAtSec), {once: true});
+    if (M.loop)
+      audio.addEventListener('ended', () => {
+        audio.currentTime = M.startAtSec;
+        void audio.play();
+      });
+  }
 
   const btn = document.createElement('button');
   btn.className = 'music paused';
@@ -80,7 +94,7 @@ export const createMusic = () => {
       gain.gain.cancelScheduledValues(now);
       gain.gain.setValueAtTime(0.0001, now);
       // Exponential rise sounds even to the ear (a linear one jumps loud at the start).
-      gain.gain.exponentialRampToValueAtTime(1, now + seconds);
+      gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, M.volume), now + seconds);
       return;
     }
     cancelAnimationFrame(rampRaf);
@@ -88,7 +102,7 @@ export const createMusic = () => {
     const t0 = performance.now();
     const step = (t: number) => {
       const k = Math.min(1, (t - t0) / (seconds * 1000));
-      audio.volume = k * k; // ease-in
+      audio.volume = k * k * M.volume; // ease-in, up to the Admin volume
       if (k < 1) rampRaf = requestAnimationFrame(step);
     };
     rampRaf = requestAnimationFrame(step);

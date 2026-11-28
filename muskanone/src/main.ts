@@ -1,4 +1,5 @@
 import './styles.css';
+import {holdOf, SETTINGS} from './settings';
 import {artDefs, charms, garland, lanterns, lotusDivider, monogramRing, scene, type SceneName} from './art';
 import {startAmbient} from './ambient';
 import {startCountdown} from './countdown';
@@ -26,9 +27,9 @@ const R = 'data-reveal';
 const u = C.ui;
 
 /** After the curtain opens: time to take in the hero before the card scratches itself (brief: 3 s). */
-const SCRATCH_DELAY = 3000;
+const SCRATCH_DELAY = SETTINGS.scratchDelayMs;
 /** After the dates show: time to read them before the page starts to move. */
-const DATES_HOLD = 2600;
+const DATES_HOLD = SETTINGS.startDelayMs;
 
 /** Code-drawn 2D scene: the fallback when WebGL isn't available (the 3D world in src/three/ draws over it). */
 const bg = (name: SceneName) => `<div class="bg" aria-hidden="true">${scene(name)}</div>`;
@@ -60,7 +61,7 @@ const heroHtml = () => `<section id="hero" class="sec page hero" data-hold="7000
   </div>
 </section>`;
 
-const invitationHtml = () => `<section id="invitation" class="sec page" data-hold="9000">
+const invitationHtml = () => `<section id="invitation" class="sec page" data-hold="${holdOf('invitation', 9000)}">
   ${bg('names')}
   ${charms()}
   <div class="txt page-inner veil">
@@ -76,7 +77,7 @@ const invitationHtml = () => `<section id="invitation" class="sec page" data-hol
   </div>
 </section>`;
 
-const urduHtml = () => `<section id="urdu" class="sec page" data-hold="9000">
+const urduHtml = () => `<section id="urdu" class="sec page" data-hold="${holdOf('urdu', 9000)}">
   ${bg('names')}
   ${charms()}
   <div class="txt page-inner veil strong">
@@ -92,7 +93,7 @@ const urduHtml = () => `<section id="urdu" class="sec page" data-hold="9000">
   </div>
 </section>`;
 
-const eventHtml = (e: InviteEvent, kind: 'petals' | 'sparkles') => `<section id="${e.key}" class="sec page event" data-hold="7000">
+const eventHtml = (e: InviteEvent, kind: 'petals' | 'sparkles') => `<section id="${e.key}" class="sec page event" data-hold="${holdOf(e.key, 7000)}">
   ${bg(e.key)}
   ${e.key === 'valima' ? '<div class="candles" aria-hidden="true"><i></i><i></i><i></i><i></i></div>' : ''}
   ${ambient(kind)}
@@ -109,7 +110,7 @@ const eventHtml = (e: InviteEvent, kind: 'petals' | 'sparkles') => `<section id=
   </div>
 </section>`;
 
-const countdownHtml = () => `<section id="countdown" class="sec page plain" data-hold="6000">
+const countdownHtml = () => `<section id="countdown" class="sec page plain" data-hold="${holdOf('countdown', 6000)}">
   ${sky()}
   ${lanterns([
     [8, 30, 0.9],
@@ -131,7 +132,7 @@ const countdownHtml = () => `<section id="countdown" class="sec page plain" data
   </div>
 </section>`;
 
-const rsvpHtml = () => `<section id="rsvp" class="sec page plain" data-hold="5000">
+const rsvpHtml = () => `<section id="rsvp" class="sec page plain" data-hold="${holdOf('rsvp', 5000)}">
   ${sky()}
   <div class="txt page-inner veil strong">
     <p class="caps small gold" ${R}>✦ ${u.rsvpKicker} ✦</p>
@@ -161,7 +162,7 @@ const venueCard = (e: InviteEvent) => `<article class="venue" ${R}>
   <a class="maps caps" href="${esc(e.mapPlaceUrl)}" target="_blank" rel="noopener">📍 ${u.openMaps}</a>
 </article>`;
 
-const venuesHtml = () => `<section id="venues" class="sec page plain" data-hold="6000">
+const venuesHtml = () => `<section id="venues" class="sec page plain" data-hold="${holdOf('venues', 6000)}">
   ${sky()}
   <div class="txt page-inner veil strong">
     <p class="caps small gold" ${R}>✦ ${u.venuesKicker} ✦</p>
@@ -341,7 +342,7 @@ const boot = () => {
     if (params.has('noscroll')) return;
     // The card scratches itself (unless the guest got there first), then the pages turn on their own.
     window.setTimeout(scratch.auto, reducedMotion ? 0 : SCRATCH_DELAY);
-    if (!reducedMotion) void onReveal.then(() => window.setTimeout(pager.startAuto, DATES_HOLD));
+    if (!reducedMotion) void onReveal.then(() => window.setTimeout(() => SETTINGS.autoAdvance && pager.startAuto(), DATES_HOLD));
   });
 };
 

@@ -1,4 +1,5 @@
 import './styles.css';
+import {holdOf, SETTINGS} from './settings';
 import {startCountdown} from './countdown';
 import {mountDoors} from './doors';
 import {startDust} from './dust';
@@ -24,9 +25,9 @@ const u = C.ui;
 const valima = C.events[0];
 
 /** Hero stagger: last line lands ~0.6 s + 9 × 120 ms + 0.8 s after the doors finish. */
-const AUTO_SCRATCH_DELAY = 2200;
+const AUTO_SCRATCH_DELAY = SETTINGS.scratchDelayMs;
 /** Time to enjoy the revealed date before the page starts to drift. */
-const AUTO_SCROLL_DELAY = 2600;
+const AUTO_SCROLL_DELAY = SETTINGS.startDelayMs;
 
 const heroHtml = () => {
   let h = 0;
@@ -51,7 +52,7 @@ const heroHtml = () => {
 };
 
 /** Quran verse page (Ar-Rum 30:21): Arabic, then its meaning. */
-const ayahHtml = () => `<section id="ayah" class="page" data-hold="7000"><div class="page-inner">
+const ayahHtml = () => `<section id="ayah" class="page" data-hold="${holdOf('ayah', 7000)}"><div class="page-inner">
   <p class="caps gold" ${R}>${esc(C.ayah.ref)}</p>
   <div ${R}>${divider()}</div>
   <p class="ayah-ar gold-text" ${R} lang="ar" dir="rtl">${C.ayah.ar}</p>
@@ -59,7 +60,7 @@ const ayahHtml = () => `<section id="ayah" class="page" data-hold="7000"><div cl
   <p class="ayah-en italic" ${R}>“${esc(C.ayah.en)}”</p>
 </div></section>`;
 
-const invitationHtml = () => `<section id="invitation" class="page" data-hold="7000"><div class="page-inner">
+const invitationHtml = () => `<section id="invitation" class="page" data-hold="${holdOf('invitation', 7000)}"><div class="page-inner">
   ${stringLights()}
   <p class="caps gold" ${R} style="margin-top:22px">${u.invitationLabel}</p>
   <div ${R}>${divider()}</div>
@@ -73,7 +74,7 @@ const invitationHtml = () => `<section id="invitation" class="page" data-hold="7
   <p class="quote italic" ${R}>“${esc(C.quote)}”</p>
 </div></section>`;
 
-const countdownHtml = () => `<section class="countdown page" id="countdown" data-hold="4500">
+const countdownHtml = () => `<section class="countdown page" id="countdown" data-hold="${holdOf('countdown', 4500)}">
   <div class="page-inner">
   <p class="caps gold" ${R}>${u.countdownLabel}</p>
   <p class="script gold-text title-lg" ${R}>${u.countdownTitle}</p>
@@ -88,7 +89,7 @@ const countdownHtml = () => `<section class="countdown page" id="countdown" data
   </div>
 </section>`;
 
-const venueHtml = (e = valima) => `<section id="venue" class="page" data-hold="5000"><div class="page-inner">
+const venueHtml = (e = valima) => `<section id="venue" class="page" data-hold="${holdOf('venue', 5000)}"><div class="page-inner">
   <p class="caps gold" ${R}>${u.venueLabel}</p>
   <div ${R}>${divider()}</div>
   <div class="venue-block" id="venue-${e.key}">
@@ -150,7 +151,7 @@ const boot = () => {
     // ?noscroll: used by scripts/record.ts, which times its own page turns to the 40 s music cut.
     if (scrolling || reducedMotion || new URLSearchParams(location.search).has('noscroll')) return;
     scrolling = true;
-    window.setTimeout(() => pager.startAuto(), AUTO_SCROLL_DELAY);
+    window.setTimeout(() => (SETTINGS.autoAdvance && pager.startAuto()), AUTO_SCROLL_DELAY);
   };
 
   // The scratch bar takes the slot's place (and its position in the hero stagger).

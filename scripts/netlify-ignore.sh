@@ -7,6 +7,7 @@ case "$BRANCH" in
   Muskan)       folder=muskan ;;
   MuskanKhanam) folder=muskankhanam ;;
   Muskanone)    folder=muskanone ;;
+  Admin)        folder=admin ;;
   *) echo "No folder mapped to branch '$BRANCH'"; exit 1 ;;
 esac
 

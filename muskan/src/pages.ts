@@ -1,3 +1,4 @@
+import {SETTINGS} from './settings';
 /**
  * Page-by-page invite inside a fixed full-screen scroller (`#app`).
  *
@@ -14,10 +15,10 @@
  */
 const MIN_FIT = 0.8;
 const MARGIN = 14; // px kept clear above and below a page's content
-const GLIDE = 1100; // ms per page-to-page glide
-const HERO_HOLD = 4000; // ms on the first page when "View again" restarts the show
+const GLIDE = SETTINGS.glideMs; // ms per page-to-page glide (Admin: page-turn speed)
+const HERO_HOLD = SETTINGS.replayHeroHoldMs; // ms on the first page when "View again" restarts the show
 const REVEAL = 900; // ms for a page's whole-page reveal to finish (see reveal.ts)
-const DEFAULT_HOLD = 4500;
+const DEFAULT_HOLD = SETTINGS.defaultHoldMs;
 const TAP_MOVE = 10; // px: more movement than this is a swipe, not a tap
 const TAP_TIME = 300; // ms
 

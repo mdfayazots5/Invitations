@@ -1,9 +1,10 @@
+import {SETTINGS} from './settings';
 /**
  * Auto-drift: after the dates are revealed, the page glides down on its own, section by section,
  * pausing on each for its `data-hold` (ms). A section taller than the screen is read in steps.
  * The first touch, wheel, key or drag stops it for good; from then on the guest scrolls freely.
  */
-const GLIDE = 1500;
+const GLIDE = SETTINGS.glideMs; // Admin: page-turn speed
 const STEP = 0.8; // of the screen height, for tall sections
 
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);

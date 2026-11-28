@@ -1,0 +1,54 @@
+{
+  "autoAdvance": true,
+  "scratchDelayMs": 3000,
+  "startDelayMs": 2600,
+  "glideMs": 1100,
+  "defaultHoldMs": 4500,
+  "replayHeroHoldMs": 4000,
+  "pages": [
+    {
+      "id": "invitation",
+      "label": "Invitation",
+      "holdMs": 9000
+    },
+    {
+      "id": "urdu",
+      "label": "Urdu invitation",
+      "holdMs": 9000
+    },
+    {
+      "id": "nikah",
+      "label": "Nikah",
+      "holdMs": 7000
+    },
+    {
+      "id": "valima",
+      "label": "Valima",
+      "holdMs": 7000
+    },
+    {
+      "id": "countdown",
+      "label": "Countdown",
+      "holdMs": 6000
+    },
+    {
+      "id": "rsvp",
+      "label": "RSVP",
+      "holdMs": 5000
+    },
+    {
+      "id": "venues",
+      "label": "Venues",
+      "holdMs": 6000
+    }
+  ],
+  "music": {
+    "enabled": true,
+    "file": "music.mp3",
+    "title": "Family song",
+    "volume": 1,
+    "fadeInSec": 2.5,
+    "startAtSec": 0,
+    "loop": true
+  }
+}

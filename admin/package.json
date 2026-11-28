@@ -1,0 +1,15 @@
+{
+  "name": "invitations-admin",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npm run build && tsx scripts/dev.ts",
+    "build": "tsc --noEmit && vite build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.0",
+    "vite": "^7.1.0"
+  }
+}

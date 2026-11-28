@@ -9,6 +9,18 @@ const allText = (v: unknown): string => (typeof v === 'string' ? v : v && typeof
 const arabicScript = (s: string) => s.replace(/[^؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿‌‍ ()۰-۹:]/g, '');
 
 /** Fills %TITLE% / %OG_DESCRIPTION% / %SITE_URL% in index.html from invite.config.ts. */
+/** dist/version.json: the deployed commit, so the Admin site can tell when a change is live. */
+const versionFile = (): Plugin => ({
+  name: 'version-file',
+  generateBundle() {
+    this.emitFile({
+      type: 'asset',
+      fileName: 'version.json',
+      source: JSON.stringify({commit: process.env.COMMIT_REF ?? 'local', builtAt: new Date().toISOString()}),
+    });
+  },
+});
+
 const inviteMeta = (): Plugin => ({
   name: 'invite-meta',
   transformIndexHtml: (html) =>
@@ -23,7 +35,7 @@ const inviteMeta = (): Plugin => ({
 });
 
 export default defineConfig({
-  plugins: [inviteMeta()],
+  plugins: [inviteMeta(), versionFile()],
   // the 3D world is its own lazy chunk (~145 KB gzipped, budget 250 KB)
   build: {target: 'es2020', assetsInlineLimit: 0, chunkSizeWarningLimit: 700},
   preview: {port: 4173, strictPort: true},

@@ -1,4 +1,5 @@
 import './styles.css';
+import {holdOf, SETTINGS} from './settings';
 import {artDefs, crest, jaaliBand, ornament, paperGrain} from './art';
 import {startCountdown} from './countdown';
 import {mountCurtain} from './curtain';
@@ -25,9 +26,9 @@ const R = 'data-reveal';
 const u = C.ui;
 
 /** After the curtain opens: time to take in the hall before the card scratches itself. */
-const SCRATCH_DELAY = 3200;
+const SCRATCH_DELAY = SETTINGS.scratchDelayMs;
 /** After the dates show: time to read them before the page starts to drift. */
-const DATES_HOLD = 2600;
+const DATES_HOLD = SETTINGS.startDelayMs;
 
 const band = () => `<div class="band" aria-hidden="true"></div>`;
 const pad2 = (n: number) => String(n).padStart(2, '0');
@@ -44,7 +45,7 @@ const heroHtml = () => `<section id="hero" class="sec hero" aria-label="${esc(u.
 </section>`;
 
 /** The painted arch (public/art/arch.webp) with the invitation written inside its glowing panel. */
-const inviteHtml = () => `<section id="invitation" class="sec invite" data-hold="11000">
+const inviteHtml = () => `<section id="invitation" class="sec invite" data-hold="${holdOf('invitation', 11000)}">
   ${band()}
   <div class="arch-scene">
     <div class="arch-text" data-fit>
@@ -89,7 +90,7 @@ const fitArch = (box: HTMLElement) => {
 };
 
 /** Surah Ar-Rum 30:21 in its own short, pale section between the arch and the events. */
-const verseHtml = () => `<section id="verse" class="sec light verse" data-hold="7000">
+const verseHtml = () => `<section id="verse" class="sec light verse" data-hold="${holdOf('verse', 7000)}">
   ${band()}
   <div class="light-inner">
     <p class="caps kicker" ${R}>✦ ${esc(C.ayah.ref)} ✦</p>
@@ -108,7 +109,7 @@ const eventItem = (e: InviteEvent, i: number) => `<li class="ev" ${R}>
   <p class="italic ev-blurb">${esc(e.blurb)} · ${esc(e.note)}</p>
 </li>`;
 
-const eventsHtml = () => `<section id="events" class="sec light events" data-hold="9000">
+const eventsHtml = () => `<section id="events" class="sec light events" data-hold="${holdOf('events', 9000)}">
   ${band()}
   <div class="light-inner">
     <p class="caps kicker" ${R}>✦ ${u.eventsLabel} ✦</p>
@@ -118,7 +119,7 @@ const eventsHtml = () => `<section id="events" class="sec light events" data-hol
   </div>
 </section>`;
 
-const countdownHtml = () => `<section id="countdown" class="sec count" data-hold="5000">
+const countdownHtml = () => `<section id="countdown" class="sec count" data-hold="${holdOf('countdown', 5000)}">
   ${band()}
   <canvas class="fireworks" aria-hidden="true"></canvas>
   <div class="count-inner">
@@ -132,7 +133,7 @@ const countdownHtml = () => `<section id="countdown" class="sec count" data-hold
   </div>
 </section>`;
 
-const rsvpHtml = () => `<section id="rsvp" class="sec rsvp" data-hold="4000">
+const rsvpHtml = () => `<section id="rsvp" class="sec rsvp" data-hold="${holdOf('rsvp', 4000)}">
   ${band()}
   <div class="rsvp-inner">
     <h2 class="script glow-title" ${R}>${u.rsvpTitle}</h2>
@@ -164,7 +165,7 @@ const venueCard = (e: InviteEvent) => `<article class="venue" ${R}>
   <a class="btn-outline caps" href="${esc(e.mapPlaceUrl)}" target="_blank" rel="noopener">📍 ${u.openMaps}</a>
 </article>`;
 
-const venuesHtml = () => `<section id="venues" class="sec light venues" data-hold="8000">
+const venuesHtml = () => `<section id="venues" class="sec light venues" data-hold="${holdOf('venues', 8000)}">
   ${band()}
   <div class="light-inner">
     <p class="caps kicker" ${R}>✦ ${u.venueKicker} ✦</p>
@@ -174,7 +175,7 @@ const venuesHtml = () => `<section id="venues" class="sec light venues" data-hol
   </div>
 </section>`;
 
-const closingHtml = () => `<footer id="closing" class="sec closing" data-hold="7000">
+const closingHtml = () => `<footer id="closing" class="sec closing" data-hold="${holdOf('closing', 7000)}">
   ${band()}
   <div class="closing-inner">
     <p class="star" ${R}>✦</p>
@@ -252,7 +253,7 @@ const boot = () => {
     window.setTimeout(() => {
       if (!drift.stopped) scratch.auto();
     }, SCRATCH_DELAY);
-    void onReveal.then(() => window.setTimeout(() => void drift.start(), DATES_HOLD));
+    void onReveal.then(() => window.setTimeout(() => SETTINGS.autoAdvance && void drift.start(), DATES_HOLD));
   });
 };
 

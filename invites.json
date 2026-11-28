@@ -1,0 +1,41 @@
+{
+  "repo": "mdfayazots5/Invitations",
+  "invites": [
+    {
+      "folder": "fayaz",
+      "branch": "Fayaz",
+      "name": "Fayaz & Muskan · Family (Nikah & Valima)",
+      "audience": "Groom's family",
+      "site": "https://fayazinvitation.netlify.app/"
+    },
+    {
+      "folder": "fayazmd",
+      "branch": "FayazMD",
+      "name": "Fayaz · Friends & colleagues (Valima)",
+      "audience": "Friends & colleagues",
+      "site": "https://mdfayazinvitation.netlify.app/"
+    },
+    {
+      "folder": "muskan",
+      "branch": "Muskan",
+      "name": "Muskan & Fayaz · Bride's family (Nikah & Valima)",
+      "audience": "Bride's family",
+      "site": "https://muskaninvitation.netlify.app/"
+    },
+    {
+      "folder": "muskankhanam",
+      "branch": "MuskanKhanam",
+      "name": "Muskan & Fayaz · Red curtain & palace",
+      "audience": "Bride's family",
+      "site": null
+    },
+    {
+      "folder": "muskanone",
+      "branch": "Muskanone",
+      "name": "Fayaz & Muskan · Pastel sky 3D",
+      "audience": "Groom's family",
+      "site": null
+    }
+  ],
+  "extraBranches": ["main", "Admin"]
+}

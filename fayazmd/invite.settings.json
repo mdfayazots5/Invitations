@@ -1,0 +1,39 @@
+{
+  "autoAdvance": true,
+  "scratchDelayMs": 2200,
+  "startDelayMs": 2600,
+  "glideMs": 1100,
+  "defaultHoldMs": 4500,
+  "replayHeroHoldMs": 4000,
+  "pages": [
+    {
+      "id": "ayah",
+      "label": "Quran verse",
+      "holdMs": 7000
+    },
+    {
+      "id": "invitation",
+      "label": "Invitation",
+      "holdMs": 7000
+    },
+    {
+      "id": "countdown",
+      "label": "Countdown",
+      "holdMs": 4500
+    },
+    {
+      "id": "venue",
+      "label": "Venue",
+      "holdMs": 5000
+    }
+  ],
+  "music": {
+    "enabled": true,
+    "file": "music.mp3",
+    "title": "Family song",
+    "volume": 1,
+    "fadeInSec": 2.5,
+    "startAtSec": 0,
+    "loop": true
+  }
+}

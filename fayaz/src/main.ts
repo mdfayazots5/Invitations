@@ -1,4 +1,5 @@
 import './styles.css';
+import {holdOf, SETTINGS} from './settings';
 import {startCountdown} from './countdown';
 import {mountDoors} from './doors';
 import {startDust} from './dust';
@@ -24,9 +25,9 @@ const R = 'data-reveal';
 const u = C.ui;
 
 /** Hero stagger: last line lands ~0.6 s + 11 × 120 ms + 0.8 s after the doors finish. */
-const AUTO_SCRATCH_DELAY = 2500;
+const AUTO_SCRATCH_DELAY = SETTINGS.scratchDelayMs;
 /** Time to enjoy the revealed dates before the page starts to drift. */
-const AUTO_SCROLL_DELAY = 2600;
+const AUTO_SCROLL_DELAY = SETTINGS.startDelayMs;
 
 /** Eight-pointed star (Rub el Hizb) used as the event-card crest. */
 const star8 = () => `<svg class="event-star" viewBox="0 0 40 40" aria-hidden="true">
@@ -58,7 +59,7 @@ const heroHtml = () => {
 };
 
 /** Quran verse page (Ar-Rum 30:21): Arabic, then its meaning. */
-const ayahHtml = () => `<section id="ayah" class="page" data-hold="7000"><div class="page-inner">
+const ayahHtml = () => `<section id="ayah" class="page" data-hold="${holdOf('ayah', 7000)}"><div class="page-inner">
   <div class="panel">
     <p class="caps gold" ${R}>${esc(C.ayah.ref)}</p>
     <div ${R}>${divider()}</div>
@@ -68,7 +69,7 @@ const ayahHtml = () => `<section id="ayah" class="page" data-hold="7000"><div cl
   </div>
 </div></section>`;
 
-const invitationHtml = () => `<section id="invitation" class="page" data-hold="7500"><div class="page-inner">
+const invitationHtml = () => `<section id="invitation" class="page" data-hold="${holdOf('invitation', 7500)}"><div class="page-inner">
   <div class="panel">
     <p class="caps gold" ${R}>${u.invitationLabel}</p>
     <div ${R}>${divider()}</div>
@@ -87,7 +88,7 @@ const invitationHtml = () => `<section id="invitation" class="page" data-hold="7
 </div></section>`;
 
 /** One page per event: Nikah, then Valima. The section label sits on the first one. */
-const eventPage = (e: InviteEvent, first: boolean) => `<section id="events-${e.key}" class="page" data-hold="5000"><div class="page-inner">
+const eventPage = (e: InviteEvent, first: boolean) => `<section id="events-${e.key}" class="page" data-hold="${holdOf(`events-${e.key}`, 5000)}"><div class="page-inner">
   ${first ? `${stringLights()}<p class="caps gold label-pill" ${R}>${u.eventsLabel}</p>` : ''}
   <article class="panel event" id="event-${e.key}">
     ${star8()}
@@ -105,7 +106,7 @@ const eventPage = (e: InviteEvent, first: boolean) => `<section id="events-${e.k
 
 const countdownHtml = () => {
   const beforeNikah = Date.now() < new Date(C.events[0].startISO).getTime();
-  return `<section class="countdown page" id="countdown" data-hold="4500"><div class="page-inner">
+  return `<section class="countdown page" id="countdown" data-hold="${holdOf('countdown', 4500)}"><div class="page-inner">
   <div class="panel">
     <p class="caps gold" ${R}>${u.countdownLabel}</p>
     ${(beforeNikah ? u.countdownTitle : u.countdownTitleAfter)
@@ -125,7 +126,7 @@ const countdownHtml = () => {
 };
 
 /** One page per venue, with a map preview: swipes turn pages, a tap opens Google Maps. */
-const venuePage = (e: InviteEvent, first: boolean) => `<section id="venue-${e.key}" class="page" data-hold="4500"><div class="page-inner">
+const venuePage = (e: InviteEvent, first: boolean) => `<section id="venue-${e.key}" class="page" data-hold="${holdOf(`venue-${e.key}`, 4500)}"><div class="page-inner">
   <div class="panel">
     ${first ? `<p class="caps gold" ${R}>${u.venueLabel}</p><div ${R}>${divider()}</div>` : ''}
     <p class="caps" ${R} style="font-size:14px">${esc(e.title.toUpperCase())} · ${esc(e.day.toUpperCase())}</p>
@@ -140,7 +141,7 @@ const venuePage = (e: InviteEvent, first: boolean) => `<section id="venue-${e.ke
 </div></section>`;
 
 /** The Prophet's ﷺ dua for the couple, with the family's own line about duas. */
-const duaHtml = () => `<section id="dua" class="page" data-hold="6000"><div class="page-inner">
+const duaHtml = () => `<section id="dua" class="page" data-hold="${holdOf('dua', 6000)}"><div class="page-inner">
   <div class="panel">
     <p class="dua-ar gold-text" ${R} lang="ar" dir="rtl">${C.dua.ar}</p>
     <p class="dua-en italic" ${R}>${esc(C.dua.en)}</p>
@@ -207,7 +208,7 @@ const boot = () => {
     // ?noscroll: used by scripts/record.ts, which times its own page turns to the song.
     if (scrolling || reducedMotion || params.has('noscroll')) return;
     scrolling = true;
-    window.setTimeout(() => pager.startAuto(), AUTO_SCROLL_DELAY);
+    window.setTimeout(() => (SETTINGS.autoAdvance && pager.startAuto()), AUTO_SCROLL_DELAY);
   };
 
   // The scratch bar takes the slot's place (and its position in the hero stagger).

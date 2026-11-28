@@ -1,0 +1,54 @@
+{
+  "autoAdvance": true,
+  "scratchDelayMs": 3200,
+  "startDelayMs": 2600,
+  "glideMs": 1500,
+  "defaultHoldMs": 4500,
+  "replayHeroHoldMs": 4000,
+  "pages": [
+    {
+      "id": "invitation",
+      "label": "Invitation (arch)",
+      "holdMs": 11000
+    },
+    {
+      "id": "verse",
+      "label": "Quran verse",
+      "holdMs": 7000
+    },
+    {
+      "id": "events",
+      "label": "Wedding events",
+      "holdMs": 9000
+    },
+    {
+      "id": "countdown",
+      "label": "Countdown",
+      "holdMs": 5000
+    },
+    {
+      "id": "rsvp",
+      "label": "RSVP",
+      "holdMs": 4000
+    },
+    {
+      "id": "venues",
+      "label": "Venues",
+      "holdMs": 8000
+    },
+    {
+      "id": "closing",
+      "label": "Closing",
+      "holdMs": 7000
+    }
+  ],
+  "music": {
+    "enabled": true,
+    "file": "music.mp3",
+    "title": "Family song",
+    "volume": 1,
+    "fadeInSec": 2.5,
+    "startAtSec": 0,
+    "loop": true
+  }
+}

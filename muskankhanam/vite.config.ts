@@ -5,6 +5,18 @@ const glyphs = (text: string) => encodeURIComponent([...new Set(text)].join(''))
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
 /** Fills %TITLE% / %OG_DESCRIPTION% / %SITE_URL% in index.html from invite.config.ts, so all text lives in one place. */
+/** dist/version.json: the deployed commit, so the Admin site can tell when a change is live. */
+const versionFile = (): Plugin => ({
+  name: 'version-file',
+  generateBundle() {
+    this.emitFile({
+      type: 'asset',
+      fileName: 'version.json',
+      source: JSON.stringify({commit: process.env.COMMIT_REF ?? 'local', builtAt: new Date().toISOString()}),
+    });
+  },
+});
+
 const inviteMeta = (): Plugin => ({
   name: 'invite-meta',
   transformIndexHtml: (html) =>
@@ -19,7 +31,7 @@ const inviteMeta = (): Plugin => ({
 });
 
 export default defineConfig({
-  plugins: [inviteMeta()],
+  plugins: [inviteMeta(), versionFile()],
   build: {target: 'es2020', assetsInlineLimit: 0},
   preview: {port: 4173, strictPort: true},
   // The phone tester lives in ../shared (one copy for every invite).

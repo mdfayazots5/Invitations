@@ -1,0 +1,59 @@
+{
+  "autoAdvance": true,
+  "scratchDelayMs": 2500,
+  "startDelayMs": 2600,
+  "glideMs": 1100,
+  "defaultHoldMs": 4500,
+  "replayHeroHoldMs": 4000,
+  "pages": [
+    {
+      "id": "ayah",
+      "label": "Quran verse",
+      "holdMs": 7000
+    },
+    {
+      "id": "invitation",
+      "label": "Invitation",
+      "holdMs": 7500
+    },
+    {
+      "id": "events-nikah",
+      "label": "Nikah",
+      "holdMs": 5000
+    },
+    {
+      "id": "events-valima",
+      "label": "Valima",
+      "holdMs": 5000
+    },
+    {
+      "id": "countdown",
+      "label": "Countdown",
+      "holdMs": 4500
+    },
+    {
+      "id": "venue-nikah",
+      "label": "Nikah venue",
+      "holdMs": 4500
+    },
+    {
+      "id": "venue-valima",
+      "label": "Valima venue",
+      "holdMs": 4500
+    },
+    {
+      "id": "dua",
+      "label": "Dua",
+      "holdMs": 6000
+    }
+  ],
+  "music": {
+    "enabled": true,
+    "file": "music.mp3",
+    "title": "Family song",
+    "volume": 1,
+    "fadeInSec": 2.5,
+    "startAtSec": 0,
+    "loop": true
+  }
+}
