@@ -27,15 +27,18 @@
       "branch": "MuskanKhanam",
       "name": "Muskan & Fayaz · Red curtain & palace",
       "audience": "Bride's family",
-      "site": null
+      "site": "https://muskankhanam.netlify.app/"
     },
     {
       "folder": "muskanone",
       "branch": "Muskanone",
       "name": "Fayaz & Muskan · Pastel sky 3D",
       "audience": "Groom's family",
-      "site": null
+      "site": "https://fminvitation.netlify.app/"
     }
   ],
-  "extraBranches": ["main", "Admin"]
+  "extraBranches": [
+    "main",
+    "Admin"
+  ]
 }

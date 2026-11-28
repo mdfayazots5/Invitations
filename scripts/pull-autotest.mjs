@@ -12,8 +12,8 @@ const SITES = {
   fayaz: 'https://fayazinvitation.netlify.app',
   fayazmd: 'https://mdfayazinvitation.netlify.app',
   muskan: 'https://muskaninvitation.netlify.app',
-  // muskankhanam: 'https://muskankhanam.netlify.app', // once its Netlify site exists
-  // muskanone: 'https://muskanone.netlify.app', // once its Netlify site exists
+  muskankhanam: 'https://muskankhanam.netlify.app',
+  muskanone: 'https://fminvitation.netlify.app',
 };
 const clear = process.argv.includes('--clear');
 const keyFile = join(ROOT, '.autotest-key');

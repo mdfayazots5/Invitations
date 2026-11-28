@@ -24,8 +24,8 @@ export type InviteEvent = {
   mapPlaceUrl: string;
 };
 
-/** Change when the Netlify site for branch Muskanone is created under another name. */
-export const SITE_URL = 'https://muskanone.netlify.app/';
+/** The live Netlify site for branch Muskanone (used by the WhatsApp link preview). */
+export const SITE_URL = 'https://fminvitation.netlify.app/';
 
 export const C = {
   bismillahAr: 'بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ', // ⚠ check
@@ -151,6 +151,6 @@ export const mapEmbedUrl = (e: InviteEvent) => `https://maps.google.com/maps?q=$
 
 /**
  * Phone tester (shared/autotest). true: the 🧪 Test button shows, but only on links with ?test
- * (https://muskanone.netlify.app/?test); guests on the normal link never see it. false: the tester is not loaded at all.
+ * (https://fminvitation.netlify.app/?test); guests on the normal link never see it. false: the tester is not loaded at all.
  */
 export const TEST_MODE = true;

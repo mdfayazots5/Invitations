@@ -5,9 +5,9 @@
 #   Fayaz         fayaz/          fayazinvitation
 #   FayazMD       fayazmd/        mdfayazinvitation
 #   Muskan        muskan/         muskaninvitation
-#   MuskanKhanam  muskankhanam/   (not created yet)
-#   Muskanone     muskanone/      (not created yet)
-#   Admin         admin/          admin site: timings & music for every invite (password protected)
+#   MuskanKhanam  muskankhanam/   muskankhanam
+#   Muskanone     muskanone/      fminvitation
+#   Admin         admin/          invitationsadmin (timings & music for every invite, password protected)
 #
 # Leave "Base directory" empty in each site's Netlify settings so this file is read.
 

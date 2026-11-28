@@ -8,9 +8,9 @@ Each Netlify site deploys one branch, and the branch decides which folder gets b
 | `Fayaz`        | `fayaz/`        | https://fayazinvitation.netlify.app/   | Family invite, Nikah & Valima: Mohammed Fayaz & Muskan Khanam (emerald & gold, 3D sky) |
 | `FayazMD`      | `fayazmd/`      | https://mdfayazinvitation.netlify.app/ | Valima invite for Fayaz's friends & colleagues |
 | `Muskan`       | `muskan/`       | https://muskaninvitation.netlify.app/  | Bride's family invite, Nikah & Valima (rose & gold, 3D sky) |
-| `MuskanKhanam` | `muskankhanam/` | not created yet (code expects `muskankhanam.netlify.app`) | Bride's family invite, redesign: red curtain & palace hall |
-| `Muskanone`    | `muskanone/`    | not created yet (code expects `muskanone.netlify.app`) | Groom's family invite, pastel-sky storybook (built from `muskanone/DESIGN-BRIEF.md`) |
-| `Admin`        | `admin/`        | your admin site (create it: see below) | Password-protected admin: auto-scroll timings and music for every invite |
+| `MuskanKhanam` | `muskankhanam/` | https://muskankhanam.netlify.app/ | Bride's family invite, redesign: red curtain & palace hall |
+| `Muskanone`    | `muskanone/`    | https://fminvitation.netlify.app/ | Groom's family invite, pastel-sky storybook (built from `muskanone/DESIGN-BRIEF.md`) |
+| `Admin`        | `admin/`        | https://invitationsadmin.netlify.app/ | Password-protected admin: auto-scroll timings and music for every invite |
 | `main`         | all             | none                                  | Where you work. Pushed to every branch above. |
 
 Each folder is its own Vite site:

@@ -56,6 +56,7 @@ npm run record     # MP4 for WhatsApp Status (needs ffmpeg and music.mp3)
 ```
 
 ## Deploy (branch `Muskanone`)
-No Netlify site yet. Create one from this repo with **Branch to deploy** `Muskanone` and an empty base directory; the root `netlify.toml` (`[context.Muskanone]`) builds this folder.
-If the site isn't called `muskanone`, change `SITE_URL` in `src/invite.config.ts` (used by the link preview).
-Phone test: open `<site>/?test` and tap 🧪.
+Live at **https://fminvitation.netlify.app/** (Netlify site `fminvitation`, branch `Muskanone`, base directory empty; the root `netlify.toml` `[context.Muskanone]` builds this folder).
+`SITE_URL` in `src/invite.config.ts` points there (used by the WhatsApp link preview).
+Phone test: open https://fminvitation.netlify.app/?test and tap 🧪.
+Timings and music: change them in the Admin site (https://invitationsadmin.netlify.app/).
